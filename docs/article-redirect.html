@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opening Patreek...</title>
+  <script>
+    (function() {
+      // App Store URLs
+      const APP_STORE_URL = 'https://apps.apple.com/us/app/patreek/id6547858283';
+      const GOOGLE_PLAY_URL = ''; // Will be added when Android app launches
+      
+      // Detect platform
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+      const isAndroid = /android/i.test(userAgent);
+      
+      // Universal Links / App Links work automatically:
+      // - If app is installed and user taps (not long-press), iOS/Android opens the app
+      // - If app is not installed or user long-presses, browser opens the page
+      // - If we're in the browser, redirect to App Store
+      
+      // Small delay to ensure we're actually in the browser (not intercepted by app)
+      setTimeout(function() {
+        if (isIOS) {
+          window.location.href = APP_STORE_URL;
+        } else if (isAndroid && GOOGLE_PLAY_URL) {
+          window.location.href = GOOGLE_PLAY_URL;
+        } else {
+          // Desktop or fallback: redirect to iOS App Store
+          window.location.href = APP_STORE_URL;
+        }
+      }, 500);
+    })();
+  </script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: #fff;
+      color: #000;
+    }
+    .loading {
+      text-align: center;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading">
+    <div class="spinner"></div>
+    <p>Opening Patreek...</p>
+  </div>
+</body>
+</html>
+
