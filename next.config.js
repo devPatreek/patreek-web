@@ -5,7 +5,6 @@ const nextConfig = {
   trailingSlash: true, // GitHub Pages works better with trailing slashes
   images: {
     unoptimized: true, // Required for static export
-  images: {
     domains: [
       'patreekbackend-env.eba-ifvfvi7q.us-east-1.elasticbeanstalk.com',
       'cdn.prod.website-files.com',
