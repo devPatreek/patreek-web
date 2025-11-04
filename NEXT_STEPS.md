@@ -61,9 +61,7 @@ Once custom domain is configured, update DNS in GoDaddy:
 **Add CNAME record:**
 - `www` → `devPatreek.github.io`
 
-**Or use CNAME for root (simpler):**
-- `@` → `devPatreek.github.io`
-- `www` → `devPatreek.github.io`
+**Note**: GoDaddy doesn't allow CNAME on root domain (`@`), so you must use A records for `@` and CNAME for `www`.
 
 ### Step 6: Verify Universal Links
 
