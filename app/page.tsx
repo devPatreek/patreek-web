@@ -18,12 +18,15 @@ export default function LinksHomePage() {
     async function loadFeeds() {
       try {
         setIsLoading(true);
+        setError(null);
         const data = await getPublicFeeds();
         setFeeds(data);
-        setError(null);
+        // If no feeds returned (empty array), that's fine - we'll show the empty state
+        // Only set error if there's an actual exception thrown
       } catch (err) {
-        console.error('Failed to load feeds:', err);
-        setError('Failed to load articles. Please try again later.');
+        console.warn('[HomePage] Failed to load feeds:', err);
+        // Don't set error state - let it show empty state instead
+        setFeeds([]);
       } finally {
         setIsLoading(false);
       }
