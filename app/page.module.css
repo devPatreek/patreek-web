@@ -326,7 +326,18 @@
   opacity: 0.9;
 }
 
-/* UNLOCK YOUR NEWS FEED Banner */
+/* UNLOCK YOUR NEWS FEED Banner - Top Static Banner */
+.unlockBannerTop {
+  background: linear-gradient(135deg, #00B0AD 0%, #0096DD 100%);
+  padding: 32px 24px;
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* UNLOCK YOUR NEWS FEED Banner - Bottom Banner */
 .unlockBanner {
   background: linear-gradient(135deg, #00B0AD 0%, #0096DD 100%);
   border-radius: 15px;

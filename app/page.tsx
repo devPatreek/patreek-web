@@ -51,71 +51,6 @@ export default function LinksHomePage() {
     return result;
   }, [feeds]);
 
-  if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <div className={styles.headerInner}>
-            <div className={styles.logoSection}>
-              <Image
-                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/675caa3a2f73ad268a86b51a_Patreek%20logo_slogan.png"
-                alt="Patreek"
-                width={60}
-                height={60}
-                className={styles.logo}
-                priority
-              />
-              <h1 className={styles.brandName}>PATREEK</h1>
-            </div>
-            <div className={styles.headerTitle}>
-              <h2 className={styles.title}>Latest news</h2>
-              <p className={styles.subtitle}>Let&apos;s read</p>
-            </div>
-          </div>
-        </header>
-        <main className={styles.main}>
-          <div className={styles.loadingState}>
-            <p>Loading articles...</p>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <div className={styles.headerInner}>
-            <div className={styles.logoSection}>
-              <Image
-                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/675caa3a2f73ad268a86b51a_Patreek%20logo_slogan.png"
-                alt="Patreek"
-                width={60}
-                height={60}
-                className={styles.logo}
-                priority
-              />
-              <h1 className={styles.brandName}>PATREEK</h1>
-            </div>
-            <div className={styles.headerTitle}>
-              <h2 className={styles.title}>Latest news</h2>
-              <p className={styles.subtitle}>Let&apos;s read</p>
-            </div>
-          </div>
-        </header>
-        <main className={styles.main}>
-          <div className={styles.emptyState}>
-            <p>{error}</p>
-            <button onClick={() => window.location.reload()} className={styles.retryButton}>
-              Retry
-            </button>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -138,94 +73,108 @@ export default function LinksHomePage() {
         </div>
       </header>
 
-      {feeds.length === 0 ? (
-        <div className={styles.emptyState}>
-          <p>No articles available at the moment.</p>
-          <p className={styles.registerPrompt}>
-            Register to get the latest updates from the topics you care about
+      {/* UNLOCK YOUR NEWS FEED Banner - Always visible at top */}
+      <div className={styles.unlockBannerTop}>
+        <div className={styles.unlockBannerContent}>
+          <p className={styles.unlockText}>UNLOCK YOUR NEWS FEED</p>
+          <p className={styles.unlockDescription}>
+            Register to get the latest updates from the topics{' '}
+            <span className={styles.unlockUnderline}>you</span> care about
           </p>
+          <div className={styles.unlockButtons}>
+            <a
+              href="https://apps.apple.com/us/app/patreek/id6547858283"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.createAccountButton}
+            >
+              Create account
+            </a>
+            <span className={styles.or}>or</span>
+            <a
+              href="https://apps.apple.com/us/app/patreek/id6547858283"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.loginButton}
+            >
+              Login
+            </a>
+          </div>
         </div>
-      ) : (
-        <main className={styles.main}>
-          {/* Top Banner Ad Slot */}
-          <div className={styles.bannerAdSlot}>
-            {/* Ad will be implemented here later */}
-          </div>
+      </div>
 
-          <div className={styles.feedList}>
-            {dataWithAdSlots.map((item) => {
-              if (item.type === 'ad') {
-                return (
-                  <div key={item.id} className={styles.adSlot}>
-                    {/* Ad slot - will be implemented later */}
-                    <div className={styles.adPlaceholder}>Advertisement</div>
-                  </div>
-                );
-              }
-
-              const feed = item.data!;
-              return (
-                <a
-                  key={item.id}
-                  href={`/article/${feed.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.feedCard}
-                >
-                  <div className={styles.imageWrapper}>
-                    <img
-                      src={feed.imageUrl || 'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'}
-                      alt={feed.title}
-                      className={styles.image}
-                    />
-                    <div className={styles.categoryBadge}>
-                      <span className={styles.categoryText}>{feed.categoryName}</span>
-                    </div>
-                  </div>
-                  <div className={styles.content}>
-                    <h2 className={styles.feedTitle}>{feed.title}</h2>
-                  </div>
-                </a>
-              );
-            })}
+      <main className={styles.main}>
+        {isLoading ? (
+          <div className={styles.loadingState}>
+            <p>Loading articles...</p>
           </div>
-          
-          {/* Bottom Banner Ad Slot */}
-          <div className={styles.bannerAdSlot}>
-            {/* Ad will be implemented here later */}
+        ) : error ? (
+          <div className={styles.emptyState}>
+            <p>{error}</p>
+            <button onClick={() => window.location.reload()} className={styles.retryButton}>
+              Retry
+            </button>
           </div>
-
-          {/* UNLOCK YOUR NEWS FEED Banner */}
-          <div className={styles.unlockBanner}>
-            <div className={styles.unlockBannerContent}>
-              <p className={styles.unlockText}>UNLOCK YOUR NEWS FEED</p>
-              <p className={styles.unlockDescription}>
-                Register to get the latest updates from the topics{' '}
-                <span className={styles.unlockUnderline}>you</span> care about
-              </p>
-              <div className={styles.unlockButtons}>
-                <a
-                  href="https://apps.apple.com/us/app/patreek/id6547858283"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.createAccountButton}
-                >
-                  Create account
-                </a>
-                <span className={styles.or}>or</span>
-                <a
-                  href="https://apps.apple.com/us/app/patreek/id6547858283"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.loginButton}
-                >
-                  Login
-                </a>
-              </div>
+        ) : feeds.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p>No articles available at the moment.</p>
+            <p className={styles.registerPrompt}>
+              Register to get the latest updates from the topics you care about
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Top Banner Ad Slot */}
+            <div className={styles.bannerAdSlot}>
+              {/* Ad will be implemented here later */}
             </div>
-          </div>
-        </main>
-      )}
+
+            <div className={styles.feedList}>
+              {dataWithAdSlots.map((item) => {
+                if (item.type === 'ad') {
+                  return (
+                    <div key={item.id} className={styles.adSlot}>
+                      {/* Ad slot - will be implemented later */}
+                      <div className={styles.adPlaceholder}>Advertisement</div>
+                    </div>
+                  );
+                }
+
+                const feed = item.data!;
+                return (
+                  <a
+                    key={item.id}
+                    href={`/article/${feed.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.feedCard}
+                  >
+                    <div className={styles.imageWrapper}>
+                      <img
+                        src={feed.imageUrl || 'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'}
+                        alt={feed.title}
+                        className={styles.image}
+                      />
+                      <div className={styles.categoryBadge}>
+                        <span className={styles.categoryText}>{feed.categoryName}</span>
+                      </div>
+                    </div>
+                    <div className={styles.content}>
+                      <h2 className={styles.feedTitle}>{feed.title}</h2>
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+            
+            {/* Bottom Banner Ad Slot */}
+            <div className={styles.bannerAdSlot}>
+              {/* Ad will be implemented here later */}
+            </div>
+          </>
+        )}
+      </main>
     </div>
   );
 }
+
