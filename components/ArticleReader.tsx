@@ -44,7 +44,6 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
               height={50}
               className={styles.logo}
             />
-            <span className={styles.brandName}>PATREEK</span>
           </Link>
           <div className={styles.headerCenter}>
             <h1 className={styles.categoryName}>{article.categoryName}</h1>
@@ -84,23 +83,32 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
                 Register to get the latest updates from the topics{' '}
                 <span className={styles.unlockUnderline}>you</span> care about
               </p>
-              <div className={styles.unlockButtons}>
+              <div className={styles.storeButtons}>
                 <a
                   href="https://apps.apple.com/us/app/patreek/id6547858283"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={styles.createAccountButton}
+                  className={styles.storeLink}
                 >
-                  Create account
+                  <Image
+                    src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3729b558347b9bf210a5a_Store%3DApp%20Store%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
+                    alt="Download on App Store"
+                    width={200}
+                    height={60}
+                    className={styles.storeImage}
+                  />
                 </a>
-                <span className={styles.or}>or</span>
                 <a
-                  href="https://apps.apple.com/us/app/patreek/id6547858283"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.loginButton}
+                  href="#"
+                  className={styles.storeLink}
                 >
-                  Login
+                  <Image
+                    src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
+                    alt="Get it on Google Play"
+                    width={200}
+                    height={60}
+                    className={styles.storeImage}
+                  />
                 </a>
               </div>
             </div>
