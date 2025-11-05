@@ -1,51 +1,65 @@
 .container {
   min-height: 100vh;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: #F4F4F4;
+  color: #252525;
 }
 
 .container.dark {
-  background-color: #1a1a1a;
-  color: #fff;
+  background-color: #252525;
+  color: #ffffff;
 }
 
 .header {
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 16px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #E3E3E3;
+  padding: 16px 20px;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .container.dark .header {
-  background-color: #2a2a2a;
-  border-bottom-color: #333;
+  background-color: #3D3D3D;
+  border-bottom-color: #3a3a3a;
 }
 
-.headerContent {
-  max-width: 800px;
+.headerInner {
+  max-width: 900px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
 }
 
-.backButton {
-  color: #000;
+.logoLink {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   text-decoration: none;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 8px 0;
   transition: opacity 0.2s;
 }
 
-.backButton:hover {
-  opacity: 0.7;
+.logoLink:hover {
+  opacity: 0.8;
 }
 
-.container.dark .backButton {
-  color: #fff;
+.logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.brandName {
+  font-size: 20px;
+  font-weight: 700;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 2px;
+  color: #2b2b2b;
+}
+
+.container.dark .brandName {
+  color: #ffffff;
 }
 
 .headerCenter {
@@ -56,44 +70,48 @@
   font-size: 18px;
   font-weight: 600;
   margin: 0 0 4px 0;
-  color: #000;
+  color: #2b2b2b;
+  font-family: 'Oswald', sans-serif;
 }
 
 .container.dark .categoryName {
-  color: #fff;
+  color: #ffffff;
 }
 
 .date {
   font-size: 14px;
   margin: 0;
-  color: #666;
+  color: #5B5B5B;
+  font-weight: 400;
 }
 
 .container.dark .date {
-  color: #999;
+  color: #b5b9bf;
 }
 
 .main {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px 16px;
+  padding: 24px 16px;
 }
 
 .article {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 24px;
+  background-color: #ffffff;
+  border-radius: 13px;
+  padding: 32px;
   line-height: 1.6;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .container.dark .article {
-  background-color: #2a2a2a;
+  background-color: #3D3D3D;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .imageWrapper {
   width: 100%;
-  margin-bottom: 24px;
-  border-radius: 8px;
+  margin-bottom: 32px;
+  border-radius: 13px;
   overflow: hidden;
 }
 
@@ -104,117 +122,178 @@
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0 0 16px 0;
+  font-size: 32px;
+  font-weight: 400;
+  margin: 0 0 20px 0;
   line-height: 1.3;
-  color: #000;
+  color: #252525;
+  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .container.dark .title {
-  color: #fff;
+  color: #ffffff;
 }
 
 .description {
-  font-size: 18px;
-  color: #666;
-  margin: 0 0 24px 0;
-  line-height: 1.5;
+  font-size: 20px;
+  color: #777777;
+  margin: 0 0 32px 0;
+  line-height: 1.6;
+  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .container.dark .description {
-  color: #999;
+  color: #b5b9bf;
 }
 
 .content {
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.8;
-  color: #333;
-  margin-bottom: 32px;
+  color: #252525;
+  margin-bottom: 40px;
+  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 .content p {
-  margin: 0 0 16px 0;
+  margin: 0 0 20px 0;
 }
 
 .content h1,
 .content h2,
 .content h3 {
-  margin: 24px 0 16px 0;
+  margin: 32px 0 20px 0;
   font-weight: 600;
+  font-family: 'Oswald', sans-serif;
 }
 
 .content h1 {
-  font-size: 24px;
+  font-size: 28px;
 }
 
 .content h2 {
-  font-size: 22px;
+  font-size: 24px;
 }
 
 .content h3 {
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .content ul,
 .content ol {
-  margin: 16px 0;
-  padding-left: 24px;
+  margin: 20px 0;
+  padding-left: 32px;
 }
 
 .content li {
-  margin: 8px 0;
+  margin: 12px 0;
 }
 
 .content a {
-  color: #667eea;
+  color: #0096DD;
   text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.content a:hover {
+  color: #00B0AD;
 }
 
 .content img {
   max-width: 100%;
   height: auto;
-  border-radius: 8px;
-  margin: 16px 0;
+  border-radius: 13px;
+  margin: 24px 0;
 }
 
 .container.dark .content {
-  color: #fff;
+  color: #ffffff;
 }
 
 .container.dark .content h1,
 .container.dark .content h2,
 .container.dark .content h3 {
-  color: #fff;
+  color: #ffffff;
 }
 
-.registerBanner {
+/* UNLOCK YOUR NEWS FEED Banner */
+.unlockBanner {
+  background: linear-gradient(135deg, #00B0AD 0%, #0096DD 100%);
+  border-radius: 15px;
+  padding: 40px 24px;
   margin-top: 40px;
-  padding: 24px;
-  background-color: #000;
-  border-radius: 8px;
   text-align: center;
+  overflow: hidden;
+  position: relative;
 }
 
-.registerText {
-  color: #fff;
-  font-size: 16px;
+.unlockBannerContent {
+  position: relative;
+  z-index: 1;
+}
+
+.unlockText {
+  color: #ffffff;
   font-weight: 500;
-  margin: 0 0 16px 0;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 20px 0;
 }
 
-.downloadButton {
-  display: inline-block;
-  padding: 12px 24px;
-  background-color: #fff;
-  color: #000;
+.unlockDescription {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  line-height: 1.4;
+}
+
+.unlockUnderline {
+  text-decoration: underline;
+}
+
+.unlockButtons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.createAccountButton {
+  padding: 10px 20px;
+  background-color: #000000;
+  color: #ffffff;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: 7px;
+  font-size: 14px;
   font-weight: 600;
+  text-transform: uppercase;
   transition: opacity 0.2s;
 }
 
-.downloadButton:hover {
+.createAccountButton:hover {
   opacity: 0.9;
 }
 
+.or {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.loginButton {
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #000000;
+  text-decoration: none;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  transition: opacity 0.2s;
+}
+
+.loginButton:hover {
+  opacity: 0.9;
+}

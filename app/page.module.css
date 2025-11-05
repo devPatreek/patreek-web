@@ -1,112 +1,196 @@
 .container {
   min-height: 100vh;
-  background-color: #f5f5f5;
-  color: #333;
+  background-color: #F4F4F4;
+  color: #252525;
 }
 
 /* Dark theme support */
 @media (prefers-color-scheme: dark) {
   .container {
-    background-color: #1a1a1a;
-    color: #fff;
+    background-color: #252525;
+    color: #ffffff;
   }
 }
 
 .header {
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  border-bottom: 1px solid #E3E3E3;
   padding: 20px 16px;
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 @media (prefers-color-scheme: dark) {
   .header {
-    background-color: #2a2a2a;
-    border-bottom-color: #333;
+    background-color: #3D3D3D;
+    border-bottom-color: #3a3a3a;
   }
 }
 
-.headerContent {
-  max-width: 800px;
+.headerInner {
+  max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .headerInner {
+    gap: 16px;
+  }
+  
+  .logoSection {
+    width: 100%;
+  }
+  
+  .headerTitle {
+    width: 100%;
+  }
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.brandName {
+  font-size: 24px;
+  font-weight: 700;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 2px;
+  margin: 0;
+  color: #2b2b2b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .brandName {
+    color: #ffffff;
+  }
+}
+
+.headerTitle {
+  flex: 1;
 }
 
 .title {
   font-size: 24px;
   font-weight: 600;
   margin: 0 0 4px 0;
-  color: #000;
+  color: #2b2b2b;
+  font-family: 'Oswald', sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
   .title {
-    color: #fff;
+    color: #ffffff;
   }
 }
 
 .subtitle {
   font-size: 14px;
   margin: 0;
-  color: #666;
+  color: #5B5B5B;
+  font-weight: 400;
 }
 
 @media (prefers-color-scheme: dark) {
   .subtitle {
-    color: #999;
+    color: #b5b9bf;
   }
 }
 
 .main {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 16px;
+  padding: 24px 16px;
+}
+
+.bannerAdSlot {
+  width: 100%;
+  min-height: 100px;
+  background-color: #E3E3E3;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5B5B5B;
+  font-size: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .bannerAdSlot {
+    background-color: #3a3a3a;
+    color: #b5b9bf;
+  }
 }
 
 .feedList {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 640px) {
+  .feedList {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .feedList {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .feedCard {
   display: block;
-  background-color: #fff;
-  border-radius: 8px;
+  background-color: #ffffff;
+  border-radius: 13px;
   overflow: hidden;
   text-decoration: none;
   color: inherit;
   transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .feedCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 @media (prefers-color-scheme: dark) {
   .feedCard {
-    background-color: #2a2a2a;
+    background-color: #3D3D3D;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
   
   .feedCard:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   }
 }
 
 .imageWrapper {
   position: relative;
   width: 100%;
-  padding-top: 56.25%; /* 16:9 aspect ratio */
+  height: 150px;
   overflow: hidden;
-  background-color: #e0e0e0;
+  background-color: #E3E3E3;
 }
 
 .image {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -114,35 +198,82 @@
 
 .categoryBadge {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  background-color: rgba(0, 0, 0, 0.6);
-  padding: 4px 12px;
-  border-radius: 4px;
+  bottom: 20px;
+  left: 20px;
+  background-color: #F4F4F4;
+  padding: 5px 15px;
+  border-radius: 50px;
+  backdrop-filter: blur(4px);
 }
 
 .categoryText {
   font-size: 12px;
-  font-weight: 500;
-  color: #fff;
+  font-weight: bold;
   text-transform: uppercase;
+  color: #2b2b2b;
+  letter-spacing: 0.5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .categoryBadge {
+    background-color: rgba(45, 45, 45, 0.9);
+  }
+  
+  .categoryText {
+    color: #ffffff;
+  }
 }
 
 .content {
-  padding: 16px;
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .content {
+    background-color: #3D3D3D;
+  }
 }
 
 .feedTitle {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 400;
   margin: 0;
   line-height: 1.4;
-  color: #000;
+  color: #252525;
+  font-family: 'Georgia', 'Times New Roman', serif;
 }
 
 @media (prefers-color-scheme: dark) {
   .feedTitle {
-    color: #fff;
+    color: #ffffff;
+  }
+}
+
+.adSlot {
+  grid-column: 1 / -1;
+  min-height: 250px;
+  background-color: #E3E3E3;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.adPlaceholder {
+  color: #5B5B5B;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+@media (prefers-color-scheme: dark) {
+  .adSlot {
+    background-color: #3a3a3a;
+  }
+  
+  .adPlaceholder {
+    color: #b5b9bf;
   }
 }
 
@@ -155,44 +286,14 @@
 
 .registerPrompt {
   margin-top: 16px;
-  color: #666;
+  color: #5B5B5B;
   font-size: 14px;
 }
 
 @media (prefers-color-scheme: dark) {
   .registerPrompt {
-    color: #999;
+    color: #b5b9bf;
   }
-}
-
-.registerBanner {
-  margin-top: 40px;
-  padding: 24px;
-  background-color: #000;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.registerText {
-  color: #fff;
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 16px 0;
-}
-
-.downloadButton {
-  display: inline-block;
-  padding: 12px 24px;
-  background-color: #fff;
-  color: #000;
-  text-decoration: none;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: opacity 0.2s;
-}
-
-.downloadButton:hover {
-  opacity: 0.9;
 }
 
 .loadingState {
@@ -200,20 +301,20 @@
   margin: 80px auto;
   padding: 0 16px;
   text-align: center;
-  color: #666;
+  color: #5B5B5B;
 }
 
 @media (prefers-color-scheme: dark) {
   .loadingState {
-    color: #999;
+    color: #b5b9bf;
   }
 }
 
 .retryButton {
   margin-top: 16px;
   padding: 12px 24px;
-  background-color: #000;
-  color: #fff;
+  background-color: #000000;
+  color: #ffffff;
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -225,3 +326,85 @@
   opacity: 0.9;
 }
 
+/* UNLOCK YOUR NEWS FEED Banner */
+.unlockBanner {
+  background: linear-gradient(135deg, #00B0AD 0%, #0096DD 100%);
+  border-radius: 15px;
+  padding: 40px 24px;
+  margin-top: 40px;
+  text-align: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.unlockBannerContent {
+  position: relative;
+  z-index: 1;
+}
+
+.unlockText {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 20px 0;
+}
+
+.unlockDescription {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0 0 20px 0;
+  line-height: 1.4;
+}
+
+.unlockUnderline {
+  text-decoration: underline;
+}
+
+.unlockButtons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.createAccountButton {
+  padding: 10px 20px;
+  background-color: #000000;
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  transition: opacity 0.2s;
+}
+
+.createAccountButton:hover {
+  opacity: 0.9;
+}
+
+.or {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.loginButton {
+  padding: 10px 20px;
+  background-color: #ffffff;
+  color: #000000;
+  text-decoration: none;
+  border-radius: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  transition: opacity 0.2s;
+}
+
+.loginButton:hover {
+  opacity: 0.9;
+}

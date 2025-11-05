@@ -45,7 +45,9 @@ export async function getPublicFeeds(): Promise<Feed[]> {
     }
     
     const data: FeedsResponse = await response.json();
-    return data.content || [];
+    // Limit to top 30 articles (API returns 20, but we'll slice if more come in future)
+    const feeds = data.content || [];
+    return feeds.slice(0, 30);
   } catch (error) {
     console.error('Error fetching public feeds:', error);
     return [];

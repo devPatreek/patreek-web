@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useState, useEffect, useMemo } from 'react';
 import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
+import Image from 'next/image';
 
 /**
  * Public feed homepage for links.patreek.com
@@ -32,13 +32,45 @@ export default function LinksHomePage() {
     loadFeeds();
   }, []);
 
+  // Insert ad slots every 3 articles (after 3rd, 6th, 9th, etc.) - matching mobile app
+  const dataWithAdSlots = useMemo(() => {
+    if (!feeds || feeds.length === 0) return [];
+    
+    const result: Array<{ type: 'article' | 'ad'; id: string; data?: Feed }> = [];
+    
+    feeds.forEach((item, index) => {
+      // Add article
+      result.push({ type: 'article', id: `article-${item.id}`, data: item });
+      
+      // Add ad slot every 3 articles (after 3rd, 6th, 9th, etc.)
+      if ((index + 1) % 3 === 0) {
+        result.push({ type: 'ad', id: `ad-${index}` });
+      }
+    });
+    
+    return result;
+  }, [feeds]);
+
   if (isLoading) {
     return (
       <div className={styles.container}>
         <header className={styles.header}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.title}>Latest news</h1>
-            <p className={styles.subtitle}>Let&apos;s read</p>
+          <div className={styles.headerInner}>
+            <div className={styles.logoSection}>
+              <Image
+                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/675caa3a2f73ad268a86b51a_Patreek%20logo_slogan.png"
+                alt="Patreek"
+                width={60}
+                height={60}
+                className={styles.logo}
+                priority
+              />
+              <h1 className={styles.brandName}>PATREEK</h1>
+            </div>
+            <div className={styles.headerTitle}>
+              <h2 className={styles.title}>Latest news</h2>
+              <p className={styles.subtitle}>Let&apos;s read</p>
+            </div>
           </div>
         </header>
         <main className={styles.main}>
@@ -54,9 +86,22 @@ export default function LinksHomePage() {
     return (
       <div className={styles.container}>
         <header className={styles.header}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.title}>Latest news</h1>
-            <p className={styles.subtitle}>Let&apos;s read</p>
+          <div className={styles.headerInner}>
+            <div className={styles.logoSection}>
+              <Image
+                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/675caa3a2f73ad268a86b51a_Patreek%20logo_slogan.png"
+                alt="Patreek"
+                width={60}
+                height={60}
+                className={styles.logo}
+                priority
+              />
+              <h1 className={styles.brandName}>PATREEK</h1>
+            </div>
+            <div className={styles.headerTitle}>
+              <h2 className={styles.title}>Latest news</h2>
+              <p className={styles.subtitle}>Let&apos;s read</p>
+            </div>
           </div>
         </header>
         <main className={styles.main}>
@@ -74,9 +119,22 @@ export default function LinksHomePage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <div className={styles.headerContent}>
-          <h1 className={styles.title}>Latest news</h1>
-          <p className={styles.subtitle}>Let&apos;s read</p>
+        <div className={styles.headerInner}>
+          <div className={styles.logoSection}>
+            <Image
+              src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/675caa3a2f73ad268a86b51a_Patreek%20logo_slogan.png"
+              alt="Patreek"
+              width={60}
+              height={60}
+              className={styles.logo}
+              priority
+            />
+            <h1 className={styles.brandName}>PATREEK</h1>
+          </div>
+          <div className={styles.headerTitle}>
+            <h2 className={styles.title}>Latest news</h2>
+            <p className={styles.subtitle}>Let&apos;s read</p>
+          </div>
         </div>
       </header>
 
@@ -89,38 +147,82 @@ export default function LinksHomePage() {
         </div>
       ) : (
         <main className={styles.main}>
+          {/* Top Banner Ad Slot */}
+          <div className={styles.bannerAdSlot}>
+            {/* Ad will be implemented here later */}
+          </div>
+
           <div className={styles.feedList}>
-            {feeds.map((feed) => (
-              <Link key={feed.id} href={`/article/${feed.id}`} className={styles.feedCard}>
-                <div className={styles.imageWrapper}>
-                  <img
-                    src={feed.imageUrl || 'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'}
-                    alt={feed.title}
-                    className={styles.image}
-                  />
-                  <div className={styles.categoryBadge}>
-                    <span className={styles.categoryText}>{feed.categoryName}</span>
+            {dataWithAdSlots.map((item) => {
+              if (item.type === 'ad') {
+                return (
+                  <div key={item.id} className={styles.adSlot}>
+                    {/* Ad slot - will be implemented later */}
+                    <div className={styles.adPlaceholder}>Advertisement</div>
                   </div>
-                </div>
-                <div className={styles.content}>
-                  <h2 className={styles.feedTitle}>{feed.title}</h2>
-                </div>
-              </Link>
-            ))}
+                );
+              }
+
+              const feed = item.data!;
+              return (
+                <a
+                  key={item.id}
+                  href={`/article/${feed.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.feedCard}
+                >
+                  <div className={styles.imageWrapper}>
+                    <img
+                      src={feed.imageUrl || 'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'}
+                      alt={feed.title}
+                      className={styles.image}
+                    />
+                    <div className={styles.categoryBadge}>
+                      <span className={styles.categoryText}>{feed.categoryName}</span>
+                    </div>
+                  </div>
+                  <div className={styles.content}>
+                    <h2 className={styles.feedTitle}>{feed.title}</h2>
+                  </div>
+                </a>
+              );
+            })}
           </div>
           
-          <div className={styles.registerBanner}>
-            <p className={styles.registerText}>
-              Register to get the latest updates from the topics you care about
-            </p>
-            <a
-              href="https://apps.apple.com/us/app/patreek/id6547858283"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.downloadButton}
-            >
-              Download App
-            </a>
+          {/* Bottom Banner Ad Slot */}
+          <div className={styles.bannerAdSlot}>
+            {/* Ad will be implemented here later */}
+          </div>
+
+          {/* UNLOCK YOUR NEWS FEED Banner */}
+          <div className={styles.unlockBanner}>
+            <div className={styles.unlockBannerContent}>
+              <p className={styles.unlockText}>UNLOCK YOUR NEWS FEED</p>
+              <p className={styles.unlockDescription}>
+                Register to get the latest updates from the topics{' '}
+                <span className={styles.unlockUnderline}>you</span> care about
+              </p>
+              <div className={styles.unlockButtons}>
+                <a
+                  href="https://apps.apple.com/us/app/patreek/id6547858283"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.createAccountButton}
+                >
+                  Create account
+                </a>
+                <span className={styles.or}>or</span>
+                <a
+                  href="https://apps.apple.com/us/app/patreek/id6547858283"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.loginButton}
+                >
+                  Login
+                </a>
+              </div>
+            </div>
           </div>
         </main>
       )}
