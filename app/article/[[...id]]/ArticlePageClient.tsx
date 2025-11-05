@@ -1,0 +1,106 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { getPublicFeed, FeedArticle } from '@/lib/api';
+import { getCachedArticle, setCachedArticle } from '@/lib/cache';
+import ArticleReader from '@/components/ArticleReader';
+
+export default function ArticlePageClient() {
+  const pathname = usePathname();
+  const [article, setArticle] = useState<FeedArticle | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadArticle() {
+      // Extract article ID from pathname (e.g., /article/123)
+      const match = pathname?.match(/\/article\/(\d+)/);
+      if (!match) {
+        setError('Invalid article ID');
+        setIsLoading(false);
+        return;
+      }
+
+      const articleId = parseInt(match[1], 10);
+      if (isNaN(articleId) || articleId <= 0) {
+        setError('Invalid article ID');
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        
+        // Check cache first
+        const cached = getCachedArticle(articleId);
+        if (cached) {
+          console.log(`[ArticlePage] Using cached article ${articleId}`);
+          setArticle(cached);
+          setError(null);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch from API if not in cache
+        console.log(`[ArticlePage] Fetching article ${articleId} from API`);
+        const data = await getPublicFeed(articleId);
+        if (!data) {
+          setError('Article not found or not available');
+        } else {
+          // Cache the article for 7 days
+          setCachedArticle(articleId, data);
+          setArticle(data);
+          setError(null);
+        }
+      } catch (err) {
+        console.error('Failed to load article:', err);
+        setError('Failed to load article. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (pathname) {
+      loadArticle();
+    }
+  }, [pathname]);
+
+  if (isLoading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f5f5f5',
+        color: '#333',
+      }}>
+        <p>Loading article...</p>
+      </div>
+    );
+  }
+
+  if (error || !article) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#f5f5f5',
+        color: '#333',
+        padding: '20px',
+      }}>
+        <p>{error || 'Article not found'}</p>
+        <a href="/" style={{ marginTop: '16px', color: '#667eea', textDecoration: 'underline' }}>
+          ← Back to Home
+        </a>
+      </div>
+    );
+  }
+
+  return <ArticleReader article={article} />;
+}
+

@@ -1,75 +1,11 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+import { getPublicFeeds } from '@/lib/api';
 import Link from 'next/link';
-import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
 
-/**
- * Public feed homepage for links.patreek.com
- * Shows public articles like guest users see in the app
- */
-export default function LinksHomePage() {
-  const [feeds, setFeeds] = useState<Feed[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export const revalidate = 300; // Revalidate every 5 minutes
 
-  useEffect(() => {
-    async function loadFeeds() {
-      try {
-        setIsLoading(true);
-        const data = await getPublicFeeds();
-        setFeeds(data);
-        setError(null);
-      } catch (err) {
-        console.error('Failed to load feeds:', err);
-        setError('Failed to load articles. Please try again later.');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadFeeds();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.title}>Latest news</h1>
-            <p className={styles.subtitle}>Let&apos;s read</p>
-          </div>
-        </header>
-        <main className={styles.main}>
-          <div className={styles.loadingState}>
-            <p>Loading articles...</p>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <header className={styles.header}>
-          <div className={styles.headerContent}>
-            <h1 className={styles.title}>Latest news</h1>
-            <p className={styles.subtitle}>Let&apos;s read</p>
-          </div>
-        </header>
-        <main className={styles.main}>
-          <div className={styles.emptyState}>
-            <p>{error}</p>
-            <button onClick={() => window.location.reload()} className={styles.retryButton}>
-              Retry
-            </button>
-          </div>
-        </main>
-      </div>
-    );
-  }
+export default async function LinksHomePage() {
+  const feeds = await getPublicFeeds();
 
   return (
     <div className={styles.container}>
@@ -127,3 +63,4 @@ export default function LinksHomePage() {
     </div>
   );
 }
+
