@@ -21,19 +21,45 @@ export default function RootPage() {
     setMounted(true);
     // Get the actual pathname from window.location (works even with 404.html redirect)
     if (typeof window !== 'undefined') {
-      setActualPath(window.location.pathname);
+      const currentPath = window.location.pathname;
+      setActualPath(currentPath);
+      console.log('[RootPage] Initial path detected:', currentPath);
     }
   }, []);
 
   // Update actual path when pathname changes
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setActualPath(window.location.pathname);
+    if (typeof window !== 'undefined' && mounted) {
+      const currentPath = window.location.pathname;
+      setActualPath(currentPath);
+      console.log('[RootPage] Path updated:', currentPath);
     }
-  }, [pathname]);
+  }, [pathname, mounted]);
 
   // Check if we're on an article route
-  const isArticleRoute = mounted && actualPath && /^\/article\/\d+/.test(actualPath);
+  // Use both pathname (Next.js) and window.location (for GitHub Pages 404 redirects)
+  const checkArticleRoute = () => {
+    if (typeof window === 'undefined') return false;
+    
+    // Check window.location first (most reliable for GitHub Pages)
+    const windowPath = window.location.pathname;
+    if (windowPath && /^\/article\/\d+/.test(windowPath)) {
+      console.log('[RootPage] Article route detected from window.location:', windowPath);
+      return true;
+    }
+    
+    // Fallback to pathname (Next.js routing)
+    if (pathname && /^\/article\/\d+/.test(pathname)) {
+      console.log('[RootPage] Article route detected from pathname:', pathname);
+      return true;
+    }
+    
+    return false;
+  };
+
+  const isArticleRoute = checkArticleRoute();
+
+  console.log('[RootPage] Rendering - mounted:', mounted, 'isArticleRoute:', isArticleRoute, 'pathname:', pathname, 'actualPath:', actualPath);
 
   // If we're on an article route, render the article page
   if (isArticleRoute) {

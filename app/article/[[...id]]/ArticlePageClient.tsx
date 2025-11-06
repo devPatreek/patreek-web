@@ -17,19 +17,26 @@ export default function ArticlePageClient() {
       // Extract article ID from pathname or window.location (for 404 redirects)
       let articleId: number | null = null;
       
-      // Try pathname first (normal Next.js routing)
-      const pathnameMatch = pathname?.match(/\/article\/(\d+)/);
-      if (pathnameMatch) {
-        articleId = parseInt(pathnameMatch[1], 10);
-      } else if (typeof window !== 'undefined') {
-        // Fallback to window.location for 404 redirects from GitHub Pages
+      // Try window.location first (most reliable for GitHub Pages 404 redirects)
+      if (typeof window !== 'undefined') {
         const windowMatch = window.location.pathname.match(/\/article\/(\d+)/);
         if (windowMatch) {
           articleId = parseInt(windowMatch[1], 10);
+          console.log(`[ArticlePage] Extracted article ID from window.location: ${articleId}`);
+        }
+      }
+      
+      // Fallback to pathname (normal Next.js routing)
+      if (!articleId && pathname) {
+        const pathnameMatch = pathname.match(/\/article\/(\d+)/);
+        if (pathnameMatch) {
+          articleId = parseInt(pathnameMatch[1], 10);
+          console.log(`[ArticlePage] Extracted article ID from pathname: ${articleId}`);
         }
       }
       
       if (!articleId || isNaN(articleId) || articleId <= 0) {
+        console.error(`[ArticlePage] Invalid article ID: ${articleId}, pathname: ${pathname}, window.location.pathname: ${typeof window !== 'undefined' ? window.location.pathname : 'N/A'}`);
         setError('Invalid article ID');
         setIsLoading(false);
         return;
@@ -37,6 +44,7 @@ export default function ArticlePageClient() {
 
       try {
         setIsLoading(true);
+        console.log(`[ArticlePage] Loading article ${articleId}...`);
         
         // Check cache first
         const cached = getCachedArticle(articleId);
@@ -53,22 +61,30 @@ export default function ArticlePageClient() {
         const data = await getPublicFeed(articleId);
         if (!data) {
           // Article not found or not public - redirect to home
-          console.log(`[ArticlePage] Article ${articleId} not found or not public, redirecting to home`);
-          if (typeof window !== 'undefined') {
-            window.location.href = '/';
-          }
+          console.log(`[ArticlePage] Article ${articleId} not found or not public (returned null), redirecting to home`);
+          // Don't redirect immediately - show error first, then redirect after a brief delay
+          setError('Article not found or not available');
+          setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              window.location.href = 'https://links.patreek.com/';
+            }
+          }, 2000);
           return;
         }
         // Cache the article for 7 days
         setCachedArticle(articleId, data);
         setArticle(data);
         setError(null);
+        console.log(`[ArticlePage] Successfully loaded article ${articleId}: ${data.title}`);
       } catch (err) {
-        console.error('Failed to load article:', err);
-        // On error, redirect to home (article not found or not public)
-        if (typeof window !== 'undefined') {
-          window.location.href = '/';
-        }
+        console.error('[ArticlePage] Failed to load article:', err);
+        setError('Failed to load article. Please try again later.');
+        // Don't redirect immediately on error - let user see the error
+        // setTimeout(() => {
+        //   if (typeof window !== 'undefined') {
+        //     window.location.href = 'https://links.patreek.com/';
+        //   }
+        // }, 3000);
       } finally {
         setIsLoading(false);
       }
