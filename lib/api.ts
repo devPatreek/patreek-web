@@ -36,10 +36,12 @@ export async function getPublicFeeds(): Promise<Feed[]> {
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
     const response = await fetch(`${API_BASE_URL}/api/v1/feeds/public`, {
-      // Allow browser to cache for 1 hour, then fetch fresh
+      method: 'GET',
+      // Allow browser to cache the response
       cache: 'default',
       headers: {
-        'Cache-Control': 'public, max-age=3600', // 1 hour browser cache
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       signal: controller.signal,
     });
@@ -78,10 +80,12 @@ export async function getPublicFeed(id: number): Promise<FeedArticle | null> {
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
     const response = await fetch(`${API_BASE_URL}/api/v1/feeds/public/${id}`, {
-      // Allow browser HTTP cache, but we'll use localStorage for 7-day TTL
+      method: 'GET',
+      // Allow browser to cache the response
       cache: 'default',
       headers: {
-        'Cache-Control': 'public, max-age=604800', // 7 days browser HTTP cache
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       signal: controller.signal,
     });
