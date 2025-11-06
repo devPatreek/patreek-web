@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { FeedArticle, Comment, getArticleComments } from '@/lib/api';
+import { beautifyContent } from '@/lib/contentFormatter';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
 
@@ -51,6 +52,11 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     ? 'Today in'
     : moment(article.createdAt).format('MMM DD');
 
+  // Beautify the article body content
+  const beautifiedBody = useMemo(() => {
+    return beautifyContent(article.body);
+  }, [article.body]);
+
   return (
     <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
       <header className={styles.header}>
@@ -91,7 +97,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
 
           <div
             className={styles.content}
-            dangerouslySetInnerHTML={{ __html: article.body }}
+            dangerouslySetInnerHTML={{ __html: beautifiedBody }}
           />
 
           {/* Comments Section */}
