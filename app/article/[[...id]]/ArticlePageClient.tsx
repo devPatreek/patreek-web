@@ -52,16 +52,23 @@ export default function ArticlePageClient() {
         console.log(`[ArticlePage] Fetching article ${articleId} from API`);
         const data = await getPublicFeed(articleId);
         if (!data) {
-          setError('Article not found or not available');
-        } else {
-          // Cache the article for 7 days
-          setCachedArticle(articleId, data);
-          setArticle(data);
-          setError(null);
+          // Article not found or not public - redirect to home
+          console.log(`[ArticlePage] Article ${articleId} not found or not public, redirecting to home`);
+          if (typeof window !== 'undefined') {
+            window.location.href = '/';
+          }
+          return;
         }
+        // Cache the article for 7 days
+        setCachedArticle(articleId, data);
+        setArticle(data);
+        setError(null);
       } catch (err) {
         console.error('Failed to load article:', err);
-        setError('Failed to load article. Please try again later.');
+        // On error, redirect to home (article not found or not public)
+        if (typeof window !== 'undefined') {
+          window.location.href = '/';
+        }
       } finally {
         setIsLoading(false);
       }

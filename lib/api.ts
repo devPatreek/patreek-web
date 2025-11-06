@@ -95,9 +95,12 @@ export async function getPublicFeed(id: number): Promise<FeedArticle | null> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    console.log(`[API] Fetching article ${id} from: ${API_BASE_URL}/api/v1/feeds/public/${id}`);
+    // Use /api/v1/feeds/{id} endpoint (not /public endpoint)
+    // This endpoint handles both authenticated and public users
+    const url = `${API_BASE_URL}/api/v1/feeds/${id}`;
+    console.log(`[API] Fetching article ${id} from: ${url}`);
     
-    const response = await fetch(`${API_BASE_URL}/api/v1/feeds/public/${id}`, {
+    const response = await fetch(url, {
       method: 'GET',
       // Allow browser to cache the response
       cache: 'default',
@@ -112,10 +115,10 @@ export async function getPublicFeed(id: number): Promise<FeedArticle | null> {
     
     if (!response.ok) {
       if (response.status === 404 || response.status === 403) {
-        console.warn(`[API] Article ${id} not found or not public (${response.status})`);
-        return null; // Article not found or not public
+        console.warn(`[API] Article ${id} not found or not available (${response.status})`);
+        return null; // Article not found or not available
       }
-      console.warn(`[API] Failed to fetch public feed ${id}: ${response.status}`);
+      console.warn(`[API] Failed to fetch feed ${id}: ${response.status}`);
       return null;
     }
     
@@ -130,10 +133,10 @@ export async function getPublicFeed(id: number): Promise<FeedArticle | null> {
       } else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION')) {
         console.warn(`[API] Connection error while fetching article ${id} - backend may be unavailable`);
       } else {
-        console.warn(`[API] Error fetching public feed ${id}:`, error.message);
+        console.warn(`[API] Error fetching feed ${id}:`, error.message);
       }
     } else {
-      console.warn(`[API] Unknown error fetching public feed ${id}:`, error);
+      console.warn(`[API] Unknown error fetching feed ${id}:`, error);
     }
     return null;
   }
