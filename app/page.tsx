@@ -191,10 +191,12 @@ function LinksHomePage() {
                 }
 
                 const feed = item.data!;
+                // Use absolute URL for proper routing in new tabs on GitHub Pages
+                const articleUrl = `https://links.patreek.com/article/${feed.id}`;
                 return (
                   <a
                     key={item.id}
-                    href={`/article/${feed.id}`}
+                    href={articleUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.feedCard}
