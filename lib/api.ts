@@ -108,18 +108,39 @@ export async function getPublicFeed(id: number): Promise<FeedArticle | null> {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
+      // Safari compatibility: explicitly set credentials mode
+      credentials: 'omit', // Don't send cookies (public endpoint)
+      mode: 'cors', // Explicitly set CORS mode for Safari
       signal: controller.signal,
     });
     
     clearTimeout(timeoutId);
     
     if (!response.ok) {
+      const isSafari = typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+      
       if (response.status === 404 || response.status === 403) {
+        if (isSafari) {
+          console.error(`[API] Safari: Article ${id} returned ${response.status}. Check if this is a CORS issue or if article is actually not found.`);
+        }
         console.warn(`[API] Article ${id} not found or not available (${response.status})`);
         return null; // Article not found or not available
       }
+      
+      // Log response headers for Safari debugging
+      if (isSafari) {
+        console.error(`[API] Safari: Failed to fetch feed ${id}: ${response.status}. Response headers:`, 
+          Object.fromEntries(response.headers.entries()));
+      }
+      
       console.warn(`[API] Failed to fetch feed ${id}: ${response.status}`);
       return null;
+    }
+    
+    // Safari compatibility: Check if response is actually JSON before parsing
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn(`[API] Unexpected content type: ${contentType}. Expected application/json`);
     }
     
     const data: FeedArticle = await response.json();
@@ -128,10 +149,19 @@ export async function getPublicFeed(id: number): Promise<FeedArticle | null> {
   } catch (error) {
     // Handle timeout and connection errors gracefully
     if (error instanceof Error) {
+      const isSafari = typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+      
       if (error.name === 'AbortError' || error.message.includes('timeout') || error.message.includes('TIMED_OUT')) {
         console.warn(`[API] Connection timeout while fetching article ${id} - backend may be unavailable`);
-      } else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION')) {
-        console.warn(`[API] Connection error while fetching article ${id} - backend may be unavailable`);
+      } else if (error.message.includes('Failed to fetch') || error.message.includes('ERR_CONNECTION') || error.message.includes('NetworkError')) {
+        // Safari often reports CORS errors as "Failed to fetch" or "NetworkError"
+        if (isSafari) {
+          console.error(`[API] Safari CORS/Network error while fetching article ${id}. This might be a CORS configuration issue. Error:`, error.message);
+        } else {
+          console.warn(`[API] Connection error while fetching article ${id} - backend may be unavailable`);
+        }
+      } else if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+        console.error(`[API] CORS error while fetching article ${id}. Check backend CORS configuration. Error:`, error.message);
       } else {
         console.warn(`[API] Error fetching feed ${id}:`, error.message);
       }

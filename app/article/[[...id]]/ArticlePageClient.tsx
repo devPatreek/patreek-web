@@ -15,18 +15,29 @@ export default function ArticlePageClient() {
   useEffect(() => {
     async function loadArticle() {
       // Extract article ID from pathname or window.location (for 404 redirects)
+      // Safari compatibility: use multiple methods to extract article ID
       let articleId: number | null = null;
       
-      // Try window.location first (most reliable for GitHub Pages 404 redirects)
+      // Method 1: Try window.location.pathname first (most reliable for GitHub Pages 404 redirects)
       if (typeof window !== 'undefined') {
-        const windowMatch = window.location.pathname.match(/\/article\/(\d+)/);
+        const windowPath = window.location.pathname;
+        const windowMatch = windowPath.match(/\/article\/(\d+)/);
         if (windowMatch) {
           articleId = parseInt(windowMatch[1], 10);
-          console.log(`[ArticlePage] Extracted article ID from window.location: ${articleId}`);
+          console.log(`[ArticlePage] Extracted article ID from window.location.pathname: ${articleId} (path: ${windowPath})`);
+        }
+        
+        // Method 2: Also try window.location.href as fallback (Safari sometimes has pathname issues)
+        if (!articleId) {
+          const hrefMatch = window.location.href.match(/\/article\/(\d+)/);
+          if (hrefMatch) {
+            articleId = parseInt(hrefMatch[1], 10);
+            console.log(`[ArticlePage] Extracted article ID from window.location.href: ${articleId}`);
+          }
         }
       }
       
-      // Fallback to pathname (normal Next.js routing)
+      // Method 3: Fallback to pathname (normal Next.js routing)
       if (!articleId && pathname) {
         const pathnameMatch = pathname.match(/\/article\/(\d+)/);
         if (pathnameMatch) {
@@ -36,7 +47,14 @@ export default function ArticlePageClient() {
       }
       
       if (!articleId || isNaN(articleId) || articleId <= 0) {
-        console.error(`[ArticlePage] Invalid article ID: ${articleId}, pathname: ${pathname}, window.location.pathname: ${typeof window !== 'undefined' ? window.location.pathname : 'N/A'}`);
+        const debugInfo = {
+          articleId,
+          pathname,
+          windowPathname: typeof window !== 'undefined' ? window.location.pathname : 'N/A',
+          windowHref: typeof window !== 'undefined' ? window.location.href : 'N/A',
+          userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'N/A',
+        };
+        console.error(`[ArticlePage] Invalid article ID:`, debugInfo);
         setError('Invalid article ID');
         setIsLoading(false);
         return;
@@ -60,8 +78,15 @@ export default function ArticlePageClient() {
         console.log(`[ArticlePage] Fetching article ${articleId} from API`);
         const data = await getPublicFeed(articleId);
         if (!data) {
-          // Article not found or not public - redirect to home
-          console.log(`[ArticlePage] Article ${articleId} not found or not public (returned null), redirecting to home`);
+          // Article not found or not public - but check if it's a Safari-specific issue
+          const isSafari = typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
+          console.log(`[ArticlePage] Article ${articleId} not found or not public (returned null). Safari: ${isSafari}`);
+          
+          // For Safari, log more details for debugging
+          if (isSafari) {
+            console.warn(`[ArticlePage] Safari detected - this might be a CORS or fetch issue. Check network tab.`);
+          }
+          
           // Don't redirect immediately - show error first, then redirect after a brief delay
           setError('Article not found or not available');
           setTimeout(() => {
