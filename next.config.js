@@ -6,7 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true, // Required for static export
     domains: [
-      'patreekbackend-env.eba-ifvfvi7q.us-east-1.elasticbeanstalk.com',
+      'api.patreek.com',
       'cdn.prod.website-files.com',
       'imgur.com',
     ],

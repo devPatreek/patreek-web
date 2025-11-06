@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://patreekbackend-env.eba-ifvfvi7q.us-east-1.elasticbeanstalk.com';
+const API_BASE_URL = 'https://api.patreek.com';
 
 export interface Feed {
   id: number;
