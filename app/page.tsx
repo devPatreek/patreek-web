@@ -1,15 +1,54 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { usePathname } from 'next/navigation';
 import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
 import Image from 'next/image';
+import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
+
+/**
+ * Root page component that handles routing for GitHub Pages
+ * Since GitHub Pages serves 404.html (which is a copy of index.html) for unknown routes,
+ * we check if we're on an article route and render the appropriate component
+ */
+export default function RootPage() {
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  const [actualPath, setActualPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+    // Get the actual pathname from window.location (works even with 404.html redirect)
+    if (typeof window !== 'undefined') {
+      setActualPath(window.location.pathname);
+    }
+  }, []);
+
+  // Update actual path when pathname changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setActualPath(window.location.pathname);
+    }
+  }, [pathname]);
+
+  // Check if we're on an article route
+  const isArticleRoute = mounted && actualPath && /^\/article\/\d+/.test(actualPath);
+
+  // If we're on an article route, render the article page
+  if (isArticleRoute) {
+    return <ArticlePageClient />;
+  }
+
+  // Otherwise, render the home page
+  return <LinksHomePage />;
+}
 
 /**
  * Public feed homepage for links.patreek.com
  * Shows public articles like guest users see in the app
  */
-export default function LinksHomePage() {
+function LinksHomePage() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
