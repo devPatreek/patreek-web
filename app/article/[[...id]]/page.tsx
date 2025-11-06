@@ -1,11 +1,12 @@
 import ArticlePageClient from './ArticlePageClient';
 
-// Required for static export - Next.js needs at least one param
-// We return a minimal param to satisfy the requirement, but the page
-// handles all article IDs dynamically via client-side routing
+// For static export with GitHub Pages, we need to generate at least one param
+// For optional catch-all routes [[...id]], we need to return an object with id as an array
+// All article IDs will be handled client-side via the ArticlePageClient component
 export async function generateStaticParams() {
-  // Return minimal param to satisfy Next.js static export requirement
-  // The actual article is fetched dynamically in the browser
+  // Return a single param with empty array to satisfy Next.js requirement for catch-all routes
+  // This creates /article/index.html which will handle routing client-side
+  // The actual article routing (/article/123) is handled via 404.html redirect
   return [{ id: [] }];
 }
 

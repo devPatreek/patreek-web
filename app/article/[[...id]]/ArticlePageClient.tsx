@@ -14,16 +14,22 @@ export default function ArticlePageClient() {
 
   useEffect(() => {
     async function loadArticle() {
-      // Extract article ID from pathname (e.g., /article/123)
-      const match = pathname?.match(/\/article\/(\d+)/);
-      if (!match) {
-        setError('Invalid article ID');
-        setIsLoading(false);
-        return;
+      // Extract article ID from pathname or window.location (for 404 redirects)
+      let articleId: number | null = null;
+      
+      // Try pathname first (normal Next.js routing)
+      const pathnameMatch = pathname?.match(/\/article\/(\d+)/);
+      if (pathnameMatch) {
+        articleId = parseInt(pathnameMatch[1], 10);
+      } else if (typeof window !== 'undefined') {
+        // Fallback to window.location for 404 redirects from GitHub Pages
+        const windowMatch = window.location.pathname.match(/\/article\/(\d+)/);
+        if (windowMatch) {
+          articleId = parseInt(windowMatch[1], 10);
+        }
       }
-
-      const articleId = parseInt(match[1], 10);
-      if (isNaN(articleId) || articleId <= 0) {
+      
+      if (!articleId || isNaN(articleId) || articleId <= 0) {
         setError('Invalid article ID');
         setIsLoading(false);
         return;
@@ -61,9 +67,8 @@ export default function ArticlePageClient() {
       }
     }
 
-    if (pathname) {
-      loadArticle();
-    }
+    // Load article when component mounts or pathname changes
+    loadArticle();
   }, [pathname]);
 
   if (isLoading) {
@@ -103,4 +108,3 @@ export default function ArticlePageClient() {
 
   return <ArticleReader article={article} />;
 }
-

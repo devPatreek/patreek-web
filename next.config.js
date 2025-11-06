@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'export', // Enable static export for GitHub Pages
-  trailingSlash: true, // GitHub Pages works better with trailing slashes
+  trailingSlash: false, // Disable trailing slashes for cleaner URLs
   images: {
     unoptimized: true, // Required for static export
     domains: [

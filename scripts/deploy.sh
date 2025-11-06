@@ -37,6 +37,16 @@ echo "📝 Creating required files..."
 touch docs/.nojekyll
 echo "links.patreek.com" > docs/CNAME
 
+# Copy index.html to 404.html for GitHub Pages SPA routing
+# This allows client-side routing to work for all routes
+echo "🔧 Setting up 404.html for client-side routing..."
+if [ -f "docs/index.html" ]; then
+  cp docs/index.html docs/404.html
+  echo "✅ 404.html created for client-side routing"
+else
+  echo "⚠️  Warning: index.html not found, skipping 404.html setup"
+fi
+
 # Git operations
 echo "📤 Staging changes..."
 git add -A
