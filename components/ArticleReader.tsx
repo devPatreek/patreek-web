@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FeedArticle } from '@/lib/api';
+import { FeedArticle, Comment, getArticleComments } from '@/lib/api';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
 
@@ -17,6 +17,8 @@ function isToday(date: string): boolean {
 
 export default function ArticleReader({ article }: ArticleReaderProps) {
   const [isDark, setIsDark] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
 
   useEffect(() => {
     // Check for dark mode preference
@@ -27,6 +29,23 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
+
+  useEffect(() => {
+    async function loadComments() {
+      try {
+        setIsLoadingComments(true);
+        const commentsData = await getArticleComments(article.id);
+        setComments(commentsData);
+      } catch (err) {
+        console.error('Failed to load comments:', err);
+        setComments([]);
+      } finally {
+        setIsLoadingComments(false);
+      }
+    }
+
+    loadComments();
+  }, [article.id]);
 
   const formattedDate = isToday(article.createdAt)
     ? 'Today in'
@@ -66,14 +85,47 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
 
           <h1 className={styles.title}>{article.title}</h1>
 
-          {article.description && (
-            <p className={styles.description}>{article.description}</p>
+          {article.excerpt && (
+            <p className={styles.description}>{article.excerpt}</p>
           )}
 
           <div
             className={styles.content}
-            dangerouslySetInnerHTML={{ __html: article.content }}
+            dangerouslySetInnerHTML={{ __html: article.body }}
           />
+
+          {/* Comments Section */}
+          <div className={styles.commentsSection}>
+            <h2 className={styles.commentsTitle}>Comments</h2>
+            {isLoadingComments ? (
+              <p className={styles.commentsLoading}>Loading comments...</p>
+            ) : comments.length === 0 ? (
+              <p className={styles.noComments}>No comments yet.</p>
+            ) : (
+              <div className={styles.commentsList}>
+                {comments.map((comment, index) => (
+                  <div key={index} className={styles.commentItem}>
+                    <div className={styles.commentHeader}>
+                      {comment.photoUrl && (
+                        <img
+                          src={comment.photoUrl}
+                          alt={comment.author}
+                          className={styles.commentAvatar}
+                        />
+                      )}
+                      <div className={styles.commentAuthorInfo}>
+                        <span className={styles.commentAuthor}>{comment.author}</span>
+                        <span className={styles.commentDate}>
+                          {moment(comment.createdAt).format('MMM DD, YYYY')}
+                        </span>
+                      </div>
+                    </div>
+                    <p className={styles.commentBody}>{comment.body}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* UNLOCK YOUR NEWS FEED Banner */}
           <div className={styles.unlockBanner}>
