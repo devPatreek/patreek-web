@@ -37,6 +37,37 @@ export default {
       return Response.redirect(`${url.origin}/public/pats/`, 301);
     }
     
+    // For /public/pats/{id} routes (article pages), rewrite to /public/pats/index.html
+    // This allows client-side routing to handle the article ID
+    const articleRouteMatch = pathname.match(/^\/public\/pats\/(\d+)$/);
+    if (articleRouteMatch) {
+      // Rewrite to index.html for client-side routing
+      const indexPath = '/public/pats/index.html';
+      console.log(`[Worker] Rewriting article route ${pathname} to ${indexPath}`);
+      const pagesUrl = `${PAGES_DEPLOYMENT_URL}${indexPath}${url.search}`;
+      
+      try {
+        const response = await fetch(pagesUrl, {
+          method: request.method,
+          headers: request.headers,
+          body: request.body,
+        });
+        
+        const newHeaders = new Headers(response.headers);
+        newHeaders.set('Content-Type', 'text/html; charset=utf-8');
+        newHeaders.set('Access-Control-Allow-Origin', '*');
+        
+        return new Response(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: newHeaders,
+        });
+      } catch (error) {
+        console.error('[Worker] Error fetching index.html for article route:', error);
+        return new Response('Error fetching content from Pages', { status: 500 });
+      }
+    }
+    
     // Route /public/pats/*, /ads.txt, Next.js assets, and RSC payload files to Cloudflare Pages
     if (
       pathname.startsWith('/public/pats/') || 

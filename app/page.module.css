@@ -126,7 +126,9 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
-  margin-bottom: 40px;
+  margin: 24px auto 40px;
+  max-width: 1200px;
+  padding: 0 16px;
 }
 
 @media (min-width: 640px) {
@@ -180,6 +182,44 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.feedImage {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background-color: #E3E3E3;
+}
+
+@media (prefers-color-scheme: dark) {
+  .feedImage {
+    background-color: #3a3a3a;
+  }
+}
+
+.feedContent {
+  padding: 20px;
+  background-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  .feedContent {
+    background-color: transparent;
+  }
+}
+
+.feedExcerpt {
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0 0 0;
+  line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .feedExcerpt {
+    color: #b5b9bf;
+  }
 }
 
 .categoryBadge {
@@ -346,6 +386,15 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   margin: 0 0 20px 0;
+}
+
+.unlockBannerText {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0;
 }
 
 .unlockDescription {
