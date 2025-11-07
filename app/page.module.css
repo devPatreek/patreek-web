@@ -359,7 +359,111 @@
   opacity: 0.9;
 }
 
-/* UNLOCK YOUR NEWS FEED Banner - Top Static Banner */
+/* Pat Definition Section */
+.definitionSection {
+  background-color: #ffffff;
+  padding: 32px 24px;
+  text-align: center;
+  border-bottom: 1px solid #E3E3E3;
+}
+
+@media (prefers-color-scheme: dark) {
+  .definitionSection {
+    background-color: #3D3D3D;
+    border-bottom-color: #3a3a3a;
+  }
+}
+
+.definitionContent {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.definitionWord {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.definitionWordText {
+  font-size: 32px;
+  font-weight: 700;
+  color: #2b2b2b;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .definitionWordText {
+    color: #ffffff;
+  }
+}
+
+.definitionPartOfSpeech {
+  font-size: 16px;
+  font-weight: 400;
+  color: #5B5B5B;
+  font-style: italic;
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  .definitionPartOfSpeech {
+    color: #b5b9bf;
+  }
+}
+
+.definitionMeaning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-left: 0;
+}
+
+.definitionColon {
+  font-size: 18px;
+  color: #5B5B5B;
+  font-weight: 400;
+  margin-right: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .definitionColon {
+    color: #b5b9bf;
+  }
+}
+
+.definitionText {
+  font-size: 18px;
+  font-weight: 400;
+  color: #2b2b2b;
+  line-height: 1.6;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  flex: 1;
+}
+
+@media (prefers-color-scheme: dark) {
+  .definitionText {
+    color: #ffffff;
+  }
+}
+
+@media (max-width: 640px) {
+  .definitionSection {
+    padding: 24px 16px;
+  }
+  
+  .definitionWordText {
+    font-size: 28px;
+  }
+  
+  .definitionText {
+    font-size: 16px;
+  }
+}
+
+/* UNLOCK YOUR PATS Banner - Top Static Banner */
 .unlockBannerTop {
   background: linear-gradient(135deg, #00B0AD 0%, #0096DD 100%);
   padding: 32px 24px;
@@ -370,7 +474,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* UNLOCK YOUR NEWS FEED Banner - Bottom Banner */
+/* UNLOCK YOUR PATS Banner - Bottom Banner */
 .unlockBanner {
   background: linear-gradient(135deg, #00B0AD 0%, #0096DD 100%);
   border-radius: 15px;

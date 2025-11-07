@@ -11,7 +11,7 @@ export default async function LinksHomePage() {
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <h1 className={styles.title}>Latest news</h1>
+          <h1 className={styles.title}>Latest pats</h1>
           <p className={styles.subtitle}>Let&apos;s read</p>
         </div>
       </header>

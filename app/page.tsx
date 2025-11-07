@@ -143,16 +143,16 @@ function LinksHomePage() {
             />
           </div>
           <div className={styles.headerTitle}>
-            <h2 className={styles.title}>Latest news</h2>
+            <h2 className={styles.title}>Latest pats</h2>
             <p className={styles.subtitle}>Let&apos;s read</p>
           </div>
         </div>
       </header>
 
-      {/* UNLOCK YOUR NEWS FEED Banner - Always visible at top */}
+      {/* UNLOCK YOUR PATS Banner - Always visible at top */}
       <div className={styles.unlockBannerTop}>
         <div className={styles.unlockBannerContent}>
-          <p className={styles.unlockText}>UNLOCK YOUR NEWS FEED</p>
+          <p className={styles.unlockText}>UNLOCK YOUR PATS</p>
           <p className={styles.unlockDescription}>
             Register to get the latest updates from the topics{' '}
             <span className={styles.unlockUnderline}>you</span> care about

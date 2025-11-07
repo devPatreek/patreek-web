@@ -148,10 +148,10 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
             )}
           </div>
 
-          {/* UNLOCK YOUR NEWS FEED Banner */}
+          {/* UNLOCK YOUR PATS Banner */}
           <div className={styles.unlockBanner}>
             <div className={styles.unlockBannerContent}>
-              <p className={styles.unlockText}>UNLOCK YOUR NEWS FEED</p>
+              <p className={styles.unlockText}>UNLOCK YOUR PATS</p>
               <p className={styles.unlockDescription}>
                 Register to get the latest updates from the topics{' '}
                 <span className={styles.unlockUnderline}>you</span> care about

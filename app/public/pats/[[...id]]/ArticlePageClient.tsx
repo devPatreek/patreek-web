@@ -201,16 +201,32 @@ export default function PublicPatsPageClient() {
             />
           </div>
           <div className={styles.headerTitle}>
-            <h2 className={styles.title}>Latest news</h2>
+            <h2 className={styles.title}>Latest pats</h2>
             <p className={styles.subtitle}>Let&apos;s read</p>
           </div>
         </div>
       </header>
 
-      {/* UNLOCK YOUR NEWS FEED Banner */}
+      {/* Pat Definition Section */}
+      <div className={styles.definitionSection}>
+        <div className={styles.definitionContent}>
+          <div className={styles.definitionWord}>
+            <span className={styles.definitionWordText}>Pat</span>
+            <span className={styles.definitionPartOfSpeech}>verb</span>
+          </div>
+          <div className={styles.definitionMeaning}>
+            <span className={styles.definitionColon}>:</span>
+            <span className={styles.definitionText}>
+              to tap or stroke a news card gently with the hand to soothe, or show approval
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* UNLOCK YOUR PATS Banner */}
       <div className={styles.unlockBannerTop}>
         <div className={styles.unlockBannerContent}>
-          <p className={styles.unlockText}>UNLOCK YOUR NEWS FEED</p>
+          <p className={styles.unlockText}>UNLOCK YOUR PATS</p>
           <p className={styles.unlockDescription}>
             Register to get the latest updates from the topics{' '}
             <span className={styles.unlockUnderline}>you</span> care about
