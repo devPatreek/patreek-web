@@ -9,14 +9,13 @@
 
 ### Step 2: Ads.txt Setup
 - ✅ Created `/public/ads.txt` file
-- ⚠️ **Action Required**: Once your Ezoic account is approved, update `ads.txt` with content from:
+- ✅ Set up GitHub Action to automatically fetch and update ads.txt daily
+- ✅ Fetched initial content from Ezoic Ads.txt Manager
+- **Note**: Since GitHub Pages doesn't support server-side redirects, we use a GitHub Action that automatically fetches the latest ads.txt content from:
   ```
-  https://srv.adstxtmanager.com/19390/links.patreek.com
+  https://srv.adstxtmanager.com/19390/patreek.com
   ```
-  Or set up automatic updates via cron job:
-  ```bash
-  curl -L https://srv.adstxtmanager.com/19390/links.patreek.com > public/ads.txt
-  ```
+  The workflow runs daily at 2 AM UTC and can also be triggered manually.
 
 ### Step 3: Ad Placements
 - ✅ Created `EzoicAd` component
