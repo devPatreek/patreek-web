@@ -176,7 +176,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
                   className={styles.storeLink}
                 >
                   <Image
-                    src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
+                    src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DLight%2C%20Language%3DEnglish%402x.png"
                     alt="Get it on Google Play"
                     width={200}
                     height={60}
