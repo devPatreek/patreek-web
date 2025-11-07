@@ -6,6 +6,8 @@ import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
 import Image from 'next/image';
 import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
+import BannerAd from '@/components/BannerAd';
+import Footer from '@/components/Footer';
 
 /**
  * Root page component that handles routing for GitHub Pages
@@ -201,18 +203,22 @@ function LinksHomePage() {
         ) : (
           <>
             {/* Top Banner Ad Slot */}
-            <div className={styles.bannerAdSlot}>
-              {/* Ad will be implemented here later */}
-            </div>
+            <BannerAd 
+              adSlot="9223686929" 
+              showPlaceholder={true}
+              testMode={process.env.NODE_ENV === 'development'}
+            />
 
             <div className={styles.feedList}>
               {dataWithAdSlots.map((item) => {
                 if (item.type === 'ad') {
                   return (
-                    <div key={item.id} className={styles.adSlot}>
-                      {/* Ad slot - will be implemented later */}
-                      <div className={styles.adPlaceholder}>Advertisement</div>
-                    </div>
+                    <BannerAd 
+                      key={item.id}
+                      adSlot="9223686929" 
+                      showPlaceholder={true}
+                      testMode={process.env.NODE_ENV === 'development'}
+                    />
                   );
                 }
 
@@ -246,12 +252,15 @@ function LinksHomePage() {
             </div>
             
             {/* Bottom Banner Ad Slot */}
-            <div className={styles.bannerAdSlot}>
-              {/* Ad will be implemented here later */}
-            </div>
+            <BannerAd 
+              adSlot="9223686929" 
+              showPlaceholder={true}
+              testMode={process.env.NODE_ENV === 'development'}
+            />
           </>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

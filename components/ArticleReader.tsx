@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FeedArticle, Comment, getArticleComments } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
+import BannerAd from '@/components/BannerAd';
+import Footer from '@/components/Footer';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
 
@@ -95,9 +97,23 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
             <p className={styles.description}>{article.excerpt}</p>
           )}
 
+          {/* Top Banner Ad - Before Article Content */}
+          <BannerAd 
+            adSlot="9223686929" 
+            showPlaceholder={true}
+            testMode={process.env.NODE_ENV === 'development'}
+          />
+
           <div
             className={styles.content}
             dangerouslySetInnerHTML={{ __html: beautifiedBody }}
+          />
+
+          {/* Bottom Banner Ad - After Article Content */}
+          <BannerAd 
+            adSlot="9223686929" 
+            showPlaceholder={true}
+            testMode={process.env.NODE_ENV === 'development'}
           />
 
           {/* Comments Section */}
@@ -173,6 +189,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
           </div>
         </article>
       </main>
+      <Footer />
     </div>
   );
 }
