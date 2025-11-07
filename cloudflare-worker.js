@@ -30,6 +30,11 @@ export default {
     // Debug logging (remove in production)
     console.log(`[Worker] Request: ${pathname}`);
     
+    // Redirect /public/pats to /public/pats/ (with trailing slash)
+    if (pathname === '/public/pats') {
+      return Response.redirect(`${url.origin}/public/pats/`, 301);
+    }
+    
     // Route /public/pats/*, /ads.txt, and Next.js assets to Cloudflare Pages
     if (
       pathname.startsWith('/public/pats/') || 

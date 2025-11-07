@@ -1,0 +1,4 @@
+# Cloudflare Pages redirects
+# Redirect /public/pats to /public/pats/ (with trailing slash)
+/public/pats /public/pats/ 301
+
