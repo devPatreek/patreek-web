@@ -32,19 +32,21 @@ export default {
     // Debug logging (remove in production)
     console.log(`[Worker] Request: ${pathname}`);
     
-    // Redirect /public/pats to /public/pats/ (with trailing slash)
+    // Handle /public/pats routes
+    // Next.js static export generates /public/pats.html for the catch-all route [[...id]]
+    // This single HTML file handles both /public/pats/ (homepage) and /public/pats/{id} (article) routes
+    
+    // Redirect /public/pats (no trailing slash) to /public/pats/ (with trailing slash)
     if (pathname === '/public/pats') {
       return Response.redirect(`${url.origin}/public/pats/`, 301);
     }
     
-    // For /public/pats/{id} routes (article pages), rewrite to /public/pats/index.html
-    // This allows client-side routing to handle the article ID
-    const articleRouteMatch = pathname.match(/^\/public\/pats\/(\d+)$/);
-    if (articleRouteMatch) {
-      // Rewrite to index.html for client-side routing
-      const indexPath = '/public/pats/index.html';
-      console.log(`[Worker] Rewriting article route ${pathname} to ${indexPath}`);
-      const pagesUrl = `${PAGES_DEPLOYMENT_URL}${indexPath}${url.search}`;
+    // For /public/pats/ (homepage) and /public/pats/{id} (article pages), route to /public/pats.html
+    // The React app will extract the ID from the URL and fetch data from the API if needed
+    if (pathname === '/public/pats/' || pathname.match(/^\/public\/pats\/(\d+)$/)) {
+      const htmlPath = '/public/pats.html';
+      console.log(`[Worker] Routing ${pathname} to ${htmlPath}`);
+      const pagesUrl = `${PAGES_DEPLOYMENT_URL}${htmlPath}${url.search}`;
       
       try {
         const response = await fetch(pagesUrl, {
@@ -53,24 +55,30 @@ export default {
           body: request.body,
         });
         
-        const newHeaders = new Headers(response.headers);
-        newHeaders.set('Content-Type', 'text/html; charset=utf-8');
-        newHeaders.set('Access-Control-Allow-Origin', '*');
-        
-        return new Response(response.body, {
-          status: response.status,
-          statusText: response.statusText,
-          headers: newHeaders,
-        });
+        if (response.status === 200) {
+          const newHeaders = new Headers(response.headers);
+          newHeaders.set('Content-Type', 'text/html; charset=utf-8');
+          newHeaders.set('Access-Control-Allow-Origin', '*');
+          
+          console.log(`[Worker] Successfully fetched ${htmlPath} for route ${pathname}`);
+          return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: newHeaders,
+          });
+        } else {
+          console.error(`[Worker] Failed to fetch ${htmlPath}: ${response.status}`);
+          return new Response(`Page not found (${response.status})`, { status: response.status });
+        }
       } catch (error) {
-        console.error('[Worker] Error fetching index.html for article route:', error);
-        return new Response('Error fetching content from Pages', { status: 500 });
+        console.error('[Worker] Error fetching HTML:', error);
+        return new Response('Error fetching page from Pages', { status: 500 });
       }
     }
     
-    // Route /public/pats/*, /ads.txt, Next.js assets, and RSC payload files to Cloudflare Pages
+    // Route /ads.txt, Next.js assets, and RSC payload files to Cloudflare Pages
+    // Note: /public/pats/* routes are handled above
     if (
-      pathname.startsWith('/public/pats/') || 
       pathname === '/ads.txt' ||
       pathname.startsWith('/_next/') ||
       pathname.startsWith('/static/') ||
