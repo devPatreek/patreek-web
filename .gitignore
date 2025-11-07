@@ -31,6 +31,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# cloudflare worker (deployed manually via Cloudflare dashboard)
+cloudflare-worker.js
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
