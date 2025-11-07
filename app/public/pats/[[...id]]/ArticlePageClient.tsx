@@ -235,7 +235,7 @@ export default function PublicPatsPageClient() {
               className={styles.storeLink}
             >
               <Image
-                src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
                 alt="Get it on Google Play"
                 width={200}
                 height={60}
