@@ -10,6 +10,8 @@
  * - /ads.txt → Fetch from Cloudflare Pages (patreek-web.pages.dev)
  * - /_next/* (Next.js assets) → Fetch from Cloudflare Pages
  * - /static/* (static assets) → Fetch from Cloudflare Pages
+ * - *.txt (Next.js RSC payload files) → Fetch from Cloudflare Pages
+ * - Requests with ?_rsc query parameter → Fetch from Cloudflare Pages
  * - /favicon.ico, /robots.txt, /sitemap.xml → Fetch from Cloudflare Pages
  * - Everything else → Proxy to patreek.webflow.io
  * 
@@ -35,7 +37,7 @@ export default {
       return Response.redirect(`${url.origin}/public/pats/`, 301);
     }
     
-    // Route /public/pats/*, /ads.txt, and Next.js assets to Cloudflare Pages
+    // Route /public/pats/*, /ads.txt, Next.js assets, and RSC payload files to Cloudflare Pages
     if (
       pathname.startsWith('/public/pats/') || 
       pathname === '/ads.txt' ||
@@ -43,7 +45,9 @@ export default {
       pathname.startsWith('/static/') ||
       pathname.startsWith('/favicon.ico') ||
       pathname.startsWith('/robots.txt') ||
-      pathname.startsWith('/sitemap.xml')
+      pathname.startsWith('/sitemap.xml') ||
+      pathname.endsWith('.txt') || // Next.js RSC payload files (index.txt, privacy.txt, terms.txt, etc.)
+      url.searchParams.has('_rsc') // Next.js RSC requests with _rsc query parameter
     ) {
       console.log(`[Worker] Routing to Pages: ${pathname}`);
       const pagesUrl = `${PAGES_DEPLOYMENT_URL}${pathname}${url.search}`;
