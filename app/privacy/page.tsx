@@ -27,7 +27,7 @@ export default function PrivacyPolicyPage() {
             <p>
               Welcome to Patreek. Patreek App is owned and operated by Sentigraph Inc. ("we," "our," or "us"). 
               This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you 
-              use our website located at links.patreek.com and our mobile application (collectively, the "Service").
+              use our website located at patreek.com and our mobile application (collectively, the "Service").
             </p>
             <p>
               Please read this Privacy Policy carefully. By using our Service, you agree to the collection and use 

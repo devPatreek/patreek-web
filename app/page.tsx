@@ -73,7 +73,7 @@ export default function RootPage() {
 }
 
 /**
- * Public feed homepage for links.patreek.com
+ * Public feed homepage for patreek.com/public/pats/
  * Shows public articles like guest users see in the app
  */
 function LinksHomePage() {
@@ -226,8 +226,8 @@ function LinksHomePage() {
                 }
 
                 const feed = item.data!;
-                // Use absolute URL for proper routing in new tabs on GitHub Pages
-                const articleUrl = `https://links.patreek.com/article/${feed.id}`;
+                // Use absolute URL for proper routing
+                const articleUrl = `https://patreek.com/public/pats/${feed.id}`;
                 return (
                   <a
                     key={item.id}

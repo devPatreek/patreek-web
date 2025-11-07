@@ -91,7 +91,7 @@ export default function ArticlePageClient() {
           setError('Article not found or not available');
           setTimeout(() => {
             if (typeof window !== 'undefined') {
-              window.location.href = 'https://links.patreek.com/';
+              window.location.href = 'https://patreek.com/public/pats/';
             }
           }, 2000);
           return;
@@ -114,7 +114,7 @@ export default function ArticlePageClient() {
         // Don't redirect immediately on error - let user see the error
         // setTimeout(() => {
         //   if (typeof window !== 'undefined') {
-        //     window.location.href = 'https://links.patreek.com/';
+        //     window.location.href = 'https://patreek.com/public/pats/';
         //   }
         // }, 3000);
       } finally {
