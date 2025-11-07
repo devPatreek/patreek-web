@@ -448,17 +448,7 @@
   display: block;
 }
 
-/* Google Play button - ensure good visibility on gradient background */
-.storeLink:has(img[alt*="Google Play"]) img,
-.storeLink img[alt*="Google Play"] {
-  background-color: rgba(255, 255, 255, 0.95);
-  padding: 4px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  height: 60px; /* Match App Store button height */
-  width: auto;
-  object-fit: contain;
-}
+/* Remove any special styling for Google Play button - should match App Store button exactly */
 
 @media (max-width: 640px) {
   .storeImage {
