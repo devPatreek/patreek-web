@@ -426,9 +426,13 @@
 }
 
 .storeLink {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: opacity 0.2s, transform 0.2s;
   text-decoration: none;
+  height: 60px; /* Fixed height to match both buttons */
+  vertical-align: middle;
 }
 
 .storeLink:hover {
@@ -438,10 +442,10 @@
 
 .storeImage {
   width: auto;
-  height: auto;
+  height: 60px; /* Fixed height for consistent sizing */
   max-width: 180px;
-  max-height: 54px;
   object-fit: contain;
+  display: block;
 }
 
 /* Google Play button - ensure good visibility on gradient background */
@@ -451,6 +455,9 @@
   padding: 4px;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  height: 60px; /* Match App Store button height */
+  width: auto;
+  object-fit: contain;
 }
 
 @media (max-width: 640px) {
