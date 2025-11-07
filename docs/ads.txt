@@ -1,0 +1,4 @@
+# Ezoic ads.txt file
+# This file will be automatically managed by Ezoic once your site is approved
+# The content will be fetched from: https://srv.adstxtmanager.com/19390/links.patreek.com
+# You can update this file manually or set up a cron job to fetch it automatically

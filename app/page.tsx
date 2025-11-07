@@ -6,7 +6,7 @@ import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
 import Image from 'next/image';
 import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
-import BannerAd from '@/components/BannerAd';
+import EzoicAd from '@/components/EzoicAd';
 import Footer from '@/components/Footer';
 
 /**
@@ -100,6 +100,13 @@ function LinksHomePage() {
     }
 
     loadFeeds();
+
+    // Refresh Ezoic ads when page loads (for dynamic content)
+    if (typeof window !== 'undefined' && window.ezstandalone) {
+      window.ezstandalone.cmd.push(function () {
+        window.ezstandalone.showAds();
+      });
+    }
   }, []);
 
   // Insert ad slots every 3 articles (after 3rd, 6th, 9th, etc.) - matching mobile app
@@ -202,22 +209,18 @@ function LinksHomePage() {
           </div>
         ) : (
           <>
-            {/* Top Banner Ad Slot */}
-            <BannerAd 
-              adSlot="9223686929" 
-              showPlaceholder={true}
-              testMode={process.env.NODE_ENV === 'development'}
-            />
+            {/* Top Banner Ad Slot - Replace 101 with your actual Ezoic placement ID */}
+            <EzoicAd placementId={101} showPlaceholder={true} />
 
             <div className={styles.feedList}>
-              {dataWithAdSlots.map((item) => {
+              {dataWithAdSlots.map((item, index) => {
                 if (item.type === 'ad') {
+                  // In-feed ads - Replace 102 with your actual Ezoic placement ID
                   return (
-                    <BannerAd 
+                    <EzoicAd 
                       key={item.id}
-                      adSlot="9223686929" 
+                      placementId={102}
                       showPlaceholder={true}
-                      testMode={process.env.NODE_ENV === 'development'}
                     />
                   );
                 }
@@ -251,12 +254,8 @@ function LinksHomePage() {
               })}
             </div>
             
-            {/* Bottom Banner Ad Slot */}
-            <BannerAd 
-              adSlot="9223686929" 
-              showPlaceholder={true}
-              testMode={process.env.NODE_ENV === 'development'}
-            />
+            {/* Bottom Banner Ad Slot - Replace 103 with your actual Ezoic placement ID */}
+            <EzoicAd placementId={103} showPlaceholder={true} />
           </>
         )}
       </main>

@@ -29,12 +29,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Google AdSense Verification Code - Required in <head> for site verification */}
+        {/* Ezoic Privacy Scripts */}
+        <script src="https://cmp.gatekeeperconsent.com/min.js" data-cfasync="false"></script>
+        <script src="https://the.gatekeeperconsent.com/cmp.min.js" data-cfasync="false"></script>
+        
+        {/* Ezoic Header Scripts */}
+        <script async src="//www.ezojs.com/ezoic/sa.min.js"></script>
         <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4256176875332227"
-          crossOrigin="anonymous"
-        ></script>
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.ezstandalone = window.ezstandalone || {};
+              ezstandalone.cmd = ezstandalone.cmd || [];
+            `,
+          }}
+        />
         
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

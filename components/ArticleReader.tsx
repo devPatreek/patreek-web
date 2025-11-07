@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FeedArticle, Comment, getArticleComments } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
-import BannerAd from '@/components/BannerAd';
+import EzoicAd from '@/components/EzoicAd';
 import Footer from '@/components/Footer';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
@@ -48,6 +48,13 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     }
 
     loadComments();
+
+    // Refresh Ezoic ads when article loads (for dynamic content)
+    if (typeof window !== 'undefined' && window.ezstandalone) {
+      window.ezstandalone.cmd.push(function () {
+        window.ezstandalone.showAds();
+      });
+    }
   }, [article.id]);
 
   const formattedDate = isToday(article.createdAt)
@@ -97,24 +104,16 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
             <p className={styles.description}>{article.excerpt}</p>
           )}
 
-          {/* Top Banner Ad - Before Article Content */}
-          <BannerAd 
-            adSlot="9223686929" 
-            showPlaceholder={true}
-            testMode={process.env.NODE_ENV === 'development'}
-          />
+          {/* Top Banner Ad - Before Article Content - Replace 104 with your actual Ezoic placement ID */}
+          <EzoicAd placementId={104} showPlaceholder={true} />
 
           <div
             className={styles.content}
             dangerouslySetInnerHTML={{ __html: beautifiedBody }}
           />
 
-          {/* Bottom Banner Ad - After Article Content */}
-          <BannerAd 
-            adSlot="9223686929" 
-            showPlaceholder={true}
-            testMode={process.env.NODE_ENV === 'development'}
-          />
+          {/* Bottom Banner Ad - After Article Content - Replace 105 with your actual Ezoic placement ID */}
+          <EzoicAd placementId={105} showPlaceholder={true} />
 
           {/* Comments Section */}
           <div className={styles.commentsSection}>

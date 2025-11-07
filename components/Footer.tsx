@@ -41,6 +41,9 @@ export default function Footer() {
             <Link href="/privacy" className={styles.footerLink}>
               Privacy Policy
             </Link>
+            <Link href="/terms" className={styles.footerLink}>
+              Terms & Conditions
+            </Link>
           </div>
           <div className={styles.footerColumn}>
             <div className={styles.columnTitle}>Social</div>

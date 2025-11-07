@@ -101,6 +101,13 @@ export default function ArticlePageClient() {
         setArticle(data);
         setError(null);
         console.log(`[ArticlePage] Successfully loaded article ${articleId}: ${data.title}`);
+        
+        // Refresh Ezoic ads when article loads (for dynamic content)
+        if (typeof window !== 'undefined' && window.ezstandalone) {
+          window.ezstandalone.cmd.push(function () {
+            window.ezstandalone.showAds();
+          });
+        }
       } catch (err) {
         console.error('[ArticlePage] Failed to load article:', err);
         setError('Failed to load article. Please try again later.');
