@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
 import Image from 'next/image';
@@ -77,6 +77,7 @@ export default function RootPage() {
  * Shows public articles like guest users see in the app
  */
 function LinksHomePage() {
+  const router = useRouter();
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -226,15 +227,16 @@ function LinksHomePage() {
                 }
 
                 const feed = item.data!;
-                // Use absolute URL for proper routing
-                const articleUrl = `https://patreek.com/public/pats/${feed.id}`;
+                const articleUrl = `/public/pats/${feed.id}`;
                 return (
                   <a
                     key={item.id}
                     href={articleUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className={styles.feedCard}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      router.push(articleUrl);
+                    }}
                   >
                     <div className={styles.imageWrapper}>
                       <img

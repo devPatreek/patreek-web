@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { getPublicFeed, FeedArticle, getPublicFeeds, Feed } from '@/lib/api';
 import { getCachedArticle, setCachedArticle } from '@/lib/cache';
 import ArticleReader from '@/components/ArticleReader';
@@ -15,6 +15,7 @@ import Footer from '@/components/Footer';
  */
 export default function PublicPatsPageClient() {
   const pathname = usePathname();
+  const router = useRouter();
   const [article, setArticle] = useState<FeedArticle | null>(null);
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -287,16 +288,16 @@ export default function PublicPatsPageClient() {
             }
 
             const feed = item.data!;
-            const articleUrl = typeof window !== 'undefined' 
-              ? `${window.location.origin}/public/pats/${feed.id}`
-              : `/public/pats/${feed.id}`;
+            const articleUrl = `/public/pats/${feed.id}`;
             return (
               <a
                 key={feed.id}
                 href={articleUrl}
                 className={styles.feedCard}
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push(articleUrl);
+                }}
               >
                 {feed.imageUrl && (
                   <div className={styles.feedImage}>
