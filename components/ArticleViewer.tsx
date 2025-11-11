@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styles from './ArticleViewer.module.css';
 
 function formatDate(dateString: string): string {
@@ -47,6 +47,68 @@ interface ArticleViewerProps {
 
 export default function ArticleViewer({ article, comments }: ArticleViewerProps) {
   const [imageError, setImageError] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+
+  const shareUrl = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      return window.location.href;
+    }
+    return `https://patreek.com/article/${article.id}`;
+  }, [article.id]);
+
+  useEffect(() => {
+    if (copyStatus === 'idle') {
+      return;
+    }
+
+    const timer = setTimeout(() => setCopyStatus('idle'), 2500);
+    return () => clearTimeout(timer);
+  }, [copyStatus]);
+
+  const fallbackCopy = (text: string) => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        fallbackCopy(shareUrl);
+      }
+      setCopyStatus('copied');
+    } catch (error) {
+      try {
+        fallbackCopy(shareUrl);
+        setCopyStatus('copied');
+      } catch (fallbackError) {
+        console.error('Failed to copy article link', fallbackError);
+        setCopyStatus('error');
+      }
+    }
+  };
+
+  const copyLabel =
+    copyStatus === 'copied'
+      ? 'Link copied!'
+      : copyStatus === 'error'
+      ? 'Unable to copy'
+      : 'Copy article link';
+  const copyButtonClassNames = [
+    styles.copyButton,
+    copyStatus === 'copied' ? styles.copyButtonSuccess : '',
+    copyStatus === 'error' ? styles.copyButtonError : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={styles.container}>
@@ -120,9 +182,48 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
 
           {/* Comments Section */}
           <div className={styles.commentsSection}>
-            <h2 className={styles.commentsTitle}>
-              Comments {comments.length > 0 && `(${comments.length})`}
-            </h2>
+            <div className={styles.commentsHeader}>
+              <h2 className={styles.commentsTitle}>
+                Comments {comments.length > 0 && `(${comments.length})`}
+              </h2>
+
+              <button
+                type="button"
+                className={copyButtonClassNames}
+                onClick={handleCopyLink}
+                aria-live="polite"
+              >
+                <svg
+                  viewBox="0 0 32 32"
+                  aria-hidden="true"
+                  focusable="false"
+                  className={styles.copyIcon}
+                >
+                  <path
+                    d="M12 6h14v18H12z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6 12V4h14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M6 12h6v14H6z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <span className={styles.copyLabel}>{copyLabel}</span>
+              </button>
+            </div>
 
             {comments.length === 0 ? (
               <p className={styles.noComments}>No comments yet. Be the first to comment!</p>
@@ -166,4 +267,3 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
     </div>
   );
 }
-
