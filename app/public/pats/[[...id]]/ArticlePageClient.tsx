@@ -21,6 +21,33 @@ export default function PublicPatsPageClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isArticleRoute, setIsArticleRoute] = useState(false);
+  
+  // Get bypass parameter from URL or referrer
+  const getBypassParam = useMemo(() => {
+    if (typeof window === 'undefined') return '';
+    
+    // First check current URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const bypass = urlParams.get('bypass');
+    if (bypass === 'ag3nt007') {
+      return '?bypass=ag3nt007';
+    }
+    
+    // If not in current URL, check referrer
+    if (document.referrer) {
+      try {
+        const referrerUrl = new URL(document.referrer);
+        const referrerBypass = referrerUrl.searchParams.get('bypass');
+        if (referrerBypass === 'ag3nt007') {
+          return '?bypass=ag3nt007';
+        }
+      } catch (e) {
+        // Invalid referrer URL, ignore
+      }
+    }
+    
+    return '';
+  }, []);
 
   useEffect(() => {
     // Check if we're on an article route or homepage
@@ -57,7 +84,7 @@ export default function PublicPatsPageClient() {
     } else {
       loadFeeds();
     }
-  }, [pathname]);
+  }, [pathname, getBypassParam]);
 
   async function loadFeeds() {
     try {
@@ -80,18 +107,23 @@ export default function PublicPatsPageClient() {
       setIsLoading(true);
       console.log(`[PublicPatsArticlePage] Loading article ${articleId}...`);
       
-      // Check cache first
-      const cached = getCachedArticle(articleId);
-      if (cached) {
-        console.log(`[PublicPatsArticlePage] Using cached article ${articleId}`);
-        setArticle(cached);
-        setError(null);
-        setIsLoading(false);
-        return;
+      // Check for bypass parameter - if present, don't use cache (to ensure bypass works)
+      const hasBypass = getBypassParam.includes('bypass=ag3nt007');
+      
+      // Check cache first (only if no bypass)
+      if (!hasBypass) {
+        const cached = getCachedArticle(articleId);
+        if (cached) {
+          console.log(`[PublicPatsArticlePage] Using cached article ${articleId}`);
+          setArticle(cached);
+          setError(null);
+          setIsLoading(false);
+          return;
+        }
       }
 
-      // Fetch from API if not in cache
-      console.log(`[PublicPatsArticlePage] Fetching article ${articleId} from API`);
+      // Fetch from API if not in cache or if bypass is enabled
+      console.log(`[PublicPatsArticlePage] Fetching article ${articleId} from API${hasBypass ? ' (bypass enabled)' : ''}`);
       const data = await getPublicFeed(articleId);
       if (!data) {
         console.log(`[PublicPatsArticlePage] Article ${articleId} not found or not public`);
@@ -166,7 +198,7 @@ export default function PublicPatsPageClient() {
           padding: '20px',
         }}>
           <p>{error || 'Article not found'}</p>
-          <a href="/public/pats/" style={{ marginTop: '16px', color: '#667eea', textDecoration: 'underline' }}>
+          <a href={`/public/pats${getBypassParam}`} style={{ marginTop: '16px', color: '#667eea', textDecoration: 'underline' }}>
             ← Back to Home
           </a>
         </div>
@@ -279,7 +311,7 @@ export default function PublicPatsPageClient() {
             }
 
             const feed = item.data!;
-            const articleUrl = `/public/pats/${feed.id}`;
+            const articleUrl = `/public/pats/${feed.id}${getBypassParam}`;
             return (
               <a
                 key={feed.id}

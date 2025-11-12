@@ -103,9 +103,9 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
       ? 'Unable to copy'
       : 'Copy article link';
   const copyButtonClassNames = [
-    styles.copyButton,
-    copyStatus === 'copied' ? styles.copyButtonSuccess : '',
-    copyStatus === 'error' ? styles.copyButtonError : '',
+    styles.shareButton,
+    copyStatus === 'copied' ? styles.shareButtonSuccess : '',
+    copyStatus === 'error' ? styles.shareButtonError : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -194,29 +194,31 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
             </div>
           )}
 
+          {/* Share Bar */}
+          <div className={styles.shareBar}>
+            <p className={styles.shareLabel}>Share this Pat</p>
+            <button
+              type="button"
+              className={copyButtonClassNames}
+              onClick={handleCopyLink}
+              aria-live="polite"
+              title={copyLabel}
+            >
+              <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.shareIcon}>
+                <use xlinkHref="#icon-social-articlelink" />
+              </svg>
+              <span className={styles.shareText}>{copyLabel}</span>
+            </button>
+          </div>
+
           {/* Divider */}
           <div className={styles.divider}></div>
 
           {/* Comments Section */}
           <div className={styles.commentsSection}>
-            <div className={styles.commentsHeader}>
-              <h2 className={styles.commentsTitle}>
-                Comments {comments.length > 0 && `(${comments.length})`}
-              </h2>
-
-              <button
-                type="button"
-                className={copyButtonClassNames}
-                onClick={handleCopyLink}
-                aria-live="polite"
-                title={copyLabel}
-              >
-                <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.copyIcon}>
-                  <use xlinkHref="#icon-social-articlelink" />
-                </svg>
-                <span className={styles.copyLabel}>{copyLabel}</span>
-              </button>
-            </div>
+            <h2 className={styles.commentsTitle}>
+              Comments {comments.length > 0 && `(${comments.length})`}
+            </h2>
 
             {comments.length === 0 ? (
               <p className={styles.noComments}>No comments yet. Be the first to comment!</p>
