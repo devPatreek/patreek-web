@@ -111,7 +111,24 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
     .join(' ');
 
   return (
-    <div className={styles.container}>
+    <>
+      <svg className={styles.hiddenSprite} aria-hidden="true" focusable="false">
+        <symbol id="icon-social-articlelink" viewBox="0 0 32 32">
+          <path
+            d="M18.586 5.414a5 5 0 0 1 7.071 7.071l-3 3a1 1 0 0 1-1.414-1.414l3-3a3 3 0 1 0-4.243-4.243l-3 3a1 1 0 1 1-1.414-1.414l3-3z"
+            fill="currentColor"
+          />
+          <path
+            d="M13.414 26.586a5 5 0 0 1-7.071-7.071l3-3a1 1 0 1 1 1.414 1.414l-3 3a3 3 0 0 0 4.243 4.243l3-3a1 1 0 1 1 1.414 1.414l-3 3z"
+            fill="currentColor"
+          />
+          <path
+            d="M11 21a1 1 0 0 1-.707-1.707l9-9a1 1 0 1 1 1.414 1.414l-9 9A1 1 0 0 1 11 21z"
+            fill="currentColor"
+          />
+        </symbol>
+      </svg>
+      <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <h1 className={styles.logo}>Patreek</h1>
@@ -192,34 +209,10 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
                 className={copyButtonClassNames}
                 onClick={handleCopyLink}
                 aria-live="polite"
+                title={copyLabel}
               >
-                <svg
-                  viewBox="0 0 32 32"
-                  aria-hidden="true"
-                  focusable="false"
-                  className={styles.copyIcon}
-                >
-                  <path
-                    d="M12 6h14v18H12z"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M6 12V4h14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M6 12h6v14H6z"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
+                <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.copyIcon}>
+                  <use xlinkHref="#icon-social-articlelink" />
                 </svg>
                 <span className={styles.copyLabel}>{copyLabel}</span>
               </button>
@@ -265,5 +258,6 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
         </p>
       </footer>
     </div>
+    </>
   );
 }

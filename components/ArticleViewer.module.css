@@ -292,3 +292,9 @@
     margin-top: 8px;
   }
 }
+.hiddenSprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
