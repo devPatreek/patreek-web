@@ -168,39 +168,39 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
           {/* Bottom Banner Ad - After Article Content - Reserved for future ad network */}
           <AdPlaceholder placementId="article-bottom" showPlaceholder={true} />
 
-          {/* Share Bar */}
-          <div className={styles.shareBar}>
-            <p className={styles.shareLabel}>Share this Pat</p>
-            <button
-              type="button"
-              className={`${styles.shareButton} ${
-                copyStatus === 'copied' ? styles.shareButtonSuccess : ''
-              } ${copyStatus === 'error' ? styles.shareButtonError : ''}`}
-              onClick={handleCopyLink}
-              aria-live="polite"
-              title={copyLabel}
-            >
-              <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.shareIcon}>
-                <path
-                  d="M18.586 5.414a5 5 0 0 1 7.071 7.071l-3 3a1 1 0 0 1-1.414-1.414l3-3a3 3 0 1 0-4.243-4.243l-3 3a1 1 0 1 1-1.414-1.414l3-3z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M13.414 26.586a5 5 0 0 1-7.071-7.071l3-3a1 1 0 0 1 1.414 1.414l-3 3a3 3 0 1 0 4.243 4.243l3-3a1 1 0 1 1 1.414 1.414l-3 3z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M20.586 11.586l-8 8a1 1 0 0 1-1.414-1.414l8-8a1 1 0 0 1 1.414 1.414z"
-                  fill="currentColor"
-                />
-              </svg>
-              <span className={styles.shareText}>{copyLabel}</span>
-            </button>
-          </div>
-
           {/* Comments Section */}
           <div className={styles.commentsSection}>
             <h2 className={styles.commentsTitle}>Comments</h2>
+            
+            {/* Share Bar - Inside Comments Section */}
+            <div className={styles.shareBar}>
+              <p className={styles.shareLabel}>Share this Pat</p>
+              <button
+                type="button"
+                className={`${styles.shareButton} ${
+                  copyStatus === 'copied' ? styles.shareButtonSuccess : ''
+                } ${copyStatus === 'error' ? styles.shareButtonError : ''}`}
+                onClick={handleCopyLink}
+                aria-live="polite"
+                title={copyLabel}
+              >
+                <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.shareIcon}>
+                  <path
+                    d="M18.586 5.414a5 5 0 0 1 7.071 7.071l-3 3a1 1 0 0 1-1.414-1.414l3-3a3 3 0 1 0-4.243-4.243l-3 3a1 1 0 1 1-1.414-1.414l3-3z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M13.414 26.586a5 5 0 0 1-7.071-7.071l3-3a1 1 0 0 1 1.414 1.414l-3 3a3 3 0 1 0 4.243 4.243l3-3a1 1 0 1 1 1.414 1.414l-3 3z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M20.586 11.586l-8 8a1 1 0 0 1-1.414-1.414l8-8a1 1 0 0 1 1.414 1.414z"
+                    fill="currentColor"
+                  />
+                </svg>
+                <span className={styles.shareText}>{copyLabel}</span>
+              </button>
+            </div>
             {isLoadingComments ? (
               <p className={styles.commentsLoading}>Loading comments...</p>
             ) : comments.length === 0 ? (
