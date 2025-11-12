@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FeedArticle, Comment, getArticleComments } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
-import EzoicAd from '@/components/EzoicAd';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import Footer from '@/components/Footer';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
@@ -49,12 +49,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
 
     loadComments();
 
-    // Refresh Ezoic ads when article loads (for dynamic content)
-    if (typeof window !== 'undefined' && window.ezstandalone) {
-      window.ezstandalone.cmd.push(function () {
-        window.ezstandalone.showAds();
-      });
-    }
+    // Ad space reserved for future ad network integration
   }, [article.id]);
 
   const formattedDate = isToday(article.createdAt)
@@ -104,16 +99,16 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
             <p className={styles.description}>{article.excerpt}</p>
           )}
 
-          {/* Top Banner Ad - Before Article Content - Replace 104 with your actual Ezoic placement ID */}
-          <EzoicAd placementId={104} showPlaceholder={true} />
+          {/* Top Banner Ad - Before Article Content - Reserved for future ad network */}
+          <AdPlaceholder placementId="article-top" showPlaceholder={true} />
 
           <div
             className={styles.content}
             dangerouslySetInnerHTML={{ __html: beautifiedBody }}
           />
 
-          {/* Bottom Banner Ad - After Article Content - Replace 105 with your actual Ezoic placement ID */}
-          <EzoicAd placementId={105} showPlaceholder={true} />
+          {/* Bottom Banner Ad - After Article Content - Reserved for future ad network */}
+          <AdPlaceholder placementId="article-bottom" showPlaceholder={true} />
 
           {/* Comments Section */}
           <div className={styles.commentsSection}>

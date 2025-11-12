@@ -7,7 +7,7 @@ import { getCachedArticle, setCachedArticle } from '@/lib/cache';
 import ArticleReader from '@/components/ArticleReader';
 import styles from '../../../page.module.css';
 import Image from 'next/image';
-import EzoicAd from '@/components/EzoicAd';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import Footer from '@/components/Footer';
 
 /**
@@ -72,12 +72,7 @@ export default function PublicPatsPageClient() {
       setIsLoading(false);
     }
 
-    // Refresh Ezoic ads when page loads
-    if (typeof window !== 'undefined' && window.ezstandalone) {
-      window.ezstandalone.cmd.push(function () {
-        window.ezstandalone.showAds();
-      });
-    }
+    // Ad space reserved for future ad network integration
   }
 
   async function loadArticle(articleId: number) {
@@ -115,12 +110,7 @@ export default function PublicPatsPageClient() {
       setError(null);
       console.log(`[PublicPatsArticlePage] Successfully loaded article ${articleId}: ${data.title}`);
       
-      // Refresh Ezoic ads when article loads
-      if (typeof window !== 'undefined' && window.ezstandalone) {
-        window.ezstandalone.cmd.push(function () {
-          window.ezstandalone.showAds();
-        });
-      }
+      // Ad space reserved for future ad network integration
     } catch (err) {
       console.error('[PublicPatsArticlePage] Failed to load article:', err);
       setError('Failed to load article. Please try again later.');
@@ -263,8 +253,8 @@ export default function PublicPatsPageClient() {
         </div>
       </div>
 
-      {/* Top Banner Ad Slot */}
-      <EzoicAd placementId={101} showPlaceholder={true} />
+      {/* Top Banner Ad Slot - Reserved for future ad network */}
+      <AdPlaceholder placementId="top-banner" showPlaceholder={true} />
 
       <div className={styles.feedList}>
         {isLoading ? (
@@ -277,11 +267,12 @@ export default function PublicPatsPageClient() {
           </div>
         ) : (
           dataWithAdSlots.map((item, index) => {
+            // In-feed ad slot - Reserved for future ad network
             if (item.type === 'ad') {
               return (
-                <EzoicAd 
+                <AdPlaceholder 
                   key={item.id}
-                  placementId={102}
+                  placementId="in-feed"
                   showPlaceholder={true}
                 />
               );
@@ -331,8 +322,8 @@ export default function PublicPatsPageClient() {
         )}
       </div>
 
-      {/* Bottom Banner Ad Slot */}
-      <EzoicAd placementId={103} showPlaceholder={true} />
+      {/* Bottom Banner Ad Slot - Reserved for future ad network */}
+      <AdPlaceholder placementId="bottom-banner" showPlaceholder={true} />
 
       <Footer />
     </div>

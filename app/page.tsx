@@ -6,7 +6,7 @@ import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
 import Image from 'next/image';
 import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
-import EzoicAd from '@/components/EzoicAd';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import Footer from '@/components/Footer';
 
 /**
@@ -102,12 +102,7 @@ function LinksHomePage() {
 
     loadFeeds();
 
-    // Refresh Ezoic ads when page loads (for dynamic content)
-    if (typeof window !== 'undefined' && window.ezstandalone) {
-      window.ezstandalone.cmd.push(function () {
-        window.ezstandalone.showAds();
-      });
-    }
+    // Ad space reserved for future ad network integration
   }, []);
 
   // Insert ad slots every 3 articles (after 3rd, 6th, 9th, etc.) - matching mobile app
@@ -210,17 +205,17 @@ function LinksHomePage() {
           </div>
         ) : (
           <>
-            {/* Top Banner Ad Slot - Replace 101 with your actual Ezoic placement ID */}
-            <EzoicAd placementId={101} showPlaceholder={true} />
+            {/* Top Banner Ad Slot - Reserved for future ad network */}
+            <AdPlaceholder placementId="top-banner" showPlaceholder={true} />
 
             <div className={styles.feedList}>
               {dataWithAdSlots.map((item, index) => {
+                // In-feed ad slot - Reserved for future ad network
                 if (item.type === 'ad') {
-                  // In-feed ads - Replace 102 with your actual Ezoic placement ID
                   return (
-                    <EzoicAd 
+                    <AdPlaceholder 
                       key={item.id}
-                      placementId={102}
+                      placementId="in-feed"
                       showPlaceholder={true}
                     />
                   );
@@ -256,8 +251,8 @@ function LinksHomePage() {
               })}
             </div>
             
-            {/* Bottom Banner Ad Slot - Replace 103 with your actual Ezoic placement ID */}
-            <EzoicAd placementId={103} showPlaceholder={true} />
+            {/* Bottom Banner Ad Slot - Reserved for future ad network */}
+            <AdPlaceholder placementId="bottom-banner" showPlaceholder={true} />
           </>
         )}
       </main>

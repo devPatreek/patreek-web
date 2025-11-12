@@ -29,7 +29,7 @@
 
 After setup, test:
 - `https://patreek.com` → Should show Webflow site
-- `https://patreek.com/ads.txt` → Should show Ezoic ads.txt content (no redirect)
+- `https://patreek.com/ads.txt` → Should show ads.txt content (no redirect)
 
 ## Free Tier Limits
 

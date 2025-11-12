@@ -51,7 +51,13 @@ export async function getPublicFeeds(): Promise<Feed[]> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    const response = await fetch(`${API_BASE_URL}/api/v1/feeds/public`, {
+    // Check for bypass parameter in URL for admin testing
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const bypass = urlParams?.get('bypass');
+    const bypassParam = bypass === 'ag3nt007' ? '?bypass=ag3nt007' : '';
+    const url = `${API_BASE_URL}/api/v1/feeds/public${bypassParam}`;
+    
+    const response = await fetch(url, {
       method: 'GET',
       // Allow browser to cache the response
       cache: 'default',
@@ -97,7 +103,11 @@ export async function getPublicFeed(id: number): Promise<FeedArticle | null> {
     
     // Use /api/v1/feeds/{id} endpoint (not /public endpoint)
     // This endpoint handles both authenticated and public users
-    const url = `${API_BASE_URL}/api/v1/feeds/${id}`;
+    // Check for bypass parameter in URL for admin testing
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const bypass = urlParams?.get('bypass');
+    const bypassParam = bypass === 'ag3nt007' ? '?bypass=ag3nt007' : '';
+    const url = `${API_BASE_URL}/api/v1/feeds/${id}${bypassParam}`;
     console.log(`[API] Fetching article ${id} from: ${url}`);
     
     const response = await fetch(url, {

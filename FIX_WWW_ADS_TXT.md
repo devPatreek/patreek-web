@@ -17,7 +17,7 @@ The Worker code has been updated to redirect `www.patreek.com` to `patreek.com`.
 5. Enter: `www.patreek.com`
 6. Click **"Add Custom Domain"**
 
-**Result:** `www.patreek.com/ads.txt` will redirect to `patreek.com/ads.txt` (301 redirect), which Ezoic can access.
+**Result:** `www.patreek.com/ads.txt` will redirect to `patreek.com/ads.txt` (301 redirect), which ad networks can access.
 
 ### Option 2: Serve Both Domains (Alternative)
 
@@ -71,7 +71,7 @@ if (hostname === 'www.patreek.com') {
 
 2. Place this redirect **at the very beginning** of the `fetch` function, before rate limiting.
 
-This way, `www.patreek.com/ads.txt` will redirect to `patreek.com/ads.txt`, which Ezoic can access.
+This way, `www.patreek.com/ads.txt` will redirect to `patreek.com/ads.txt`, which ad networks can access.
 
 ## Why This Happens
 
@@ -82,5 +82,5 @@ This way, `www.patreek.com/ads.txt` will redirect to `patreek.com/ads.txt`, whic
 
 ## After Fix
 
-Once `www.patreek.com/ads.txt` is accessible, Ezoic should be able to verify your site and the 403 "Monetization not allowed" error should disappear.
+Once `www.patreek.com/ads.txt` is accessible, ad networks should be able to verify your site.
 

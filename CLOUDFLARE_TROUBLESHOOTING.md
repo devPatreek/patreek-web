@@ -68,5 +68,5 @@ After nameservers are updated and propagated:
 - `dig NS patreek.com` should show Cloudflare nameservers
 - `ping patreek.com` should resolve (may not respond to ping, but DNS should resolve)
 - `curl patreek.com` should work
-- `curl patreek.com/ads.txt` should show Ezoic content
+- `curl patreek.com/ads.txt` should show ads.txt content
 

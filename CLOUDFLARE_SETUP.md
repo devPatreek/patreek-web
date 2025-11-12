@@ -112,7 +112,7 @@ This means DNS records exist. You have two options:
 
 **What happens:**
 - ✅ `patreek.com` → Worker intercepts → Proxies to `patreek.webflow.io`
-- ✅ `patreek.com/ads.txt` → Worker serves directly from Ezoic
+- ✅ `patreek.com/ads.txt` → Worker serves ads.txt file
 - ✅ No DNS records needed - Worker handles everything
 
 ## Step 7: Reconnect Domain in Webflow (Optional)
@@ -128,6 +128,6 @@ Your reverse proxy is now active. `patreek.com` will show content from `patreek.
 ## What Happens After Setup
 
 - ✅ `patreek.com` → Cloudflare Worker → `patreek.webflow.io` (via proxy)
-- ✅ `patreek.com/ads.txt` → Served directly from Ezoic (no redirect)
+- ✅ `patreek.com/ads.txt` → Served directly (no redirect)
 - ✅ All other paths → Proxied to Webflow
 
