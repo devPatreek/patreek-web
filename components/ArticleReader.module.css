@@ -296,6 +296,84 @@
   }
 }
 
+/* Share Bar */
+.shareBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background-color: #f4f6f8;
+  border-radius: 12px;
+  margin: 32px 0;
+}
+
+.container.dark .shareBar {
+  background-color: #2a2a2a;
+}
+
+.shareLabel {
+  margin: 0;
+  color: #1f1f1f;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.container.dark .shareLabel {
+  color: #ffffff;
+}
+
+.shareButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border: 1px solid #c5c5c5;
+  border-radius: 999px;
+  background-color: #ffffff;
+  color: #101820;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.container.dark .shareButton {
+  background-color: #3D3D3D;
+  border-color: #4a4a4a;
+  color: #ffffff;
+}
+
+.shareButton:hover {
+  border-color: #0c7fd7;
+  color: #0c7fd7;
+}
+
+.container.dark .shareButton:hover {
+  border-color: #0c7fd7;
+  color: #0c7fd7;
+}
+
+.shareButtonSuccess {
+  border-color: #1a7f37;
+  color: #1a7f37;
+}
+
+.shareButtonError {
+  border-color: #b42318;
+  color: #b42318;
+}
+
+.shareIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.shareText {
+  white-space: nowrap;
+}
+
 /* Comments Section */
 .commentsSection {
   margin-top: 48px;

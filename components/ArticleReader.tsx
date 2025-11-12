@@ -22,6 +22,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   const [isDark, setIsDark] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
 
   useEffect(() => {
     // Check for dark mode preference
@@ -51,6 +52,63 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
 
     // Ad space reserved for future ad network integration
   }, [article.id]);
+
+  // Share URL
+  const shareUrl = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      return window.location.href;
+    }
+    return `https://patreek.com/public/pats/${article.id}`;
+  }, [article.id]);
+
+  // Reset copy status after 2.5 seconds
+  useEffect(() => {
+    if (copyStatus === 'idle') {
+      return;
+    }
+    const timer = setTimeout(() => setCopyStatus('idle'), 2500);
+    return () => clearTimeout(timer);
+  }, [copyStatus]);
+
+  // Fallback copy method for older browsers
+  const fallbackCopy = (text: string) => {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+  };
+
+  // Handle copy link
+  const handleCopyLink = async () => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        fallbackCopy(shareUrl);
+      }
+      setCopyStatus('copied');
+    } catch (error) {
+      try {
+        fallbackCopy(shareUrl);
+        setCopyStatus('copied');
+      } catch (fallbackError) {
+        console.error('Failed to copy article link', fallbackError);
+        setCopyStatus('error');
+      }
+    }
+  };
+
+  const copyLabel =
+    copyStatus === 'copied'
+      ? 'Link copied!'
+      : copyStatus === 'error'
+      ? 'Unable to copy'
+      : 'Copy article link';
 
   const formattedDate = isToday(article.createdAt)
     ? 'Today in'
@@ -109,6 +167,36 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
 
           {/* Bottom Banner Ad - After Article Content - Reserved for future ad network */}
           <AdPlaceholder placementId="article-bottom" showPlaceholder={true} />
+
+          {/* Share Bar */}
+          <div className={styles.shareBar}>
+            <p className={styles.shareLabel}>Share this Pat</p>
+            <button
+              type="button"
+              className={`${styles.shareButton} ${
+                copyStatus === 'copied' ? styles.shareButtonSuccess : ''
+              } ${copyStatus === 'error' ? styles.shareButtonError : ''}`}
+              onClick={handleCopyLink}
+              aria-live="polite"
+              title={copyLabel}
+            >
+              <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.shareIcon}>
+                <path
+                  d="M18.586 5.414a5 5 0 0 1 7.071 7.071l-3 3a1 1 0 0 1-1.414-1.414l3-3a3 3 0 1 0-4.243-4.243l-3 3a1 1 0 1 1-1.414-1.414l3-3z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M13.414 26.586a5 5 0 0 1-7.071-7.071l3-3a1 1 0 0 1 1.414 1.414l-3 3a3 3 0 1 0 4.243 4.243l3-3a1 1 0 1 1 1.414 1.414l-3 3z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M20.586 11.586l-8 8a1 1 0 0 1-1.414-1.414l8-8a1 1 0 0 1 1.414 1.414z"
+                  fill="currentColor"
+                />
+              </svg>
+              <span className={styles.shareText}>{copyLabel}</span>
+            </button>
+          </div>
 
           {/* Comments Section */}
           <div className={styles.commentsSection}>
