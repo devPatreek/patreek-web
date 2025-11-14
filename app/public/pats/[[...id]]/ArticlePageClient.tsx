@@ -7,7 +7,7 @@ import { getCachedArticle, setCachedArticle } from '@/lib/cache';
 import ArticleReader from '@/components/ArticleReader';
 import styles from '../../../page.module.css';
 import Image from 'next/image';
-import AdPlaceholder from '@/components/AdPlaceholder';
+import MonetagBanner from '@/components/MonetagBanner';
 import Footer from '@/components/Footer';
 
 /**
@@ -285,8 +285,8 @@ export default function PublicPatsPageClient() {
         </div>
       </div>
 
-      {/* Top Banner Ad Slot - Reserved for future ad network */}
-      <AdPlaceholder placementId="top-banner" showPlaceholder={true} />
+      {/* Top Banner Ad Slot - Monetag */}
+      <MonetagBanner zoneId="10189289" placementId="top-banner" size="responsive" />
 
       <div className={styles.feedList}>
         {isLoading ? (
@@ -299,13 +299,14 @@ export default function PublicPatsPageClient() {
           </div>
         ) : (
           dataWithAdSlots.map((item, index) => {
-            // In-feed ad slot - Reserved for future ad network
+            // In-feed ad slot - Monetag
             if (item.type === 'ad') {
               return (
-                <AdPlaceholder 
+                <MonetagBanner 
                   key={item.id}
+                  zoneId="10189261"
                   placementId="in-feed"
-                  showPlaceholder={true}
+                  size="responsive"
                 />
               );
             }
@@ -354,8 +355,8 @@ export default function PublicPatsPageClient() {
         )}
       </div>
 
-      {/* Bottom Banner Ad Slot - Reserved for future ad network */}
-      <AdPlaceholder placementId="bottom-banner" showPlaceholder={true} />
+      {/* Bottom Banner Ad Slot - Monetag */}
+      <MonetagBanner zoneId="10189289" placementId="bottom-banner" size="responsive" />
 
       <Footer />
     </div>

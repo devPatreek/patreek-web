@@ -30,10 +30,9 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <script
-          src="https://fpyf8.com/88/tag.min.js"
-          data-zone="185411"
-          async
-          data-cfasync="false"
+          dangerouslySetInnerHTML={{
+            __html: `(function(s){s.dataset.zone='10189261',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`,
+          }}
         />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
