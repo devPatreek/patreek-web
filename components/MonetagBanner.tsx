@@ -50,32 +50,48 @@ export default function MonetagBanner({
     const containerId = `monetag-banner-${zoneId}-${placementId || 'default'}`;
     adRef.current.id = containerId;
 
-    // Monetag banner ads work by creating divs with data-zone attributes
-    // The global vignette script (from layout.tsx) will detect these divs
-    // and render banner ads in them
-    
-    // Set data attributes for Monetag to detect
-    adRef.current.setAttribute('data-zone', String(zoneId));
-    adRef.current.setAttribute('data-slot', String(zoneId));
-    
-    if (placementId) {
-      adRef.current.setAttribute('data-placement', placementId);
+    // Check if script for this zone already exists to avoid duplicates
+    const existingScript = document.querySelector(`script[data-zone="${zoneId}"]`);
+    if (existingScript && existingScript.parentNode === adRef.current) {
+      setAdLoaded(true);
+      return;
     }
 
-    // Check if Monetag script is loaded (from layout.tsx)
-    const checkMonetagLoaded = () => {
-      // The vignette script should be loaded globally
-      // Monetag will automatically detect divs with data-zone attributes
+    // Monetag banner ads require injecting a script tag with data-zone attribute
+    // The script pattern: (function(s){s.dataset.zone='ZONE_ID',s.src='https://gizokraijaw.net/vignette.min.js'})(...)
+    // We'll create the script element directly and inject it into the ad container
+    const script = document.createElement('script');
+    script.setAttribute('data-zone', String(zoneId));
+    script.src = 'https://gizokraijaw.net/vignette.min.js';
+    script.async = true;
+    script.setAttribute('data-cfasync', 'false');
+    
+    if (placementId) {
+      script.setAttribute('data-placement', placementId);
+    }
+
+    script.onload = () => {
       setAdLoaded(true);
+      console.log(`[MonetagBanner] ✅ Banner ad script loaded for zone ${zoneId} (${placementId || 'default'})`);
     };
 
-    // Wait a bit for Monetag script to initialize
-    const timer = setTimeout(checkMonetagLoaded, 500);
+    script.onerror = () => {
+      console.error(`[MonetagBanner] ❌ Failed to load banner ad script for zone ${zoneId}`);
+      if (showPlaceholder) {
+        setAdLoaded(false);
+      }
+    };
 
+    // Append script to the ad container
+    adRef.current.appendChild(script);
+
+    // Cleanup function
     return () => {
-      clearTimeout(timer);
+      if (adRef.current && script.parentNode === adRef.current) {
+        adRef.current.removeChild(script);
+      }
     };
-  }, [zoneId, placementId]);
+  }, [zoneId, placementId, showPlaceholder]);
 
   // Show placeholder if requested and ad hasn't loaded
   if (showPlaceholder && (!zoneId || !adLoaded)) {
