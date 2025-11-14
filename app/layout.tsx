@@ -31,7 +31,7 @@ export default function RootLayout({
       <head>
         <script
           src="https://fpyf8.com/88/tag.min.js"
-          data-zone="185398"
+          data-zone="185411"
           async
           data-cfasync="false"
         />
