@@ -29,6 +29,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script
+          src="https://fpyf8.com/88/tag.min.js"
+          data-zone="185398"
+          async
+          data-cfasync="false"
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -48,4 +54,3 @@ export default function RootLayout({
     </html>
   );
 }
-
