@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import styles from './ArticleViewer.module.css';
+import MonetagSlot from './ads/MonetagSlot';
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -142,6 +143,12 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
             <span className={styles.categoryText}>{article.categoryName}</span>
           </div>
 
+          {/* Top Banner Ad */}
+          <MonetagSlot
+            zoneId="10189289"
+            className={styles.adSlot}
+            label="Top banner advertisement"
+          />
           {/* Article Title */}
           <h1 className={styles.title}>{article.title}</h1>
 
@@ -211,6 +218,13 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
             </button>
           </div>
 
+          {/* In-Feed Ad */}
+          <MonetagSlot
+            zoneId="10189261"
+            className={styles.adSlot}
+            label="In-feed advertisement"
+          />
+
           {/* Divider */}
           <div className={styles.divider}></div>
 
@@ -252,6 +266,13 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
             )}
           </div>
         </article>
+
+        {/* Bottom Banner Ad */}
+        <MonetagSlot
+          zoneId="10189289"
+          className={styles.adSlot}
+          label="Bottom banner advertisement"
+        />
       </main>
 
       <footer className={styles.footer}>
