@@ -43,6 +43,12 @@ export default function RootLayout({
           rel="apple-touch-icon"
           href="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67ab990473bace7594cd4617_patreek-logo.png"
         />
+        {/* Monetag Vignette Script - Global overlay ads */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(s){s.dataset.zone='10189261',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`,
+          }}
+        />
       </head>
       <body>{children}</body>
     </html>
