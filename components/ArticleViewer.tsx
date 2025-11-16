@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import styles from './ArticleViewer.module.css';
 import MonetagSlot from './ads/MonetagSlot';
+import MonetagMultiTag from './ads/MonetagMultiTag';
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -130,6 +131,7 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
         </symbol>
       </svg>
       <div className={styles.container}>
+        <MonetagMultiTag />
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <h1 className={styles.logo}>Patreek</h1>
