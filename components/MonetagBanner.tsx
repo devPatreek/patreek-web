@@ -34,11 +34,12 @@ interface MonetagBannerProps {
 export default function MonetagBanner({
   zoneId,
   placementId,
-  showPlaceholder = false,
+  showPlaceholder = true, // Default to true for debugging - set to false once ads are working
   size = 'responsive',
 }: MonetagBannerProps) {
   const adRef = useRef<HTMLDivElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
+  const [adVisible, setAdVisible] = useState(false);
 
   useEffect(() => {
     // Only load ads in browser environment
@@ -76,48 +77,77 @@ export default function MonetagBanner({
     // Append script to the ad container
     adRef.current.appendChild(script);
     
-    // Mark as loaded after a short delay (Monetag loads asynchronously)
+    // Check if ad content appears in the container
+    const checkAdVisibility = () => {
+      if (adRef.current) {
+        // Check if Monetag has injected content (iframe, img, or other elements)
+        const hasContent = adRef.current.querySelector('iframe, img, div[style*="position"]') !== null;
+        if (hasContent) {
+          setAdVisible(true);
+          setAdLoaded(true);
+          return true;
+        }
+      }
+      return false;
+    };
+    
+    // Check periodically for ad content
+    const visibilityTimer = setInterval(() => {
+      if (checkAdVisibility()) {
+        clearInterval(visibilityTimer);
+      }
+    }, 500);
+    
+    // Mark as loaded after a delay (Monetag loads asynchronously)
     const timer = setTimeout(() => {
-      setAdLoaded(true);
-    }, 1000);
+      checkAdVisibility();
+      clearInterval(visibilityTimer);
+      setAdLoaded(true); // Mark as loaded even if no ad content yet
+    }, 3000);
 
     // Cleanup function
     return () => {
       clearTimeout(timer);
+      clearInterval(visibilityTimer);
       if (adRef.current && script.parentNode === adRef.current) {
         adRef.current.removeChild(script);
       }
     };
   }, [zoneId, placementId, showPlaceholder]);
 
-  // Show placeholder if requested and ad hasn't loaded
-  if (showPlaceholder && (!zoneId || !adLoaded)) {
-    return (
-      <div className={styles.placeholder}>
-        <div className={styles.placeholderContent}>
-          <span className={styles.placeholderText}>Advertisement ({placementId || 'banner'})</span>
-        </div>
-      </div>
-    );
-  }
-
   if (!zoneId) {
     return null;
   }
 
+  // Show placeholder if requested and ad content isn't visible
+  const shouldShowPlaceholder = showPlaceholder && !adVisible;
+
   return (
     <div 
       ref={adRef}
-      className={styles.monetagBanner}
+      className={`${styles.monetagBanner} ${shouldShowPlaceholder ? styles.withPlaceholder : ''}`}
       data-zone={String(zoneId)}
       data-placement={placementId}
       data-size={size}
       style={{
         minHeight: size === '728x90' ? '90px' : size === '300x250' ? '250px' : size === '320x50' ? '50px' : '100px',
         width: '100%',
+        position: 'relative',
       }}
     >
       {/* Monetag script will inject the ad content here */}
+      {shouldShowPlaceholder && (
+        <div className={styles.placeholderOverlay}>
+          <div className={styles.placeholderContent}>
+            <span className={styles.placeholderText}>
+              Ad Slot: {placementId || 'banner'} (Zone: {zoneId})
+            </span>
+            <span className={styles.placeholderSubtext}>
+              {adLoaded ? 'Waiting for ad content...' : 'Loading ad...'}
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
