@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FeedArticle, Comment, getArticleComments } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
-import MonetagBanner from '@/components/MonetagBanner';
 import Footer from '@/components/Footer';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
@@ -157,16 +156,10 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
             <p className={styles.description}>{article.excerpt}</p>
           )}
 
-          {/* Top Banner Ad - Before Article Content - Monetag */}
-          <MonetagBanner zoneId="10189289" placementId="article-top" size="responsive" />
-
           <div
             className={styles.content}
             dangerouslySetInnerHTML={{ __html: beautifiedBody }}
           />
-
-          {/* Bottom Banner Ad - After Article Content - Monetag */}
-          <MonetagBanner zoneId="10189289" placementId="article-bottom" size="responsive" />
 
           {/* Comments Section */}
           <div className={styles.commentsSection}>

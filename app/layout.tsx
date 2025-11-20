@@ -29,12 +29,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <script
-          src="https://fpyf8.com/88/tag.min.js"
-          data-zone="186203"
-          async
-          data-cfasync="false"
-        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -48,12 +42,6 @@ export default function RootLayout({
         <link
           rel="apple-touch-icon"
           href="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67ab990473bace7594cd4617_patreek-logo.png"
-        />
-        {/* Monetag Vignette Script - Global overlay ads */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(s){s.dataset.zone='10189261',s.src='https://gizokraijaw.net/vignette.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`,
-          }}
         />
       </head>
       <body>{children}</body>

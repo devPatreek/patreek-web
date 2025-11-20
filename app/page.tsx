@@ -6,7 +6,6 @@ import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
 import Image from 'next/image';
 import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
-import MonetagBanner from '@/components/MonetagBanner';
 import Footer from '@/components/Footer';
 import SignupModal from '@/components/SignupModal';
 
@@ -246,8 +245,6 @@ function LinksHomePage() {
                 );
               })}
             </div>
-            
-            <MonetagBanner zoneId="10189289" placementId="bottom-banner" size="responsive" />
           </>
         )}
       </main>

@@ -7,7 +7,6 @@ import { getCachedArticle, setCachedArticle } from '@/lib/cache';
 import ArticleReader from '@/components/ArticleReader';
 import styles from '../../../page.module.css';
 import Image from 'next/image';
-import MonetagBanner from '@/components/MonetagBanner';
 import Footer from '@/components/Footer';
 
 /**
@@ -285,8 +284,7 @@ export default function PublicPatsPageClient() {
         </div>
       </div>
 
-      {/* Top Banner Ad Slot - Monetag */}
-      <MonetagBanner zoneId="10189289" placementId="top-banner" size="responsive" />
+      {/* Ads disabled */}
 
       <div className={styles.feedList}>
         {isLoading ? (
@@ -299,19 +297,7 @@ export default function PublicPatsPageClient() {
           </div>
         ) : (
           dataWithAdSlots.map((item, index) => {
-            // In-feed ad slot - Monetag
-            if (item.type === 'ad') {
-              return (
-                <MonetagBanner 
-                  key={item.id}
-                  zoneId="10189261"
-                  placementId="in-feed"
-                  size="responsive"
-                />
-              );
-            }
-
-            const feed = item.data!;
+                const feed = item.data!;
             const articleUrl = `/public/pats/${feed.id}${getBypassParam}`;
             return (
               <a
@@ -355,11 +341,9 @@ export default function PublicPatsPageClient() {
         )}
       </div>
 
-      {/* Bottom Banner Ad Slot - Monetag */}
-      <MonetagBanner zoneId="10189289" placementId="bottom-banner" size="responsive" />
+      {/* Ads disabled */}
 
       <Footer />
     </div>
   );
 }
-
