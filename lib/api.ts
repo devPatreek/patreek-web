@@ -11,6 +11,12 @@ export interface Feed {
   updatedAt: string;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  parentId?: number;
+}
+
 export interface FeedsResponse {
   content: Feed[];
   totalElements: number;
@@ -44,6 +50,19 @@ export interface CommentsResponse {
   totalPages: number;
   size: number;
   number: number;
+}
+
+export interface SignupPayload {
+  name: string;
+  email: string;
+  password: string;
+  categoryIds: number[];
+}
+
+export interface SignupResponse {
+  token?: string;
+  refreshToken?: string;
+  userId?: string;
 }
 
 export async function getPublicFeeds(): Promise<Feed[]> {
@@ -220,3 +239,74 @@ export async function getArticleComments(feedId: number, page: number = 0, size:
   }
 }
 
+export async function getCategories(): Promise<Category[]> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const response = await fetch(`${API_BASE_URL}/api/v1/categories`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch categories:', response.status);
+      return [];
+    }
+    const data = await response.json();
+    // Some backends return {categories: []}; normalize to array
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (Array.isArray(data?.content)) {
+      return data.content;
+    }
+    if (Array.isArray(data?.categories)) {
+      return data.categories;
+    }
+    return [];
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.warn('[API] Categories request timed out');
+    } else {
+      console.warn('[API] Error fetching categories', error);
+    }
+    return [];
+  }
+}
+
+export async function registerUser(payload: SignupPayload): Promise<SignupResponse> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Unable to sign up right now');
+    }
+    return response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Signup timed out, please try again');
+    }
+    throw error instanceof Error ? error : new Error('Unknown signup error');
+  }
+}
+
+export function getSocialAuthUrl(provider: 'google' | 'apple', redirectUri: string) {
+  const encodedRedirect = encodeURIComponent(redirectUri);
+  return `${API_BASE_URL}/oauth2/authorization/${provider}?redirect_uri=${encodedRedirect}`;
+}

@@ -102,7 +102,7 @@ export default function ArticleViewer({ article, comments }: ArticleViewerProps)
       ? 'Link copied!'
       : copyStatus === 'error'
       ? 'Unable to copy'
-      : 'Copy article link';
+      : 'Copy pat link';
   const copyButtonClassNames = [
     styles.shareButton,
     copyStatus === 'copied' ? styles.shareButtonSuccess : '',

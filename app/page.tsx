@@ -8,6 +8,7 @@ import Image from 'next/image';
 import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
 import MonetagBanner from '@/components/MonetagBanner';
 import Footer from '@/components/Footer';
+import SignupModal from '@/components/SignupModal';
 
 /**
  * Root page component that handles routing for GitHub Pages
@@ -81,6 +82,7 @@ function LinksHomePage() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isSignupOpen, setIsSignupOpen] = useState(false);
 
   useEffect(() => {
     async function loadFeeds() {
@@ -105,27 +107,47 @@ function LinksHomePage() {
     // Ad space reserved for future ad network integration
   }, []);
 
-  // Insert ad slots every 3 articles (after 3rd, 6th, 9th, etc.) - matching mobile app
-  const dataWithAdSlots = useMemo(() => {
-    if (!feeds || feeds.length === 0) return [];
-    
-    const result: Array<{ type: 'article' | 'ad'; id: string; data?: Feed }> = [];
-    
-    feeds.forEach((item, index) => {
-      // Add article
-      result.push({ type: 'article', id: `article-${item.id}`, data: item });
-      
-      // Add ad slot every 3 articles (after 3rd, 6th, 9th, etc.)
-      if ((index + 1) % 3 === 0) {
-        result.push({ type: 'ad', id: `ad-${index}` });
-      }
+  const groupedFeeds = useMemo(() => {
+    const map = new Map<string, Feed[]>();
+    feeds.forEach(feed => {
+      const key = feed.categoryName || 'Other';
+      const bucket = map.get(key) || [];
+      bucket.push(feed);
+      map.set(key, bucket);
     });
-    
-    return result;
+    return Array.from(map.entries()).map(([category, items]) => {
+      const sorted = [...items].sort((a, b) => {
+        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bDate - aDate;
+      });
+      return { category, items: sorted };
+    });
   }, [feeds]);
+
+  const categoryIcon = (category: string) => {
+    const lower = category.toLowerCase();
+    if (lower.includes('business')) return '💼';
+    if (lower.includes('tech') || lower.includes('ai')) return '🤖';
+    if (lower.includes('entertain')) return '📺';
+    if (lower.includes('sports')) return '🏅';
+    if (lower.includes('health')) return '🩺';
+    if (lower.includes('finance')) return '📈';
+    return '⚡';
+  };
+
+  const handleNavigate = (id: number) => {
+    const articleUrl = `/public/pats/${id}`;
+    router.push(articleUrl);
+  };
 
   return (
     <div className={styles.container}>
+      <SignupModal
+        open={isSignupOpen}
+        onClose={() => setIsSignupOpen(false)}
+        onSuccess={() => setIsSignupOpen(false)}
+      />
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <div className={styles.logoSection}>
@@ -139,49 +161,20 @@ function LinksHomePage() {
             />
           </div>
           <div className={styles.headerTitle}>
-            <h2 className={styles.title}>Latest pats</h2>
-            <p className={styles.subtitle}>Let&apos;s read</p>
+            <h2 className={styles.title}>Latest pats by category</h2>
+            <p className={styles.subtitle}>Compact lanes of what&apos;s trending now</p>
           </div>
         </div>
       </header>
 
-      {/* UNLOCK YOUR PATS Banner - Always visible at top */}
-      <div className={styles.unlockBannerTop}>
-        <div className={styles.unlockBannerContent}>
-          <p className={styles.unlockText}>UNLOCK YOUR PATS</p>
-          <p className={styles.unlockDescription}>
-            Register to get the latest updates from the topics{' '}
-            <span className={styles.unlockUnderline}>you</span> care about
-          </p>
-          <div className={styles.storeButtons}>
-            <a
-              href="https://apps.apple.com/us/app/patreek/id6547858283"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.storeLink}
-            >
-              <Image
-                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3729b558347b9bf210a5a_Store%3DApp%20Store%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
-                alt="Download on App Store"
-                width={200}
-                height={60}
-                className={styles.storeImage}
-              />
-            </a>
-            <a
-              href="#"
-              className={styles.storeLink}
-            >
-              <Image
-                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
-                alt="Get it on Google Play"
-                width={200}
-                height={60}
-                className={styles.storeImage}
-              />
-            </a>
-          </div>
+      <div className={styles.signupBanner}>
+        <div className={styles.signupBannerText}>
+          <p className={styles.signupHeadline}>Sign up to get personalized pats specially curated for you!</p>
+          <p className={styles.signupSubhead}>Mirror the mobile experience with category picks, SSO, and your own timeline.</p>
         </div>
+        <button className={styles.signupButton} onClick={() => setIsSignupOpen(true)}>
+          Sign Up
+        </button>
       </div>
 
       <main className={styles.main}>
@@ -196,7 +189,7 @@ function LinksHomePage() {
               Retry
             </button>
           </div>
-        ) : feeds.length === 0 ? (
+        ) : groupedFeeds.length === 0 ? (
           <div className={styles.emptyState}>
             <p>No articles available at the moment.</p>
             <p className={styles.registerPrompt}>
@@ -205,54 +198,55 @@ function LinksHomePage() {
           </div>
         ) : (
           <>
-            {/* Top Banner Ad Slot - Monetag */}
-            <MonetagBanner zoneId="10189289" placementId="top-banner" size="responsive" />
-
-            <div className={styles.feedList}>
-              {dataWithAdSlots.map((item, index) => {
-                // In-feed ad slot - Monetag
-                if (item.type === 'ad') {
-                  return (
-                    <MonetagBanner 
-                      key={item.id}
-                      zoneId="10189261"
-                      placementId="in-feed"
-                      size="responsive"
-                    />
-                  );
-                }
-
-                const feed = item.data!;
-                const articleUrl = `/public/pats/${feed.id}`;
+            <div className={styles.categoryGrid}>
+              {groupedFeeds.map(group => {
+                const [hero, ...rest] = group.items;
+                if (!hero) return null;
                 return (
-                  <a
-                    key={item.id}
-                    href={articleUrl}
-                    className={styles.feedCard}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      router.push(articleUrl);
-                    }}
-                  >
-                    <div className={styles.imageWrapper}>
-                      <img
-                        src={feed.imageUrl || 'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'}
-                        alt={feed.title}
-                        className={styles.image}
-                      />
-                      <div className={styles.categoryBadge}>
-                        <span className={styles.categoryText}>{feed.categoryName}</span>
+                  <div key={group.category} className={styles.categoryCard}>
+                    <div className={styles.categoryHeader}>
+                      <span className={styles.categoryIcon}>{categoryIcon(group.category)}</span>
+                      <div>
+                        <p className={styles.categoryLabel}>Category</p>
+                        <h3 className={styles.categoryTitle}>{group.category}</h3>
                       </div>
                     </div>
-                    <div className={styles.content}>
-                      <h2 className={styles.feedTitle}>{feed.title}</h2>
+                    <button
+                      className={styles.hero}
+                      onClick={() => handleNavigate(hero.id)}
+                      aria-label={`Open ${hero.title}`}
+                    >
+                      <div className={styles.heroImageWrapper}>
+                        <img
+                          src={
+                            hero.imageUrl ||
+                            'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
+                          }
+                          alt={hero.title}
+                          className={styles.heroImage}
+                        />
+                      </div>
+                      <div className={styles.heroContent}>
+                        <h4 className={styles.heroTitle}>{hero.title}</h4>
+                      </div>
+                    </button>
+                    <div className={styles.headlines}>
+                      {rest.slice(0, 4).map(item => (
+                        <button
+                          key={item.id}
+                          className={styles.headlineRow}
+                          onClick={() => handleNavigate(item.id)}
+                        >
+                          <span className={styles.headlineBullet}>•</span>
+                          <span className={styles.headlineText}>{item.title}</span>
+                        </button>
+                      ))}
                     </div>
-                  </a>
+                  </div>
                 );
               })}
             </div>
             
-            {/* Bottom Banner Ad Slot - Monetag */}
             <MonetagBanner zoneId="10189289" placementId="bottom-banner" size="responsive" />
           </>
         )}
@@ -261,4 +255,3 @@ function LinksHomePage() {
     </div>
   );
 }
-

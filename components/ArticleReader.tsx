@@ -108,7 +108,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
       ? 'Link copied!'
       : copyStatus === 'error'
       ? 'Unable to copy'
-      : 'Copy article link';
+      : 'Copy pat link';
 
   const formattedDate = isToday(article.createdAt)
     ? 'Today in'
