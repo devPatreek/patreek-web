@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getPublicFeed, FeedArticle, getPublicFeeds, Feed } from '@/lib/api';
 import { getCachedArticle, setCachedArticle } from '@/lib/cache';
@@ -20,6 +20,9 @@ export default function PublicPatsPageClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isArticleRoute, setIsArticleRoute] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
   
   // Get bypass parameter from URL or referrer
   const getBypassParam = useMemo(() => {
@@ -150,22 +153,65 @@ export default function PublicPatsPageClient() {
     }
   }
 
-  // Insert ad slots every 3 articles (after 3rd, 6th, 9th, etc.)
-  const dataWithAdSlots = useMemo(() => {
-    if (!feeds || feeds.length === 0) return [];
-    
-    const result: Array<{ type: 'article' | 'ad'; id: string; data?: Feed }> = [];
-    
-    feeds.forEach((item, index) => {
-      result.push({ type: 'article', id: `article-${item.id}`, data: item });
-      
-      if ((index + 1) % 3 === 0) {
-        result.push({ type: 'ad', id: `ad-${index}` });
-      }
+  const groupedFeeds = useMemo(() => {
+    const map = new Map<string, Feed[]>();
+    feeds.forEach(feed => {
+      const key = feed.categoryName || 'Other';
+      const bucket = map.get(key) || [];
+      bucket.push(feed);
+      map.set(key, bucket);
     });
-    
-    return result;
+    return Array.from(map.entries()).map(([category, items]) => {
+      const sorted = [...items].sort((a, b) => {
+        const aDate = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bDate = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bDate - aDate;
+      });
+      return { category, items: sorted };
+    });
   }, [feeds]);
+
+  const categoryIcon = (category: string) => {
+    const lower = category.toLowerCase();
+    if (lower.includes('business')) return '💼';
+    if (lower.includes('tech') || lower.includes('ai')) return '🤖';
+    if (lower.includes('entertain')) return '📺';
+    if (lower.includes('sports')) return '🏅';
+    if (lower.includes('health')) return '🩺';
+    if (lower.includes('finance')) return '📈';
+    return '⚡';
+  };
+
+  const handleNavigate = (id: number) => {
+    const articleUrl = `/public/pats/${id}${getBypassParam}`;
+    router.push(articleUrl);
+  };
+
+  const updateScrollState = () => {
+    const node = trackRef.current;
+    if (!node) return;
+    const { scrollLeft, clientWidth, scrollWidth } = node;
+    setCanScrollLeft(scrollLeft > 8);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 8);
+  };
+
+  useEffect(() => {
+    updateScrollState();
+    const node = trackRef.current;
+    if (!node) return;
+    const handler = () => updateScrollState();
+    node.addEventListener('scroll', handler);
+    return () => node.removeEventListener('scroll', handler);
+  }, [groupedFeeds.length]);
+
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    const node = trackRef.current;
+    if (!node) return;
+    const firstCard = node.querySelector<HTMLElement>(`.${styles.categoryCard}`);
+    const delta = firstCard ? firstCard.offsetWidth + 16 : 320;
+    const amount = direction === 'left' ? -delta : delta;
+    node.scrollBy({ left: amount, behavior: 'smooth' });
+  };
 
   // Render article page
   if (isArticleRoute) {
@@ -286,63 +332,82 @@ export default function PublicPatsPageClient() {
 
       {/* Ads disabled */}
 
-      <div className={styles.feedList}>
+      <div className={styles.main}>
         {isLoading ? (
           <div className={styles.emptyState}>
             <p>Loading articles...</p>
           </div>
-        ) : feeds.length === 0 ? (
+        ) : groupedFeeds.length === 0 ? (
           <div className={styles.emptyState}>
             <p>No articles available at the moment. Register to get the latest updates from the topics you care about</p>
           </div>
         ) : (
-          dataWithAdSlots.map((item, index) => {
-            // Skip ad slots (they don't have data property)
-            if (item.type === 'ad' || !item.data) {
-              return null;
-            }
-            
-            const feed = item.data;
-            const articleUrl = `/public/pats/${feed.id}${getBypassParam}`;
-            return (
-              <a
-                key={feed.id}
-                href={articleUrl}
-                className={styles.feedCard}
-                onClick={(e) => {
-                  e.preventDefault();
-                  router.push(articleUrl);
-                }}
-              >
-                {feed.imageUrl && (
-                  <div className={styles.feedImage}>
-                    <Image
-                      src={feed.imageUrl}
-                      alt={feed.title}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 400px"
-                      style={{ objectFit: 'cover' }}
-                    />
-                    {feed.categoryName && (
-                      <div className={styles.categoryBadge}>
-                        <span className={styles.categoryText}>{feed.categoryName}</span>
+          <div className={styles.carouselShell}>
+            <button
+              className={`${styles.navButton} ${!canScrollLeft ? styles.navButtonDisabled : ''}`}
+              onClick={() => scrollCarousel('left')}
+              aria-label="Scroll categories left"
+              disabled={!canScrollLeft}
+            >
+              ‹
+            </button>
+            <div className={styles.categoryTrack} ref={trackRef} onScroll={updateScrollState}>
+              {groupedFeeds.map(group => {
+                const [hero, ...rest] = group.items;
+                if (!hero) return null;
+                return (
+                  <div key={group.category} className={styles.categoryCard}>
+                    <div className={styles.categoryHeader}>
+                      <span className={styles.categoryIcon}>{categoryIcon(group.category)}</span>
+                      <div>
+                        <p className={styles.categoryLabel}>Category</p>
+                        <h3 className={styles.categoryTitle}>{group.category}</h3>
                       </div>
-                    )}
+                    </div>
+                    <button
+                      className={styles.hero}
+                      onClick={() => handleNavigate(hero.id)}
+                      aria-label={`Open ${hero.title}`}
+                    >
+                      <div className={styles.heroImageWrapper}>
+                        <img
+                          src={
+                            hero.imageUrl ||
+                            'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
+                          }
+                          alt={hero.title}
+                          className={styles.heroImage}
+                        />
+                      </div>
+                      <div className={styles.heroContent}>
+                        <h4 className={styles.heroTitle}>{hero.title}</h4>
+                      </div>
+                    </button>
+                    <div className={styles.headlines}>
+                      {rest.map(item => (
+                        <button
+                          key={item.id}
+                          className={styles.headlineRow}
+                          onClick={() => handleNavigate(item.id)}
+                        >
+                          <span className={styles.headlineBullet}>•</span>
+                          <span className={styles.headlineText}>{item.title}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                )}
-                <div className={styles.feedContent}>
-                  <h3 className={styles.feedTitle}>{feed.title}</h3>
-                  {feed.description && (
-                    <p className={styles.feedExcerpt}>
-                      {feed.description.length > 120 
-                        ? `${feed.description.substring(0, 120)}...` 
-                        : feed.description}
-                    </p>
-                  )}
-                </div>
-              </a>
-            );
-          })
+                );
+              })}
+            </div>
+            <button
+              className={`${styles.navButton} ${!canScrollRight ? styles.navButtonDisabled : ''}`}
+              onClick={() => scrollCarousel('right')}
+              aria-label="Scroll categories right"
+              disabled={!canScrollRight}
+            >
+              ›
+            </button>
+          </div>
         )}
       </div>
 
