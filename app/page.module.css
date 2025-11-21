@@ -200,14 +200,29 @@
   }
 }
 
-.categoryGrid {
+.carouselShell {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
   margin: 24px auto 40px;
 }
 
+.categoryTrack {
+  overflow: hidden;
+  display: flex;
+  gap: 16px;
+  scroll-behavior: smooth;
+  padding: 8px 4px;
+}
+
+.categoryTrack::-webkit-scrollbar {
+  display: none;
+}
+
 .categoryCard {
+  min-width: 280px;
+  max-width: 320px;
   background: #ffffff;
   border-radius: 18px;
   padding: 16px;
@@ -349,6 +364,32 @@
   .headlineBullet {
     color: #8c8c8c;
   }
+}
+
+.navButton {
+  background: #ffffff;
+  color: #0096dd;
+  border: 1px solid #e5e5e5;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.navButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.navButtonDisabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .feedCard {

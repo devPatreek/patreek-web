@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, UIEvent } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
@@ -82,6 +82,9 @@ function LinksHomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   useEffect(() => {
     async function loadFeeds() {
@@ -138,6 +141,32 @@ function LinksHomePage() {
   const handleNavigate = (id: number) => {
     const articleUrl = `/public/pats/${id}`;
     router.push(articleUrl);
+  };
+
+  const updateScrollState = () => {
+    const node = trackRef.current;
+    if (!node) return;
+    const { scrollLeft, clientWidth, scrollWidth } = node;
+    setCanScrollLeft(scrollLeft > 8);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 8);
+  };
+
+  useEffect(() => {
+    updateScrollState();
+    const node = trackRef.current;
+    if (!node) return;
+    const handler = () => updateScrollState();
+    node.addEventListener('scroll', handler);
+    return () => node.removeEventListener('scroll', handler);
+  }, [groupedFeeds.length]);
+
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    const node = trackRef.current;
+    if (!node) return;
+    const firstCard = node.querySelector<HTMLElement>(`.${styles.categoryCard}`);
+    const delta = firstCard ? firstCard.offsetWidth + 16 : 320;
+    const amount = direction === 'left' ? -delta : delta;
+    node.scrollBy({ left: amount, behavior: 'smooth' });
   };
 
   return (
@@ -197,53 +226,71 @@ function LinksHomePage() {
           </div>
         ) : (
           <>
-            <div className={styles.categoryGrid}>
-              {groupedFeeds.map(group => {
-                const [hero, ...rest] = group.items;
-                if (!hero) return null;
-                return (
-                  <div key={group.category} className={styles.categoryCard}>
-                    <div className={styles.categoryHeader}>
-                      <span className={styles.categoryIcon}>{categoryIcon(group.category)}</span>
-                      <div>
-                        <p className={styles.categoryLabel}>Category</p>
-                        <h3 className={styles.categoryTitle}>{group.category}</h3>
+            <div className={styles.carouselShell}>
+              <button
+                className={`${styles.navButton} ${!canScrollLeft ? styles.navButtonDisabled : ''}`}
+                onClick={() => scrollCarousel('left')}
+                aria-label="Scroll categories left"
+                disabled={!canScrollLeft}
+              >
+                ‹
+              </button>
+              <div className={styles.categoryTrack} ref={trackRef} onScroll={updateScrollState}>
+                {groupedFeeds.map(group => {
+                  const [hero, ...rest] = group.items;
+                  if (!hero) return null;
+                  return (
+                    <div key={group.category} className={styles.categoryCard}>
+                      <div className={styles.categoryHeader}>
+                        <span className={styles.categoryIcon}>{categoryIcon(group.category)}</span>
+                        <div>
+                          <p className={styles.categoryLabel}>Category</p>
+                          <h3 className={styles.categoryTitle}>{group.category}</h3>
+                        </div>
+                      </div>
+                      <button
+                        className={styles.hero}
+                        onClick={() => handleNavigate(hero.id)}
+                        aria-label={`Open ${hero.title}`}
+                      >
+                        <div className={styles.heroImageWrapper}>
+                          <img
+                            src={
+                              hero.imageUrl ||
+                              'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
+                            }
+                            alt={hero.title}
+                            className={styles.heroImage}
+                          />
+                        </div>
+                        <div className={styles.heroContent}>
+                          <h4 className={styles.heroTitle}>{hero.title}</h4>
+                        </div>
+                      </button>
+                      <div className={styles.headlines}>
+                        {rest.map(item => (
+                          <button
+                            key={item.id}
+                            className={styles.headlineRow}
+                            onClick={() => handleNavigate(item.id)}
+                          >
+                            <span className={styles.headlineBullet}>•</span>
+                            <span className={styles.headlineText}>{item.title}</span>
+                          </button>
+                        ))}
                       </div>
                     </div>
-                    <button
-                      className={styles.hero}
-                      onClick={() => handleNavigate(hero.id)}
-                      aria-label={`Open ${hero.title}`}
-                    >
-                      <div className={styles.heroImageWrapper}>
-                        <img
-                          src={
-                            hero.imageUrl ||
-                            'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
-                          }
-                          alt={hero.title}
-                          className={styles.heroImage}
-                        />
-                      </div>
-                      <div className={styles.heroContent}>
-                        <h4 className={styles.heroTitle}>{hero.title}</h4>
-                      </div>
-                    </button>
-                    <div className={styles.headlines}>
-                      {rest.slice(0, 4).map(item => (
-                        <button
-                          key={item.id}
-                          className={styles.headlineRow}
-                          onClick={() => handleNavigate(item.id)}
-                        >
-                          <span className={styles.headlineBullet}>•</span>
-                          <span className={styles.headlineText}>{item.title}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              <button
+                className={`${styles.navButton} ${!canScrollRight ? styles.navButtonDisabled : ''}`}
+                onClick={() => scrollCarousel('right')}
+                aria-label="Scroll categories right"
+                disabled={!canScrollRight}
+              >
+                ›
+              </button>
             </div>
           </>
         )}
