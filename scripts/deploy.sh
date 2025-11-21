@@ -24,6 +24,10 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Export static site
+echo "🌐 Exporting static site..."
+npx next export
+
 # Remove old docs content
 echo "🧹 Cleaning docs directory..."
 rm -rf docs/*
@@ -59,4 +63,3 @@ git push origin main
 
 echo ""
 echo "✅ Deployment complete!"
-
