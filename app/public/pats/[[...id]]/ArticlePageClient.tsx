@@ -11,7 +11,7 @@ import Footer from '@/components/Footer';
 import categoryIcons from '@/data/categoryIcons.json';
 
 /**
- * Handles both /public/pats/ (homepage) and /public/pats/{id} (article) routes
+ * Handles both / (homepage) and /pat/{id} (article) routes
  */
 export default function PublicPatsPageClient() {
   const pathname = usePathname();
@@ -59,23 +59,22 @@ export default function PublicPatsPageClient() {
     
     if (typeof window !== 'undefined') {
       const windowPath = window.location.pathname;
-      // Match /public/pats/{id} format (but not just /public/pats/)
-      const windowMatch = windowPath.match(/^\/public\/pats\/(\d+)$/);
+      const windowMatch = windowPath.match(/^\/pat\/(\d+)$/);
       if (windowMatch) {
         articleId = parseInt(windowMatch[1], 10);
         routeIsArticle = true;
-      } else if (windowPath === '/public/pats' || windowPath === '/public/pats/') {
+      } else if (windowPath === '/' || windowPath === '/pat' || windowPath === '/pat/') {
         routeIsArticle = false;
       }
     }
     
     // Fallback to pathname
     if (!articleId && pathname) {
-      const pathnameMatch = pathname.match(/^\/public\/pats\/(\d+)$/);
+      const pathnameMatch = pathname.match(/^\/pat\/(\d+)$/);
       if (pathnameMatch) {
         articleId = parseInt(pathnameMatch[1], 10);
         routeIsArticle = true;
-      } else if (pathname === '/public/pats' || pathname === '/public/pats/') {
+      } else if (pathname === '/' || pathname === '/pat' || pathname === '/pat/') {
         routeIsArticle = false;
       }
     }
@@ -133,7 +132,7 @@ export default function PublicPatsPageClient() {
         setError('Article not found or not available');
         setTimeout(() => {
           if (typeof window !== 'undefined') {
-            window.location.href = '/public/pats/';
+            window.location.href = '/';
           }
         }, 2000);
         return;
@@ -179,7 +178,7 @@ export default function PublicPatsPageClient() {
   };
 
   const handleNavigate = (id: number) => {
-    const articleUrl = `/public/pats/${id}${getBypassParam}`;
+    const articleUrl = `/pat/${id}${getBypassParam}`;
     router.push(articleUrl);
   };
 
@@ -239,14 +238,29 @@ export default function PublicPatsPageClient() {
           padding: '20px',
         }}>
           <p>{error || 'Article not found'}</p>
-          <a href={`/public/pats${getBypassParam}`} style={{ marginTop: '16px', color: '#667eea', textDecoration: 'underline' }}>
+          <a href={`/${getBypassParam ? getBypassParam : ''}`} style={{ marginTop: '16px', color: '#667eea', textDecoration: 'underline' }}>
             ← Back to Home
           </a>
         </div>
       );
     }
 
-    return <ArticleReader article={article} />;
+    return (
+      <main className={`${styles.main} ${styles.mainRow}`}>
+        <div className={styles.mainColumn}>
+          <ArticleReader article={article} />
+        </div>
+        <aside className={styles.rightRail} aria-label="Sponsored">
+          <a href="" rel="nofollow noopener" target="_blank">
+            <img
+              src="https://landings-cdn.adsterratech.com/referralBanners/png/160%20x%20600%20px.png"
+              alt="Sponsored banner"
+              className={styles.rightRailImage}
+            />
+          </a>
+        </aside>
+      </main>
+    );
   }
 
   // Render homepage
@@ -328,7 +342,8 @@ export default function PublicPatsPageClient() {
 
       {/* Ads disabled */}
 
-      <div className={styles.main}>
+      <main className={`${styles.main} ${styles.mainRow}`}>
+        <div className={styles.mainColumn}>
         {isLoading ? (
           <div className={styles.emptyState}>
             <p>Loading articles...</p>
@@ -409,9 +424,17 @@ export default function PublicPatsPageClient() {
             </button>
           </div>
         )}
-      </div>
-
-      {/* Ads disabled */}
+        </div>
+        <aside className={styles.rightRail} aria-label="Sponsored">
+          <a href="" rel="nofollow noopener" target="_blank">
+            <img
+              src="https://landings-cdn.adsterratech.com/referralBanners/png/160%20x%20600%20px.png"
+              alt="Sponsored banner"
+              className={styles.rightRailImage}
+            />
+          </a>
+        </aside>
+      </main>
 
       <Footer />
     </div>

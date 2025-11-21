@@ -1,75 +1,29 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, UIEvent } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
 import Image from 'next/image';
-import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
 import Footer from '@/components/Footer';
 import SignupModal from '@/components/SignupModal';
 import categoryIcons from '@/data/categoryIcons.json';
+import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
 
 /**
- * Root page component that handles routing for GitHub Pages
- * Since GitHub Pages serves 404.html (which is a copy of index.html) for unknown routes,
- * we check if we're on an article route and render the appropriate component
+ * Root page component - shows public feeds list (main homepage)
+ * This is what patreek.com shows
  */
 export default function RootPage() {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
-  const [actualPath, setActualPath] = useState<string | null>(null);
+  const isPatRoute =
+    (typeof window !== 'undefined' && /^\/pat\/\d+/.test(window.location.pathname)) ||
+    (pathname ? /^\/pat\/\d+/.test(pathname) : false);
 
-  useEffect(() => {
-    setMounted(true);
-    // Get the actual pathname from window.location (works even with 404.html redirect)
-    if (typeof window !== 'undefined') {
-      const currentPath = window.location.pathname;
-      setActualPath(currentPath);
-      console.log('[RootPage] Initial path detected:', currentPath);
-    }
-  }, []);
-
-  // Update actual path when pathname changes
-  useEffect(() => {
-    if (typeof window !== 'undefined' && mounted) {
-      const currentPath = window.location.pathname;
-      setActualPath(currentPath);
-      console.log('[RootPage] Path updated:', currentPath);
-    }
-  }, [pathname, mounted]);
-
-  // Check if we're on an article route
-  // Use both pathname (Next.js) and window.location (for GitHub Pages 404 redirects)
-  const checkArticleRoute = () => {
-    if (typeof window === 'undefined') return false;
-    
-    // Check window.location first (most reliable for GitHub Pages)
-    const windowPath = window.location.pathname;
-    if (windowPath && /^\/article\/\d+/.test(windowPath)) {
-      console.log('[RootPage] Article route detected from window.location:', windowPath);
-      return true;
-    }
-    
-    // Fallback to pathname (Next.js routing)
-    if (pathname && /^\/article\/\d+/.test(pathname)) {
-      console.log('[RootPage] Article route detected from pathname:', pathname);
-      return true;
-    }
-    
-    return false;
-  };
-
-  const isArticleRoute = checkArticleRoute();
-
-  console.log('[RootPage] Rendering - mounted:', mounted, 'isArticleRoute:', isArticleRoute, 'pathname:', pathname, 'actualPath:', actualPath);
-
-  // If we're on an article route, render the article page
-  if (isArticleRoute) {
+  if (isPatRoute) {
     return <ArticlePageClient />;
   }
 
-  // Otherwise, render the home page
   return <LinksHomePage />;
 }
 
@@ -135,7 +89,7 @@ function LinksHomePage() {
   };
 
   const handleNavigate = (id: number) => {
-    const articleUrl = `/public/pats/${id}`;
+    const articleUrl = `/pat/${id}`;
     router.push(articleUrl);
   };
 
@@ -201,7 +155,8 @@ function LinksHomePage() {
         </button>
       </div>
 
-      <main className={styles.main}>
+      <main className={`${styles.main} ${styles.mainRow}`}>
+        <div className={styles.mainColumn}>
         {isLoading ? (
           <div className={styles.loadingState}>
             <p>Loading articles...</p>
@@ -294,6 +249,20 @@ function LinksHomePage() {
             </div>
           </>
         )}
+        </div>
+        <aside className={styles.rightRail} aria-label="Sponsored">
+          <a
+            href=""
+            rel="nofollow noopener"
+            target="_blank"
+          >
+            <img
+              src="https://landings-cdn.adsterratech.com/referralBanners/png/160%20x%20600%20px.png"
+              alt="Sponsored banner"
+              className={styles.rightRailImage}
+            />
+          </a>
+        </aside>
       </main>
       <Footer />
     </div>

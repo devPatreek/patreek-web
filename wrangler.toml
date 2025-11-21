@@ -1,0 +1,14 @@
+name = "patreek-webflow-proxy"
+main = "cloudflare-worker.js"
+compatibility_date = "2024-01-01"
+
+# Route configuration - this worker handles all requests to patreek.com/*
+# Routes are configured in Cloudflare Dashboard, not here
+# The route pattern is: patreek.com/*
+
+# Optional: KV namespace binding (if you're using KV for rate limiting)
+# Uncomment and update if you have a KV namespace
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT_KV"
+# id = "your-kv-namespace-id"
+
