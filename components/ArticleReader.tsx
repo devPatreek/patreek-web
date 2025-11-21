@@ -57,7 +57,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     if (typeof window !== 'undefined') {
       return window.location.href;
     }
-    return `https://patreek.com/public/pats/${article.id}`;
+    return `https://patreek.com/pat/${article.id}`;
   }, [article.id]);
 
   // Reset copy status after 2.5 seconds

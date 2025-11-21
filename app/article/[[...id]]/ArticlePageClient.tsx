@@ -91,7 +91,7 @@ export default function ArticlePageClient() {
           setError('Article not found or not available');
           setTimeout(() => {
             if (typeof window !== 'undefined') {
-              window.location.href = 'https://patreek.com/public/pats/';
+              window.location.href = 'https://patreek.com/';
             }
           }, 2000);
           return;

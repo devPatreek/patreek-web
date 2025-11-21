@@ -8,27 +8,17 @@ import Image from 'next/image';
 import Footer from '@/components/Footer';
 import SignupModal from '@/components/SignupModal';
 import categoryIcons from '@/data/categoryIcons.json';
-import ArticlePageClient from './article/[[...id]]/ArticlePageClient';
 
 /**
  * Root page component - shows public feeds list (main homepage)
  * This is what patreek.com shows
  */
 export default function RootPage() {
-  const pathname = usePathname();
-  const isPatRoute =
-    (typeof window !== 'undefined' && /^\/pat\/\d+/.test(window.location.pathname)) ||
-    (pathname ? /^\/pat\/\d+/.test(pathname) : false);
-
-  if (isPatRoute) {
-    return <ArticlePageClient />;
-  }
-
   return <LinksHomePage />;
 }
 
 /**
- * Public feed homepage for patreek.com/public/pats/
+ * Public feed homepage for patreek.com/
  * Shows public articles like guest users see in the app
  */
 function LinksHomePage() {
