@@ -8,12 +8,23 @@ import Image from 'next/image';
 import Footer from '@/components/Footer';
 import SignupModal from '@/components/SignupModal';
 import categoryIcons from '@/data/categoryIcons.json';
+import PatPageClient from './pat/[[...id]]/ArticlePageClient';
+import AdsterraSlot from '@/components/AdsterraSlot';
 
 /**
  * Root page component - shows public feeds list (main homepage)
  * This is what patreek.com shows
  */
 export default function RootPage() {
+  const pathname = usePathname();
+  const isPatRoute =
+    (typeof window !== 'undefined' && /^\/pat\/\d+/.test(window.location.pathname)) ||
+    (pathname ? /^\/pat\/\d+/.test(pathname) : false);
+
+  if (isPatRoute) {
+    return <PatPageClient />;
+  }
+
   return <LinksHomePage />;
 }
 
@@ -241,17 +252,8 @@ function LinksHomePage() {
         )}
         </div>
         <aside className={styles.rightRail} aria-label="Sponsored">
-          <a
-            href=""
-            rel="nofollow noopener"
-            target="_blank"
-          >
-            <img
-              src="https://landings-cdn.adsterratech.com/referralBanners/png/160%20x%20600%20px.png"
-              alt="Sponsored banner"
-              className={styles.rightRailImage}
-            />
-          </a>
+          <AdsterraSlot variant="iframe300x250" />
+          <AdsterraSlot variant="native" />
         </aside>
       </main>
       <Footer />
