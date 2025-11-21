@@ -249,6 +249,12 @@
   font-size: 18px;
 }
 
+.categoryIcon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
 .categoryLabel {
   margin: 0;
   font-size: 12px;

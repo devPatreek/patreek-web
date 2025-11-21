@@ -8,6 +8,7 @@ import ArticleReader from '@/components/ArticleReader';
 import styles from '../../../page.module.css';
 import Image from 'next/image';
 import Footer from '@/components/Footer';
+import categoryIcons from '@/data/categoryIcons.json';
 
 /**
  * Handles both /public/pats/ (homepage) and /public/pats/{id} (article) routes
@@ -171,15 +172,10 @@ export default function PublicPatsPageClient() {
     });
   }, [feeds]);
 
+  const defaultIcon = categoryIcons.default;
+
   const categoryIcon = (category: string) => {
-    const lower = category.toLowerCase();
-    if (lower.includes('business')) return '💼';
-    if (lower.includes('tech') || lower.includes('ai')) return '🤖';
-    if (lower.includes('entertain')) return '📺';
-    if (lower.includes('sports')) return '🏅';
-    if (lower.includes('health')) return '🩺';
-    if (lower.includes('finance')) return '📈';
-    return '⚡';
+    return categoryIcons[category as keyof typeof categoryIcons] || defaultIcon;
   };
 
   const handleNavigate = (id: number) => {
@@ -358,7 +354,11 @@ export default function PublicPatsPageClient() {
                 return (
                   <div key={group.category} className={styles.categoryCard}>
                     <div className={styles.categoryHeader}>
-                      <span className={styles.categoryIcon}>{categoryIcon(group.category)}</span>
+                      <span
+                        className={styles.categoryIcon}
+                        dangerouslySetInnerHTML={{ __html: categoryIcon(group.category) }}
+                        aria-hidden="true"
+                      />
                       <div>
                         <p className={styles.categoryLabel}>Category</p>
                         <h3 className={styles.categoryTitle}>{group.category}</h3>
