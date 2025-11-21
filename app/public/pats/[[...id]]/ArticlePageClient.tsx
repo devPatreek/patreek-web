@@ -297,7 +297,12 @@ export default function PublicPatsPageClient() {
           </div>
         ) : (
           dataWithAdSlots.map((item, index) => {
-                const feed = item.data!;
+            // Skip ad slots (they don't have data property)
+            if (item.type === 'ad' || !item.data) {
+              return null;
+            }
+            
+            const feed = item.data;
             const articleUrl = `/public/pats/${feed.id}${getBypassParam}`;
             return (
               <a
