@@ -141,6 +141,510 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* New layout */
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #ffffff;
+  border-bottom: 1px solid #e6e6e6;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.topLeft {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.navLink {
+  text-decoration: none;
+  color: #2b2b2b;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.navLink:hover {
+  color: #0096dd;
+}
+
+.topRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mailButton {
+  border: 1px solid #7a4bce;
+  background: linear-gradient(135deg, #7a4bce, #a65df6);
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.signInButton {
+  border: 1px solid #dcdcdc;
+  background: #f6f6f6;
+  color: #333;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.heroAd {
+  margin: 20px auto;
+  max-width: 1280px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #001f3f, #004f8c);
+  color: #ffffff;
+  padding: 36px 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.heroAdContent {
+  max-width: 600px;
+  display: grid;
+  gap: 12px;
+}
+
+.heroEyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 1px;
+  font-size: 12px;
+  color: #8cd7ff;
+}
+
+.heroHeadline {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.heroSubtext {
+  margin: 0;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.heroCta {
+  width: fit-content;
+  background: linear-gradient(135deg, #00b0ad, #0096dd);
+  color: #ffffff;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.analyticsRow {
+  max-width: 1280px;
+  margin: 0 auto 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 0 16px;
+}
+
+.analyticsCard {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.analyticsLabel {
+  margin: 0;
+  font-weight: 700;
+  color: #5b5b5b;
+  font-size: 13px;
+}
+
+.analyticsValue {
+  margin: 4px 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: #0096dd;
+}
+
+.analyticsMeta {
+  margin: 0;
+  font-size: 13px;
+  color: #767676;
+}
+
+.mainShell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 320px;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+@media (max-width: 1200px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+  .rightColumn {
+    display: none;
+  }
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.centerColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionTitle {
+  margin: 0 0 6px 0;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.categoryStack {
+  display: grid;
+  gap: 12px;
+}
+
+.categoryCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.categoryIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #f4f4f4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.categoryIcon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+.categoryLabel {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #6f6f6f;
+}
+
+.categoryTitle {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #252525;
+}
+
+.hero {
+  border: none;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.heroImageWrapper {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #e5e5e5;
+  height: 160px;
+}
+
+.heroImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.heroContent {
+  padding: 0 2px;
+}
+
+.heroTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: #252525;
+}
+
+.headlines {
+  display: grid;
+  gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.headlineRow {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px;
+  align-items: start;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.headlineRow:hover .headlineText {
+  text-decoration: underline;
+}
+
+.headlineBullet {
+  color: #9c9c9c;
+  font-size: 16px;
+  line-height: 1.4;
+  padding-top: 2px;
+}
+
+.headlineText {
+  color: #2b2b2b;
+  font-size: 15px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.carousel {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+}
+
+.carouselHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+}
+
+.carouselControls {
+  display: flex;
+  gap: 8px;
+}
+
+.carouselCard {
+  position: relative;
+  min-height: 260px;
+}
+
+.carouselImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carouselOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.65) 100%);
+  color: #ffffff;
+  padding: 16px;
+  display: grid;
+  align-content: end;
+  gap: 8px;
+}
+
+.carouselCategory {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 12px;
+}
+
+.carouselTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.carouselCta {
+  width: fit-content;
+  border: none;
+  background: #00b0ad;
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.carouselEmpty {
+  padding: 24px;
+  text-align: center;
+  color: #666;
+}
+
+.navButton {
+  background: #ffffff;
+  color: #0096dd;
+  border: 1px solid #e5e5e5;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+
+.navButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.navButtonDisabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.rightRailStack {
+  display: grid;
+  gap: 10px;
+}
+
+.widgetCard {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.widgetLabel {
+  margin: 0 0 4px 0;
+  font-weight: 700;
+}
+
+.widgetBody {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.forYou {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
+.forYouFeed {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.forYouCard {
+  background: #f8f8f8;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+}
+
+.forYouImageWrapper {
+  width: 110px;
+  height: 80px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.forYouImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.forYouContent {
+  display: grid;
+  gap: 4px;
+}
+
+.forYouCategory {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.forYouTitle {
+  margin: 0;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.forYouCTA {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .signupBanner {
   max-width: 1200px;
   margin: 20px auto 0;

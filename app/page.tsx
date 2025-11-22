@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getPublicFeeds, Feed } from '@/lib/api';
 import styles from './page.module.css';
@@ -38,9 +38,8 @@ function LinksHomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [hasSession, setHasSession] = useState(false);
 
   useEffect(() => {
     async function loadFeeds() {
@@ -94,31 +93,23 @@ function LinksHomePage() {
     router.push(articleUrl);
   };
 
-  const updateScrollState = () => {
-    const node = trackRef.current;
-    if (!node) return;
-    const { scrollLeft, clientWidth, scrollWidth } = node;
-    setCanScrollLeft(scrollLeft > 8);
-    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 8);
-  };
+  const carouselItems = useMemo(() => groupedFeeds.map(g => g.items[0]).filter(Boolean), [groupedFeeds]);
 
   useEffect(() => {
-    updateScrollState();
-    const node = trackRef.current;
-    if (!node) return;
-    const handler = () => updateScrollState();
-    node.addEventListener('scroll', handler);
-    return () => node.removeEventListener('scroll', handler);
-  }, [groupedFeeds.length]);
+    const timer = setInterval(() => {
+      setCarouselIndex(prev => {
+        if (!carouselItems.length) return 0;
+        return (prev + 1) % carouselItems.length;
+      });
+    }, 10000);
+    return () => clearInterval(timer);
+  }, [carouselItems.length]);
 
-  const scrollCarousel = (direction: 'left' | 'right') => {
-    const node = trackRef.current;
-    if (!node) return;
-    const firstCard = node.querySelector<HTMLElement>(`.${styles.categoryCard}`);
-    const delta = firstCard ? firstCard.offsetWidth + 16 : 320;
-    const amount = direction === 'left' ? -delta : delta;
-    node.scrollBy({ left: amount, behavior: 'smooth' });
-  };
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stored = window.localStorage.getItem('patreek_session');
+    setHasSession(Boolean(stored));
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -127,37 +118,54 @@ function LinksHomePage() {
         onClose={() => setIsSignupOpen(false)}
         onSuccess={() => setIsSignupOpen(false)}
       />
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <div className={styles.logoSection}>
-            <Image
-              src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/675caa3a2f73ad268a86b51a_Patreek%20logo_slogan.png"
-              alt="Patreek"
-              width={60}
-              height={60}
-              className={styles.logo}
-              priority
-            />
-          </div>
-          <div className={styles.headerTitle}>
-            <h2 className={styles.title}>Latest pats by category</h2>
-            <p className={styles.subtitle}>Compact lanes of what&apos;s trending now</p>
-          </div>
+
+      <header className={styles.topBar}>
+        <div className={styles.topLeft}>
+          <Image
+            src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/675caa3a2f73ad268a86b51a_Patreek%20logo_slogan.png"
+            alt="Patreek"
+            width={110}
+            height={40}
+            className={styles.logo}
+            priority
+          />
+          <nav className={styles.navLinks} aria-label="Primary">
+            <a className={styles.navLink} href="#">News</a>
+            <a className={styles.navLink} href="#">Finance</a>
+            <a className={styles.navLink} href="#">Sports</a>
+            <a className={styles.navLink} href="#">More</a>
+          </nav>
+        </div>
+        <div className={styles.topRight}>
+          <button className={styles.mailButton}>Mail</button>
+          <button className={styles.signInButton}>Sign in</button>
         </div>
       </header>
 
-      <div className={styles.signupBanner}>
-        <div className={styles.signupBannerText}>
-          <p className={styles.signupHeadline}>Sign up to get personalized pats specially curated for you!</p>
-          <p className={styles.signupSubhead}>Mirror the mobile experience with category picks, SSO, and your own timeline.</p>
+      <div className={styles.heroAd}>
+        <div className={styles.heroAdContent}>
+          <p className={styles.heroEyebrow}>Featured Partner</p>
+          <h1 className={styles.heroHeadline}>Bring your story to the front page.</h1>
+          <p className={styles.heroSubtext}>Premium takeover slot, Patreek-blue CTA, high-impact visuals.</p>
+          <button className={styles.heroCta}>Book this slot</button>
         </div>
-        <button className={styles.signupButton} onClick={() => setIsSignupOpen(true)}>
-          Sign Up
-        </button>
       </div>
 
-      <main className={`${styles.main} ${styles.mainRow}`}>
-        <div className={styles.mainColumn}>
+      <div className={styles.analyticsRow}>
+        {[
+          { title: 'Top sharers', metric: 'Shares', value: '1.2k', user: '@mo_alex' },
+          { title: 'Top commenters', metric: 'Comments', value: '980', user: '@jules' },
+          { title: 'Top patters', metric: 'Pats', value: '2.4k', user: '@helen' },
+        ].map(card => (
+          <div key={card.title} className={styles.analyticsCard}>
+            <p className={styles.analyticsLabel}>{card.title}</p>
+            <p className={styles.analyticsValue}>{card.value}</p>
+            <p className={styles.analyticsMeta}>{card.metric} · {card.user}</p>
+          </div>
+        ))}
+      </div>
+
+      <main className={styles.mainShell}>
         {isLoading ? (
           <div className={styles.loadingState}>
             <p>Loading articles...</p>
@@ -178,84 +186,167 @@ function LinksHomePage() {
           </div>
         ) : (
           <>
-            <div className={styles.carouselShell}>
-              <button
-                className={`${styles.navButton} ${!canScrollLeft ? styles.navButtonDisabled : ''}`}
-                onClick={() => scrollCarousel('left')}
-                aria-label="Scroll categories left"
-                disabled={!canScrollLeft}
-              >
-                ‹
-              </button>
-              <div className={styles.categoryTrack} ref={trackRef} onScroll={updateScrollState}>
-                {groupedFeeds.map(group => {
-                  const [hero, ...rest] = group.items;
-                  if (!hero) return null;
-                  return (
-                    <div key={group.category} className={styles.categoryCard}>
-                      <div className={styles.categoryHeader}>
-                      <span
-                        className={styles.categoryIcon}
-                        dangerouslySetInnerHTML={{ __html: categoryIcon(group.category) }}
-                        aria-hidden="true"
-                      />
-                        <div>
-                          <p className={styles.categoryLabel}>Category</p>
-                          <h3 className={styles.categoryTitle}>{group.category}</h3>
+            <div className={styles.contentGrid}>
+              <div className={styles.leftColumn}>
+                <h3 className={styles.sectionTitle}>Categories</h3>
+                <div className={styles.categoryStack}>
+                  {groupedFeeds.map(group => {
+                    const [hero, ...rest] = group.items;
+                    if (!hero) return null;
+                    return (
+                      <div key={group.category} className={styles.categoryCard}>
+                        <div className={styles.categoryHeader}>
+                          <span
+                            className={styles.categoryIcon}
+                            dangerouslySetInnerHTML={{ __html: categoryIcon(group.category) }}
+                            aria-hidden="true"
+                          />
+                          <div>
+                            <p className={styles.categoryLabel}>Category</p>
+                            <h3 className={styles.categoryTitle}>{group.category}</h3>
+                          </div>
+                        </div>
+                        <button
+                          className={styles.hero}
+                          onClick={() => handleNavigate(hero.id)}
+                          aria-label={`Open ${hero.title}`}
+                        >
+                          <div className={styles.heroImageWrapper}>
+                            <img
+                              src={
+                                hero.imageUrl ||
+                                'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
+                              }
+                              alt={hero.title}
+                              className={styles.heroImage}
+                            />
+                          </div>
+                          <div className={styles.heroContent}>
+                            <h4 className={styles.heroTitle}>{hero.title}</h4>
+                          </div>
+                        </button>
+                        <div className={styles.headlines}>
+                          {rest.map(item => (
+                            <button
+                              key={item.id}
+                              className={styles.headlineRow}
+                              onClick={() => handleNavigate(item.id)}
+                            >
+                              <span className={styles.headlineBullet}>•</span>
+                              <span className={styles.headlineText}>{item.title}</span>
+                            </button>
+                          ))}
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className={styles.centerColumn}>
+                <div className={styles.carousel}>
+                  <div className={styles.carouselHeader}>
+                    <h3 className={styles.sectionTitle}>Spotlight</h3>
+                    <div className={styles.carouselControls}>
                       <button
-                        className={styles.hero}
-                        onClick={() => handleNavigate(hero.id)}
-                        aria-label={`Open ${hero.title}`}
+                        className={styles.navButton}
+                        onClick={() =>
+                          setCarouselIndex(prev =>
+                            !carouselItems.length ? 0 : (prev - 1 + carouselItems.length) % carouselItems.length,
+                          )
+                        }
+                        aria-label="Previous"
                       >
-                        <div className={styles.heroImageWrapper}>
-                          <img
-                            src={
-                              hero.imageUrl ||
-                              'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
-                            }
-                            alt={hero.title}
-                            className={styles.heroImage}
-                          />
-                        </div>
-                        <div className={styles.heroContent}>
-                          <h4 className={styles.heroTitle}>{hero.title}</h4>
-                        </div>
+                        ‹
                       </button>
-                      <div className={styles.headlines}>
-                        {rest.map(item => (
-                          <button
-                            key={item.id}
-                            className={styles.headlineRow}
-                            onClick={() => handleNavigate(item.id)}
-                          >
-                            <span className={styles.headlineBullet}>•</span>
-                            <span className={styles.headlineText}>{item.title}</span>
-                          </button>
-                        ))}
+                      <button
+                        className={styles.navButton}
+                        onClick={() =>
+                          setCarouselIndex(prev =>
+                            !carouselItems.length ? 0 : (prev + 1) % carouselItems.length,
+                          )
+                        }
+                        aria-label="Next"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
+                  {carouselItems.length > 0 ? (
+                    <div className={styles.carouselCard}>
+                      <img
+                        src={
+                          carouselItems[carouselIndex].imageUrl ||
+                          'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
+                        }
+                        alt={carouselItems[carouselIndex].title}
+                        className={styles.carouselImage}
+                      />
+                      <div className={styles.carouselOverlay}>
+                        <p className={styles.carouselCategory}>{carouselItems[carouselIndex].categoryName}</p>
+                        <h2 className={styles.carouselTitle}>{carouselItems[carouselIndex].title}</h2>
+                        <button
+                          className={styles.carouselCta}
+                          onClick={() => handleNavigate(carouselItems[carouselIndex].id)}
+                        >
+                          Read pat
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
+                  ) : (
+                    <div className={styles.carouselEmpty}>No spotlight pats yet.</div>
+                  )}
+                </div>
               </div>
-              <button
-                className={`${styles.navButton} ${!canScrollRight ? styles.navButtonDisabled : ''}`}
-                onClick={() => scrollCarousel('right')}
-                aria-label="Scroll categories right"
-                disabled={!canScrollRight}
-              >
-                ›
-              </button>
+
+              <div className={styles.rightColumn}>
+                <div className={styles.sectionTitle}>Sponsored & Widgets</div>
+                <div className={styles.rightRailStack}>
+                  <AdsterraSlot variant="iframe300x250" />
+                  <AdsterraSlot variant="native" />
+                  {[...Array(8)].map((_, idx) => (
+                    <div key={idx} className={styles.widgetCard}>
+                      <p className={styles.widgetLabel}>Widget {idx + 1}</p>
+                      <p className={styles.widgetBody}>Reserve this slot for partners, games, plans, or polls.</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.forYou}>
+              <h3 className={styles.sectionTitle}>For You</h3>
+              {hasSession ? (
+                <div className={styles.forYouFeed}>
+                  {feeds.slice(0, 10).map(feed => (
+                    <article key={feed.id} className={styles.forYouCard} onClick={() => handleNavigate(feed.id)}>
+                      <div className={styles.forYouImageWrapper}>
+                        <img
+                          src={feed.imageUrl || 'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'}
+                          alt={feed.title}
+                          className={styles.forYouImage}
+                        />
+                      </div>
+                      <div className={styles.forYouContent}>
+                        <p className={styles.forYouCategory}>{feed.categoryName}</p>
+                        <h4 className={styles.forYouTitle}>{feed.title}</h4>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.forYouCTA}>
+                  <p>Sign in to see your personalized pats here.</p>
+                  <button className={styles.heroCta} onClick={() => setIsSignupOpen(true)}>
+                    Sign in to unlock
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}
-        </div>
-        <aside className={styles.rightRail} aria-label="Sponsored">
-          <AdsterraSlot variant="iframe300x250" />
-          <AdsterraSlot variant="native" />
-        </aside>
       </main>
+
       <Footer />
     </div>
   );

@@ -33,7 +33,7 @@ export default function AdsterraSlot({ variant, className }: Props) {
       };
       const script = document.createElement('script');
       script.type = 'text/javascript';
-      script.src = '//www.highperformanceformat.com/7ac921c83230b7bec27cd77e5976bdfa/invoke.js';
+      script.src = 'https://www.highperformanceformat.com/7ac921c83230b7bec27cd77e5976bdfa/invoke.js';
       script.async = true;
       containerRef.current.appendChild(script);
 
@@ -48,7 +48,7 @@ export default function AdsterraSlot({ variant, className }: Props) {
       const script = document.createElement('script');
       script.async = true;
       script.setAttribute('data-cfasync', 'false');
-      script.src = '//pl28102082.effectivegatecpm.com/e43b9924b35e5d713560143434db77a3/invoke.js';
+      script.src = 'https://pl28102082.effectivegatecpm.com/e43b9924b35e5d713560143434db77a3/invoke.js';
       containerRef.current.appendChild(script);
 
       return () => {
