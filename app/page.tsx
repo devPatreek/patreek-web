@@ -297,6 +297,36 @@ function LinksHomePage() {
                     <div className={styles.carouselEmpty}>No spotlight pats yet.</div>
                   )}
                 </div>
+
+                <div className={styles.forYou}>
+                  <h3 className={styles.sectionTitle}>For You</h3>
+                  {hasSession ? (
+                    <div className={styles.forYouFeed}>
+                      {feeds.slice(0, 10).map(feed => (
+                        <article key={feed.id} className={styles.forYouCard} onClick={() => handleNavigate(feed.id)}>
+                          <div className={styles.forYouImageWrapper}>
+                            <img
+                              src={feed.imageUrl || 'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'}
+                              alt={feed.title}
+                              className={styles.forYouImage}
+                            />
+                          </div>
+                          <div className={styles.forYouContent}>
+                            <p className={styles.forYouCategory}>{feed.categoryName}</p>
+                            <h4 className={styles.forYouTitle}>{feed.title}</h4>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className={styles.forYouCTA}>
+                      <p>Sign in to see your personalized pats here.</p>
+                      <button className={styles.heroCta} onClick={() => setIsSignupOpen(true)}>
+                        Sign in to unlock
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className={styles.rightColumn}>
@@ -314,37 +344,9 @@ function LinksHomePage() {
               </div>
             </div>
 
-            <div className={styles.forYou}>
-              <h3 className={styles.sectionTitle}>For You</h3>
-              {hasSession ? (
-                <div className={styles.forYouFeed}>
-                  {feeds.slice(0, 10).map(feed => (
-                    <article key={feed.id} className={styles.forYouCard} onClick={() => handleNavigate(feed.id)}>
-                      <div className={styles.forYouImageWrapper}>
-                        <img
-                          src={feed.imageUrl || 'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'}
-                          alt={feed.title}
-                          className={styles.forYouImage}
-                        />
-                      </div>
-                      <div className={styles.forYouContent}>
-                        <p className={styles.forYouCategory}>{feed.categoryName}</p>
-                        <h4 className={styles.forYouTitle}>{feed.title}</h4>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              ) : (
-                <div className={styles.forYouCTA}>
-                  <p>Sign in to see your personalized pats here.</p>
-                  <button className={styles.heroCta} onClick={() => setIsSignupOpen(true)}>
-                    Sign in to unlock
-                  </button>
-                </div>
-              )}
-            </div>
           </>
         )}
+
       </main>
 
       <Footer />
