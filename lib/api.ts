@@ -65,6 +65,12 @@ export interface SignupResponse {
   userId?: string;
 }
 
+export interface SigninPayload {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
 export async function getPublicFeeds(): Promise<Feed[]> {
   try {
     const controller = new AbortController();
@@ -278,6 +284,38 @@ export async function getCategories(): Promise<Category[]> {
   }
 }
 
+export async function getPublicCategories(): Promise<Category[]> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(`${API_BASE_URL}/api/v1/categories/public`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch public categories:', response.status);
+      return [];
+    }
+    const data = await response.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.content)) return data.content;
+    if (Array.isArray(data?.categories)) return data.categories;
+    return [];
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.warn('[API] Public categories request timed out');
+    } else {
+      console.warn('[API] Error fetching public categories', error);
+    }
+    return [];
+  }
+}
+
 export async function registerUser(payload: SignupPayload): Promise<SignupResponse> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
@@ -303,6 +341,34 @@ export async function registerUser(payload: SignupPayload): Promise<SignupRespon
       throw new Error('Signup timed out, please try again');
     }
     throw error instanceof Error ? error : new Error('Unknown signup error');
+  }
+}
+
+export async function loginUser(payload: SigninPayload): Promise<SignupResponse> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/signin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Unable to sign in right now');
+    }
+    return response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Sign in timed out, please try again');
+    }
+    throw error instanceof Error ? error : new Error('Unknown sign in error');
   }
 }
 

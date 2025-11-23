@@ -171,9 +171,25 @@ function LinksHomePage() {
         )}
 
         <div className={styles.topRight}>
-          <button className={styles.coinButton}>Coin</button>
+          <button className={styles.coinButton} aria-label="Patreek Coin">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 20V5h5a4 4 0 010 8H7" />
+              <path d="M6 9h12M6 13h12" />
+            </svg>
+          </button>
           <button className={styles.mailButton}>Store</button>
-          <button className={styles.signInButton}>Sign in</button>
+          <button className={styles.signInButton} onClick={() => router.push('/registration')}>
+            Sign up
+          </button>
         </div>
       </header>
 
