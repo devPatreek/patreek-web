@@ -10,12 +10,39 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  gap: 16px;
+  padding: 12px 18px;
   border-bottom: 1px solid #e6e6e6;
   background: #ffffff;
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.getApp {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #f8f8ff;
+  border: 1px solid #e6e6f0;
+  padding: 8px 12px;
+  border-radius: 14px;
+}
+
+.getAppText {
+  font-weight: 700;
+  color: #2b2b2b;
+}
+
+.storeIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .logoLink {
@@ -25,12 +52,12 @@
 }
 
 .logo {
-  height: 44px;
+  height: 36px;
   width: auto;
   object-fit: contain;
 }
 
-.headerActions {
+.headerNav {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -39,15 +66,15 @@
 .headerLink {
   text-decoration: none;
   font-weight: 700;
-  color: #2b2b2b;
-  padding: 8px 12px;
-  border-radius: 10px;
+  color: #6a29c5;
+  padding: 6px 8px;
+  border-radius: 8px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .headerLink:hover {
-  background: #f1f4ff;
-  color: #0066cc;
+  background: #f6f0ff;
+  color: #4d1a90;
 }
 
 .main {
@@ -347,4 +374,22 @@
   .card {
     padding: 16px;
   }
+}
+
+.adSection {
+  padding: 10px 20px 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.adInner {
+  width: 100%;
+  max-width: 1100px;
+}
+
+.adCard {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  min-height: 120px;
 }
