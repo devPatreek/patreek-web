@@ -332,8 +332,8 @@ function LinksHomePage() {
               <div className={styles.rightColumn}>
                 <div className={styles.sectionTitle}>Sponsored & Widgets</div>
                 <div className={styles.rightRailStack}>
-                  <AdsterraSlot variant="iframe300x250" />
-                  <AdsterraSlot variant="native" />
+                  <AdsterraSlot variant="iframe300x250" className={styles.widgetCard} />
+                  <AdsterraSlot variant="native" className={styles.widgetCard} />
                   {[...Array(8)].map((_, idx) => (
                     <div key={idx} className={styles.widgetCard}>
                       <p className={styles.widgetLabel}>Widget {idx + 1}</p>

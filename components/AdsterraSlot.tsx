@@ -57,18 +57,20 @@ export default function AdsterraSlot({ variant, className }: Props) {
     }
   }, [variant]);
 
+  const minHeight = variant === 'iframe300x250' ? 250 : 0;
+
   return (
     <div
       className={className}
       style={{
-        width: variant === 'iframe300x250' ? 300 : '100%',
-        minHeight: variant === 'iframe300x250' ? 250 : 0,
+        width: '100%',
+        minHeight,
       }}
     >
       <div
         id={variant === 'native' ? 'container-e43b9924b35e5d713560143434db77a3' : undefined}
         ref={containerRef}
-        style={{ width: '100%', minHeight: variant === 'iframe300x250' ? 250 : 0 }}
+        style={{ width: '100%', minHeight }}
       />
     </div>
   );

@@ -485,7 +485,8 @@
 
 .carouselCard {
   position: relative;
-  min-height: 260px;
+  min-height: 320px;
+  height: 320px;
 }
 
 .carouselImage {
