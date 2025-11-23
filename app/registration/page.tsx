@@ -417,7 +417,7 @@ export default function RegistrationPage() {
               <form className={styles.form} onSubmit={handleSigninSubmit}>
                 <div className={styles.fieldGroup}>
                   <label className={styles.label} htmlFor="signin-email">
-                    Username, email, or mobile
+                    Email
                   </label>
                   <input
                     id="signin-email"
