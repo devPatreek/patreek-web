@@ -130,14 +130,49 @@ function LinksHomePage() {
             priority
           />
           <nav className={styles.navLinks} aria-label="Primary">
-            <a className={styles.navLink} href="#">News</a>
-            <a className={styles.navLink} href="#">Finance</a>
-            <a className={styles.navLink} href="#">Sports</a>
-            <a className={styles.navLink} href="#">More</a>
+            {['News', 'Finance', 'Sports', 'More'].map(link => (
+              <button key={link} className={styles.navButtonLink}>
+                {link}
+              </button>
+            ))}
           </nav>
         </div>
+
+        {!hasSession && (
+          <div className={styles.getApp}>
+            <span className={styles.getAppText}>Get the App</span>
+            <a
+              href="https://apps.apple.com/us/app/patreek/id6547858283"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.storeIcon}
+              aria-label="Download on the App Store"
+            >
+              <Image
+                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3729b558347b9bf210a5a_Store%3DApp%20Store%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
+                alt="App Store"
+                width={90}
+                height={28}
+              />
+            </a>
+            <a
+              href=""
+              className={styles.storeIcon}
+              aria-label="Get it on Google Play (coming soon)"
+            >
+              <Image
+                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
+                alt="Google Play"
+                width={90}
+                height={28}
+              />
+            </a>
+          </div>
+        )}
+
         <div className={styles.topRight}>
-          <button className={styles.mailButton}>Mail</button>
+          <button className={styles.coinButton}>Coin</button>
+          <button className={styles.mailButton}>Store</button>
           <button className={styles.signInButton}>Sign in</button>
         </div>
       </header>
@@ -332,14 +367,26 @@ function LinksHomePage() {
               <div className={styles.rightColumn}>
                 <div className={styles.sectionTitle}>Sponsored & Widgets</div>
                 <div className={styles.rightRailStack}>
-                  <AdsterraSlot variant="iframe300x250" className={styles.widgetCard} />
-                  <AdsterraSlot variant="native" className={styles.widgetCard} />
-                  {[...Array(8)].map((_, idx) => (
-                    <div key={idx} className={styles.widgetCard}>
-                      <p className={styles.widgetLabel}>Widget {idx + 1}</p>
-                      <p className={styles.widgetBody}>Reserve this slot for partners, games, plans, or polls.</p>
-                    </div>
-                  ))}
+                  {[...Array(8)].flatMap((_, idx) => {
+                    const elements = [
+                      <div key={`widget-${idx}`} className={styles.widgetCard}>
+                        <p className={styles.widgetLabel}>Widget {idx + 1}</p>
+                        <p className={styles.widgetBody}>Reserve this slot for partners, games, plans, or polls.</p>
+                      </div>,
+                    ];
+
+                    if ((idx + 1) % 2 === 0) {
+                      elements.push(
+                        <AdsterraSlot
+                          key={`ad-${idx}`}
+                          variant="iframe300x250"
+                          className={styles.widgetCard}
+                        />,
+                      );
+                    }
+
+                    return elements;
+                  })}
                 </div>
               </div>
             </div>
