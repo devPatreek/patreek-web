@@ -11,6 +11,7 @@ import {
   getCategories,
   getPublicCategories,
   getSocialAuthUrl,
+  checkUsernameAvailability,
   loginUser,
   registerUser,
   SigninPayload,
@@ -29,6 +30,7 @@ export default function RegistrationPage() {
 
   // Sign up form state
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
@@ -43,6 +45,8 @@ export default function RegistrationPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [signinStatus, setSigninStatus] = useState<Status>({ type: 'idle' });
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<Status>({ type: 'idle' });
+  const [usernameMessage, setUsernameMessage] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -109,6 +113,24 @@ export default function RegistrationPage() {
     );
   }, [categories, selectedCategories, canSelectMore, isLoadingCategories]);
 
+  const handleUsernameBlur = async () => {
+    if (!username.trim()) {
+      setUsernameStatus({ type: 'idle' });
+      setUsernameMessage('');
+      return;
+    }
+    setUsernameStatus({ type: 'idle' });
+    try {
+      const result = await checkUsernameAvailability(username.trim());
+      setUsernameStatus({ type: 'success', message: result.message });
+      setUsernameMessage(result.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Username unavailable';
+      setUsernameStatus({ type: 'error', message });
+      setUsernameMessage(message);
+    }
+  };
+
   const handleSocial = (provider: 'google' | 'apple') => {
     if (typeof window === 'undefined') return;
     const redirectUri = window.location.origin + '/';
@@ -118,8 +140,8 @@ export default function RegistrationPage() {
 
   const handleSignupSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      setSignupStatus({ type: 'error', message: 'Please fill in name, email, and password.' });
+    if (!name.trim() || !username.trim() || !email.trim() || !password.trim()) {
+      setSignupStatus({ type: 'error', message: 'Please fill in name, username, email, and password.' });
       return;
     }
     if (selectedCategories.length === 0) {
@@ -130,6 +152,7 @@ export default function RegistrationPage() {
     setSignupStatus({ type: 'idle' });
     const payload: SignupPayload = {
       name: name.trim(),
+      username: username.trim(),
       email: email.trim(),
       password,
       categoryIds: selectedCategories,
@@ -225,7 +248,7 @@ export default function RegistrationPage() {
         </div>
 
         <nav className={styles.headerNav} aria-label="Registration navigation">
-          <Link className={styles.headerLink} href="/help">
+          <Link className={styles.headerLink} href="/contact">
             Help
           </Link>
           <Link className={styles.headerLink} href="/terms">
@@ -272,19 +295,48 @@ export default function RegistrationPage() {
                 }`}
                 onClick={() => setActiveForm('signin')}
                 role="tab"
-                aria-selected={activeForm === 'signin'}
-              >
-                Sign in
-              </button>
-            </div>
+              aria-selected={activeForm === 'signin'}
+            >
+              Sign in
+            </button>
+          </div>
 
-            {activeForm === 'signup' ? (
-              <form className={styles.form} onSubmit={handleSignupSubmit}>
-                <div className={styles.fieldGroup}>
-                  <label className={styles.label} htmlFor="name">
-                    Full name
-                  </label>
-                  <input
+          {activeForm === 'signup' ? (
+            <form className={styles.form} onSubmit={handleSignupSubmit}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label} htmlFor="username">
+                  Username
+                </label>
+                <input
+                  id="username"
+                  className={styles.input}
+                  value={username}
+                  onChange={e => {
+                    setUsername(e.target.value);
+                    setUsernameStatus({ type: 'idle' });
+                    setUsernameMessage('');
+                  }}
+                  onBlur={handleUsernameBlur}
+                  placeholder="yourhandle"
+                  autoComplete="username"
+                  required
+                />
+                {usernameStatus.type === 'success' && (
+                  <div className={`${styles.statusInline} ${styles.successInline}`}>
+                    ✓ {usernameMessage || 'Username is available'}
+                  </div>
+                )}
+                {usernameStatus.type === 'error' && (
+                  <div className={`${styles.statusInline} ${styles.errorInline}`}>
+                    {usernameMessage || 'Username is taken or invalid'}
+                  </div>
+                )}
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.label} htmlFor="name">
+                  Full name
+                </label>
+                <input
                     id="name"
                     className={styles.input}
                     value={name}

@@ -192,6 +192,21 @@
   gap: 6px;
 }
 
+.statusInline {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.successInline {
+  color: #0f6b45;
+  font-weight: 700;
+}
+
+.errorInline {
+  color: #a4001d;
+  font-weight: 700;
+}
+
 .label {
   font-weight: 700;
   font-size: 14px;

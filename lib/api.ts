@@ -54,6 +54,7 @@ export interface CommentsResponse {
 
 export interface SignupPayload {
   name: string;
+  username?: string;
   email: string;
   password: string;
   categoryIds: number[];
@@ -69,6 +70,11 @@ export interface SigninPayload {
   email: string;
   password: string;
   rememberMe?: boolean;
+}
+
+export interface UsernameAvailability {
+  available: boolean;
+  message: string;
 }
 
 export async function getPublicFeeds(): Promise<Feed[]> {
@@ -369,6 +375,41 @@ export async function loginUser(payload: SigninPayload): Promise<SignupResponse>
       throw new Error('Sign in timed out, please try again');
     }
     throw error instanceof Error ? error : new Error('Unknown sign in error');
+  }
+}
+
+export async function checkUsernameAvailability(username: string): Promise<UsernameAvailability> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/user/username/${encodeURIComponent(username)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        available: true,
+        message: data?.data?.message || 'Username is available',
+      };
+    }
+    const text = await response.text();
+    const message = text || 'Username is not available';
+    if (response.status === 403) {
+      return { available: false, message };
+    }
+    if (response.status === 400) {
+      return { available: false, message: 'Invalid username format' };
+    }
+    throw new Error(message);
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error instanceof Error ? error : new Error('Unable to check username');
   }
 }
 
