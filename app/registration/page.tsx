@@ -52,16 +52,18 @@ export default function RegistrationPage() {
     let mounted = true;
     async function loadCategories() {
       setIsLoadingCategories(true);
-      const data = await getPublicCategories();
-      if (mounted) {
-        setCategories(data && data.length ? data : []);
-        setIsLoadingCategories(false);
-      }
-      if (mounted && (!data || data.length === 0)) {
-        // Fallback to authenticated endpoint if public one returns nothing
-        const fallback = await getCategories();
-        setCategories(fallback || []);
-        setIsLoadingCategories(false);
+      try {
+        const data = await getPublicCategories();
+        if (mounted) {
+          setCategories(data && data.length ? data : []);
+          setIsLoadingCategories(false);
+        }
+      } catch (error) {
+        console.error('[Registration] Failed to load public categories:', error);
+        if (mounted) {
+          setCategories([]);
+          setIsLoadingCategories(false);
+        }
       }
     }
     loadCategories();
