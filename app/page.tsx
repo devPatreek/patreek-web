@@ -228,70 +228,72 @@ function LinksHomePage() {
               Retry
             </button>
           </div>
-        ) : groupedFeeds.length === 0 ? (
-          <div className={styles.emptyState}>
-            <p>No articles available at the moment.</p>
-            <p className={styles.registerPrompt}>
-              Register to get the latest updates from the topics you care about
-            </p>
-          </div>
         ) : (
           <>
             <div className={styles.contentGrid}>
               <div className={styles.leftColumn}>
                 <h3 className={styles.sectionTitle}>Categories</h3>
-                <div className={styles.categoryStack}>
-                  {groupedFeeds.map(group => {
-                    const [hero, ...rest] = group.items;
-                    if (!hero) return null;
-                    return (
-                      <div key={group.category} className={styles.categoryCard}>
-                        <div className={styles.categoryHeader}>
-                          <span
-                            className={styles.categoryIcon}
-                            dangerouslySetInnerHTML={{ __html: categoryIcon(group.category) }}
-                            aria-hidden="true"
-                          />
-                          <div>
-                            <p className={styles.categoryLabel}>Category</p>
-                            <h3 className={styles.categoryTitle}>{group.category}</h3>
-                          </div>
-                        </div>
-                        <button
-                          className={styles.hero}
-                          onClick={() => handleNavigate(hero.id)}
-                          aria-label={`Open ${hero.title}`}
-                        >
-                          <div className={styles.heroImageWrapper}>
-                            <img
-                              src={
-                                hero.imageUrl ||
-                                'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
-                              }
-                              alt={hero.title}
-                              className={styles.heroImage}
+                {groupedFeeds.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <p>No articles available at the moment.</p>
+                    <p className={styles.registerPrompt}>
+                      Register to get the latest updates from the topics you care about
+                    </p>
+                  </div>
+                ) : (
+                  <div className={styles.categoryStack}>
+                    {groupedFeeds.map(group => {
+                      const [hero, ...rest] = group.items;
+                      if (!hero) return null;
+                      return (
+                        <div key={group.category} className={styles.categoryCard}>
+                          <div className={styles.categoryHeader}>
+                            <span
+                              className={styles.categoryIcon}
+                              dangerouslySetInnerHTML={{ __html: categoryIcon(group.category) }}
+                              aria-hidden="true"
                             />
+                            <div>
+                              <p className={styles.categoryLabel}>Category</p>
+                              <h3 className={styles.categoryTitle}>{group.category}</h3>
+                            </div>
                           </div>
-                          <div className={styles.heroContent}>
-                            <h4 className={styles.heroTitle}>{hero.title}</h4>
+                          <button
+                            className={styles.hero}
+                            onClick={() => handleNavigate(hero.id)}
+                            aria-label={`Open ${hero.title}`}
+                          >
+                            <div className={styles.heroImageWrapper}>
+                              <img
+                                src={
+                                  hero.imageUrl ||
+                                  'https://insideskills.pl/wp-content/uploads/2024/01/placeholder-6.png'
+                                }
+                                alt={hero.title}
+                                className={styles.heroImage}
+                              />
+                            </div>
+                            <div className={styles.heroContent}>
+                              <h4 className={styles.heroTitle}>{hero.title}</h4>
+                            </div>
+                          </button>
+                          <div className={styles.headlines}>
+                            {rest.map(item => (
+                              <button
+                                key={item.id}
+                                className={styles.headlineRow}
+                                onClick={() => handleNavigate(item.id)}
+                              >
+                                <span className={styles.headlineBullet}>•</span>
+                                <span className={styles.headlineText}>{item.title}</span>
+                              </button>
+                            ))}
                           </div>
-                        </button>
-                        <div className={styles.headlines}>
-                          {rest.map(item => (
-                            <button
-                              key={item.id}
-                              className={styles.headlineRow}
-                              onClick={() => handleNavigate(item.id)}
-                            >
-                              <span className={styles.headlineBullet}>•</span>
-                              <span className={styles.headlineText}>{item.title}</span>
-                            </button>
-                          ))}
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               <div className={styles.centerColumn}>
@@ -395,7 +397,7 @@ function LinksHomePage() {
                       elements.push(
                         <AdsterraSlot
                           key={`ad-${idx}`}
-                          variant="iframe300x250"
+                          variant="native"
                           className={styles.widgetCard}
                         />,
                       );
