@@ -257,6 +257,44 @@
   gap: 8px;
 }
 
+.accordion {
+  display: grid;
+  gap: 10px;
+}
+
+.accordionItem {
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+}
+
+.accordionHeader {
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.accordionBody {
+  padding: 0 14px 14px;
+}
+
+.accordionTitle {
+  color: #2b2b2b;
+}
+
+.accordionChevron {
+  font-size: 14px;
+  color: #666;
+}
+
 .chip {
   border-radius: 12px;
   padding: 8px 10px;

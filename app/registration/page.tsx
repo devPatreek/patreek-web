@@ -41,6 +41,7 @@ export default function RegistrationPage() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [countryQuery, setCountryQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Set<number>>(new Set());
   const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
@@ -131,20 +132,34 @@ export default function RegistrationPage() {
 
   const canSelectMore = selectedCategories.length < 5;
 
-  // Flatten hierarchical categories (parent + children) into a single flat list
-  const flattenedCategories = useMemo(() => {
-    const flatten = (cats: Category[]): Category[] => {
-      const result: Category[] = [];
-      for (const cat of cats) {
-        result.push(cat);
-        if (cat.children && cat.children.length > 0) {
-          result.push(...flatten(cat.children));
-        }
-      }
-      return result;
-    };
-    return flatten(categories);
+  const parents = useMemo(
+    () => categories.filter(cat => !cat.parentId),
+    [categories],
+  );
+
+  const childrenByParent = useMemo(() => {
+    const map = new Map<number, Category[]>();
+    categories
+      .filter(cat => cat.parentId)
+      .forEach(child => {
+        const list = map.get(child.parentId!) || [];
+        list.push(child);
+        map.set(child.parentId!, list);
+    });
+    return map;
   }, [categories]);
+
+  const toggleParentExpand = (id: number) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const toggleCategory = (id: number) => {
     if (selectedCategories.includes(id)) {
@@ -173,38 +188,69 @@ export default function RegistrationPage() {
         </div>
       );
     }
-    if (!flattenedCategories.length) {
+    if (!parents.length) {
       return <div className={styles.muted}>No categories available. Please try again later.</div>;
     }
     return (
-      <div className={styles.categoryGrid}>
-        {flattenedCategories.map(category => {
-          const isSelected = selectedCategories.includes(category.id);
-          const disabled = !isSelected && !canSelectMore;
-          const isSubcategory = category.parentId != null;
+      <div className={styles.accordion}>
+        {parents.map(parent => {
+          const kids = childrenByParent.get(parent.id) || [];
+          const expanded = expandedCategories.has(parent.id);
           return (
-            <button
-              key={category.id}
-              type="button"
-              className={[
-                styles.chip,
-                isSelected ? styles.chipSelected : '',
-                disabled ? styles.chipDisabled : '',
-                isSubcategory ? styles.chipSubcategory : '',
-              ].join(' ')}
-              onClick={() => toggleCategory(category.id)}
-              disabled={disabled}
-              aria-pressed={isSelected}
-              title={isSubcategory ? `Subcategory of parent category` : undefined}
-            >
-              {isSubcategory && '└ '}
-              {category.name}
-            </button>
+            <div key={parent.id} className={styles.accordionItem}>
+              <button
+                type="button"
+                className={styles.accordionHeader}
+                onClick={() => toggleParentExpand(parent.id)}
+                aria-expanded={expanded}
+              >
+                <span className={styles.accordionTitle}>{parent.name}</span>
+                <span className={styles.accordionChevron}>{expanded ? '▴' : '▾'}</span>
+              </button>
+              {expanded && (
+                <div className={styles.accordionBody}>
+                  {kids.length ? (
+                    <div className={styles.categoryGrid}>
+                      {kids.map(child => {
+                        const isSelected = selectedCategories.includes(child.id);
+                        const disabled = !isSelected && !canSelectMore;
+                        return (
+                          <button
+                            key={child.id}
+                            type="button"
+                            className={[
+                              styles.chip,
+                              isSelected ? styles.chipSelected : '',
+                              disabled ? styles.chipDisabled : '',
+                            ].join(' ')}
+                            onClick={() => toggleCategory(child.id)}
+                            disabled={disabled}
+                            aria-pressed={isSelected}
+                          >
+                            {child.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className={styles.muted}>No subcategories available.</div>
+                  )}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
     );
-  }, [flattenedCategories, selectedCategories, canSelectMore, isLoadingCategories, categoriesError]);
+  }, [
+    parents,
+    childrenByParent,
+    selectedCategories,
+    canSelectMore,
+    isLoadingCategories,
+    categoriesError,
+    expandedCategories,
+  ]);
 
   const filteredCountries = useMemo(() => {
     if (!countryQuery.trim()) return countriesData as Country[];
