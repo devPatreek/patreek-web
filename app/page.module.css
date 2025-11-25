@@ -180,13 +180,14 @@
 
 .navButtonLink {
   border: 1px solid transparent;
-  padding: 8px 14px;
+  padding: 0 14px;
   border-radius: 14px;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
   box-sizing: border-box;
-  min-height: 36px;
+  height: 35px;
+  line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
