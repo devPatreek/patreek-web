@@ -19,6 +19,31 @@ import {
 } from '@/lib/api';
 import AdsterraSlot from '@/components/AdsterraSlot';
 
+type Country = { code: string; name: string };
+
+const COUNTRIES: Country[] = [
+  { code: 'US', name: 'United States' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'NG', name: 'Nigeria' },
+  { code: 'ZA', name: 'South Africa' },
+  { code: 'KE', name: 'Kenya' },
+  { code: 'GH', name: 'Ghana' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'IN', name: 'India' },
+  { code: 'SG', name: 'Singapore' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'CN', name: 'China' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'AE', name: 'United Arab Emirates' },
+];
+
 type Status =
   | { type: 'idle' }
   | { type: 'error'; message: string }
@@ -35,6 +60,8 @@ export default function RegistrationPage() {
   const [password, setPassword] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
+  const [countryQuery, setCountryQuery] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [signupStatus, setSignupStatus] = useState<Status>({ type: 'idle' });
   const [isSigningUp, setIsSigningUp] = useState(false);
@@ -115,6 +142,14 @@ export default function RegistrationPage() {
     );
   }, [categories, selectedCategories, canSelectMore, isLoadingCategories]);
 
+  const filteredCountries = useMemo(() => {
+    if (!countryQuery.trim()) return COUNTRIES;
+    return COUNTRIES.filter(country =>
+      country.name.toLowerCase().includes(countryQuery.trim().toLowerCase()) ||
+      country.code.toLowerCase().includes(countryQuery.trim().toLowerCase()),
+    );
+  }, [countryQuery]);
+
   const handleUsernameBlur = async () => {
     if (!username.trim()) {
       setUsernameStatus({ type: 'idle' });
@@ -146,6 +181,10 @@ export default function RegistrationPage() {
       setSignupStatus({ type: 'error', message: 'Please fill in name, username, email, and password.' });
       return;
     }
+    if (!selectedCountry) {
+      setSignupStatus({ type: 'error', message: 'Please select your country.' });
+      return;
+    }
     if (selectedCategories.length === 0) {
       setSignupStatus({ type: 'error', message: 'Pick at least one category (up to 5).' });
       return;
@@ -158,15 +197,14 @@ export default function RegistrationPage() {
       email: email.trim(),
       password,
       categoryIds: selectedCategories,
+      countryCode: selectedCountry,
     };
     try {
-      const response = await registerUser(payload);
-      const sessionValue = response.token || 'signed_up';
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('patreek_session', sessionValue);
-      }
-      setSignupStatus({ type: 'success', message: 'Account created! You are all set.' });
-      router.push('/');
+      await registerUser(payload);
+      setSignupStatus({
+        type: 'success',
+        message: 'Account created! Please check your email to verify and then sign in.',
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unable to sign up right now. Please try again.';
@@ -297,10 +335,10 @@ export default function RegistrationPage() {
                 }`}
                 onClick={() => setActiveForm('signin')}
                 role="tab"
-              aria-selected={activeForm === 'signin'}
-            >
-              Sign in
-            </button>
+                aria-selected={activeForm === 'signin'}
+              >
+                Sign in
+              </button>
           </div>
 
           {activeForm === 'signup' ? (
@@ -364,19 +402,58 @@ export default function RegistrationPage() {
                 </div>
 
                 <div className={styles.fieldGroup}>
-                  <label className={styles.label} htmlFor="password">
-                    Password
-                  </label>
-                  <input
-                    id="password"
+                <label className={styles.label} htmlFor="password">
+                  Password
+                </label>
+                <input
+                  id="password"
                     className={styles.input}
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    autoComplete="new-password"
-                  />
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <div className={styles.labelRow}>
+                  <label className={styles.label} htmlFor="country">
+                    Country
+                  </label>
+                  {selectedCountry && (
+                    <span className={styles.countryPill}>{selectedCountry}</span>
+                  )}
                 </div>
+                <input
+                  id="country"
+                  className={styles.input}
+                  value={countryQuery}
+                  onChange={e => setCountryQuery(e.target.value)}
+                  placeholder="Search country"
+                  autoComplete="off"
+                />
+                <div className={styles.countryList}>
+                  {filteredCountries.map(country => (
+                    <button
+                      key={country.code}
+                      type="button"
+                      className={`${styles.countryItem} ${
+                        selectedCountry === country.code ? styles.countryItemSelected : ''
+                      }`}
+                      onClick={() => setSelectedCountry(country.code)}
+                    >
+                      <span className={styles.countryName}>{country.name}</span>
+                      <span className={styles.countryCode}>{country.code}</span>
+                    </button>
+                  ))}
+                </div>
+                {!selectedCountry && (
+                  <div className={`${styles.statusInline} ${styles.errorInline}`}>
+                    Select your country to continue.
+                  </div>
+                )}
+              </div>
 
                 <div className={styles.fieldGroup}>
                   <div className={styles.labelRow}>
@@ -402,15 +479,53 @@ export default function RegistrationPage() {
                       type="button"
                       className={styles.social}
                       onClick={() => handleSocial('google')}
+                    aria-label="Continue with Google"
                     >
-                      Continue with Google
+                      <svg
+                        className={styles.socialIcon}
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 488 512"
+                        role="img"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill="#EA4335"
+                          d="M488 261.8c0-17.4-1.6-34.1-4.6-50.4H249v95.4h135.5c-5.9 32-23.5 59.1-50.1 77.3v64.3h80.9c47.3-43.6 74.7-107.9 74.7-186.6z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M249 492c67.6 0 124.3-22.4 165.7-60.9l-80.9-64.3c-22.6 15.2-51.5 24.2-84.8 24.2-65 0-120.1-43.9-139.8-103.1H25.9v64.8C67.2 438.4 151.7 492 249 492z"
+                        />
+                        <path
+                          fill="#4A90E2"
+                          d="M109.2 287.9c-4.9-15.2-7.7-31.4-7.7-48s2.8-32.8 7.7-48.1v-64.8H25.9C9.4 160.9 0 202.6 0 247.9s9.4 87 25.9 120.9l83.3-64.9z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M249 141.8c35.7 0 67.6 12.3 92.7 36.2l69.5-69.5C373.3 60.3 316.6 36 249 36c-97.3 0-181.8 53.6-223.1 131.9l83.3 64.9C128.9 185.7 184 141.8 249 141.8z"
+                        />
+                      </svg>
+                      <span className={styles.srOnly}>Continue with Google</span>
                     </button>
                     <button
                       type="button"
                       className={styles.social}
                       onClick={() => handleSocial('apple')}
+                    aria-label="Continue with Apple"
                     >
-                      Continue with Apple
+                      <svg
+                        className={styles.socialIcon}
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 448 512"
+                        role="img"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M350.14 129.15c-22.01 26.18-52.8 41.47-84.43 38.64-4.08-32.69 10.71-67.43 30.33-88.82 22.01-24.89 57.6-42.32 86.6-43.03 3.84 31.77-8.98 66.04-32.5 93.21zm-47.45 62.03c-47.57-.28-88.24 27.63-110.88 27.63-23.63 0-55.67-26.54-92.06-25.85-47.47.74-91.21 27.57-115.15 70.09-49.06 85.1-12.65 211.14 35.23 280.5 23.36 33.75 51.44 71.74 88.25 70.04 35.29-1.43 48.65-22.79 91.31-22.79 42.67 0 54.89 22.79 91.38 22.06 37.91-.59 61.73-34.44 84.98-68.2 26.67-38.97 37.63-76.68 37.99-78.7-.82-.36-72.76-27.94-73.3-110.95-.59-69.24 56.17-101.58 58.72-102.94-32.07-47.1-81.79-52.33-99.47-53.79z"
+                        />
+                      </svg>
+                      <span className={styles.srOnly}>Continue with Apple</span>
                     </button>
                   </div>
                 </div>
@@ -477,8 +592,33 @@ export default function RegistrationPage() {
                       type="button"
                       className={styles.social}
                       onClick={() => handleSocial('google')}
+                      aria-label="Sign in with Google"
                     >
-                      Sign in with Google
+                      <svg
+                        className={styles.socialIcon}
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 488 512"
+                        role="img"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fill="#EA4335"
+                          d="M488 261.8c0-17.4-1.6-34.1-4.6-50.4H249v95.4h135.5c-5.9 32-23.5 59.1-50.1 77.3v64.3h80.9c47.3-43.6 74.7-107.9 74.7-186.6z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M249 492c67.6 0 124.3-22.4 165.7-60.9l-80.9-64.3c-22.6 15.2-51.5 24.2-84.8 24.2-65 0-120.1-43.9-139.8-103.1H25.9v64.8C67.2 438.4 151.7 492 249 492z"
+                        />
+                        <path
+                          fill="#4A90E2"
+                          d="M109.2 287.9c-4.9-15.2-7.7-31.4-7.7-48s2.8-32.8 7.7-48.1v-64.8H25.9C9.4 160.9 0 202.6 0 247.9s9.4 87 25.9 120.9l83.3-64.9z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M249 141.8c35.7 0 67.6 12.3 92.7 36.2l69.5-69.5C373.3 60.3 316.6 36 249 36c-97.3 0-181.8 53.6-223.1 131.9l83.3 64.9C128.9 185.7 184 141.8 249 141.8z"
+                        />
+                      </svg>
+                      <span className={styles.srOnly}>Sign in with Google</span>
                     </button>
                   </div>
                   <div className={styles.switchRow}>

@@ -58,6 +58,7 @@ export interface SignupPayload {
   email: string;
   password: string;
   categoryIds: number[];
+  countryCode?: string;
 }
 
 export interface SignupResponse {

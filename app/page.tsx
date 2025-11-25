@@ -385,26 +385,29 @@ function LinksHomePage() {
               <div className={styles.rightColumn}>
                 <div className={styles.sectionTitle}>Sponsored & Widgets</div>
                 <div className={styles.rightRailStack}>
-                  {[...Array(8)].flatMap((_, idx) => {
-                    const elements = [
-                      <div key={`widget-${idx}`} className={styles.widgetCard}>
-                        <p className={styles.widgetLabel}>Widget {idx + 1}</p>
-                        <p className={styles.widgetBody}>Reserve this slot for partners, games, plans, or polls.</p>
-                      </div>,
-                    ];
-
-                    if ((idx + 1) % 2 === 0) {
-                      elements.push(
-                        <AdsterraSlot
-                          key={`ad-${idx}`}
-                          variant="native"
-                          className={styles.widgetCard}
-                        />,
-                      );
-                    }
-
-                    return elements;
-                  })}
+                  {[0, 1].map(adIdx => (
+                    <AdsterraSlot
+                      key={`ad-top-${adIdx}`}
+                      variant="native"
+                      className={styles.widgetCard}
+                    />
+                  ))}
+                  {[...Array(3)].map((_, idx) => (
+                    <div key={`widget-${idx}`} className={styles.widgetCard}>
+                      <p className={styles.widgetLabel}>Widget {idx + 1}</p>
+                      <p className={styles.widgetBody}>Reserve this slot for partners, games, plans, or polls.</p>
+                    </div>
+                  ))}
+                  <AdsterraSlot
+                    key="ad-bottom-0"
+                    variant="native"
+                    className={styles.widgetCard}
+                  />
+                  <AdsterraSlot
+                    key="ad-bottom-1"
+                    variant="native"
+                    className={styles.widgetCard}
+                  />
                 </div>
               </div>
             </div>
