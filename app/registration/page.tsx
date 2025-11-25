@@ -132,22 +132,40 @@ export default function RegistrationPage() {
 
   const canSelectMore = selectedCategories.length < 5;
 
-  const parents = useMemo(
-    () => categories.filter(cat => !cat.parentId),
-    [categories],
-  );
+  const parents = useMemo(() => categories.filter(cat => !cat.parentId), [categories]);
 
   const childrenByParent = useMemo(() => {
     const map = new Map<number, Category[]>();
+
+    const walkChildren = (parentId: number, kids?: Category[]) => {
+      if (!kids || kids.length === 0) return;
+      const existing = map.get(parentId) || [];
+      existing.push(...kids);
+      map.set(parentId, existing);
+      kids.forEach(child => {
+        if (child.children && child.children.length) {
+          walkChildren(child.id, child.children);
+        }
+      });
+    };
+
+    parents.forEach(parent => {
+      walkChildren(parent.id, parent.children);
+    });
+
+    // Also include any categories returned flat with parentId set (defensive)
     categories
       .filter(cat => cat.parentId)
       .forEach(child => {
         const list = map.get(child.parentId!) || [];
-        list.push(child);
-        map.set(child.parentId!, list);
-    });
+        if (!list.find(c => c.id === child.id)) {
+          list.push(child);
+          map.set(child.parentId!, list);
+        }
+      });
+
     return map;
-  }, [categories]);
+  }, [categories, parents]);
 
   const toggleParentExpand = (id: number) => {
     setExpandedCategories(prev => {
