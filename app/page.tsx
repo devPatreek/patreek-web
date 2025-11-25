@@ -129,13 +129,6 @@ function LinksHomePage() {
             className={styles.logo}
             priority
           />
-          <nav className={styles.navLinks} aria-label="Primary">
-            {['News', 'Finance', 'Sports', 'More'].map(link => (
-              <button key={link} className={styles.navButtonLink}>
-                {link}
-              </button>
-            ))}
-          </nav>
         </div>
 
         {!hasSession && (
@@ -171,25 +164,34 @@ function LinksHomePage() {
         )}
 
         <div className={styles.topRight}>
-          <button className={styles.coinButton} aria-label="Patreek Coin">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M7 20V5h5a4 4 0 010 8H7" />
-              <path d="M6 9h12M6 13h12" />
-            </svg>
-          </button>
-          <button className={styles.mailButton}>Store</button>
-          <button className={styles.signInButton} onClick={() => router.push('/registration')}>
-            Sign up
-          </button>
+          <nav className={styles.navLinks} aria-label="Primary">
+            <button className={styles.navButtonLink}>Coins</button>
+            <button className={styles.navButtonLink}>Store</button>
+            <button className={styles.navButtonLink}>Videos</button>
+            <button className={styles.navButtonLink}>Podcasts</button>
+            <button className={styles.navButtonLink}>Opinion</button>
+          </nav>
+          {hasSession ? (
+            <button className={styles.profileButton} aria-label="User Profile" onClick={() => router.push('/profile')}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </button>
+          ) : (
+            <button className={styles.signInButton} onClick={() => router.push('/registration')}>
+              Sign up
+            </button>
+          )}
         </div>
       </header>
 

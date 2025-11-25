@@ -267,6 +267,32 @@
   cursor: pointer;
 }
 
+.profileButton {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid #dcdcdc;
+  background: #ffffff;
+  color: #2b2b2b;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.profileButton:hover {
+  background: #f7f7f7;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.profileButton svg {
+  width: 20px;
+  height: 20px;
+}
+
 .heroAd {
   margin: 20px auto;
   max-width: 1280px;

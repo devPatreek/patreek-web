@@ -18,31 +18,9 @@ import {
   SignupPayload,
 } from '@/lib/api';
 import AdsterraSlot from '@/components/AdsterraSlot';
+import countriesData from '@/data/countries.json';
 
 type Country = { code: string; name: string };
-
-const COUNTRIES: Country[] = [
-  { code: 'US', name: 'United States' },
-  { code: 'GB', name: 'United Kingdom' },
-  { code: 'CA', name: 'Canada' },
-  { code: 'AU', name: 'Australia' },
-  { code: 'NG', name: 'Nigeria' },
-  { code: 'ZA', name: 'South Africa' },
-  { code: 'KE', name: 'Kenya' },
-  { code: 'GH', name: 'Ghana' },
-  { code: 'DE', name: 'Germany' },
-  { code: 'FR', name: 'France' },
-  { code: 'ES', name: 'Spain' },
-  { code: 'IT', name: 'Italy' },
-  { code: 'NL', name: 'Netherlands' },
-  { code: 'IN', name: 'India' },
-  { code: 'SG', name: 'Singapore' },
-  { code: 'JP', name: 'Japan' },
-  { code: 'CN', name: 'China' },
-  { code: 'BR', name: 'Brazil' },
-  { code: 'MX', name: 'Mexico' },
-  { code: 'AE', name: 'United Arab Emirates' },
-];
 
 type Status =
   | { type: 'idle' }
@@ -143,8 +121,8 @@ export default function RegistrationPage() {
   }, [categories, selectedCategories, canSelectMore, isLoadingCategories]);
 
   const filteredCountries = useMemo(() => {
-    if (!countryQuery.trim()) return COUNTRIES;
-    return COUNTRIES.filter(country =>
+    if (!countryQuery.trim()) return countriesData as Country[];
+    return (countriesData as Country[]).filter(country =>
       country.name.toLowerCase().includes(countryQuery.trim().toLowerCase()) ||
       country.code.toLowerCase().includes(countryQuery.trim().toLowerCase()),
     );
