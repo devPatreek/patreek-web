@@ -476,7 +476,7 @@ export async function checkUsernameAvailability(username: string): Promise<Usern
     if (response.status === 400) {
       return { available: false, message: 'Invalid username format' };
     }
-    throw new Error(message);
+    return { available: false, message };
   } catch (error) {
     clearTimeout(timeoutId);
     throw error instanceof Error ? error : new Error('Unable to check username');

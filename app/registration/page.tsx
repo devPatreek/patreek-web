@@ -37,6 +37,9 @@ export default function RegistrationPage() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [countryQuery, setCountryQuery] = useState('');
@@ -287,8 +290,13 @@ export default function RegistrationPage() {
     setUsernameStatus({ type: 'idle' });
     try {
       const result = await checkUsernameAvailability(username.trim());
-      setUsernameStatus({ type: 'success', message: result.message });
-      setUsernameMessage(result.message);
+      if (result.available) {
+        setUsernameStatus({ type: 'success', message: result.message || 'Username is available' });
+        setUsernameMessage(result.message || 'Username is available');
+      } else {
+        setUsernameStatus({ type: 'error', message: result.message || 'Username is not available' });
+        setUsernameMessage(result.message || 'Username is not available');
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Username unavailable';
       setUsernameStatus({ type: 'error', message });
@@ -307,6 +315,10 @@ export default function RegistrationPage() {
     event.preventDefault();
     if (!name.trim() || !username.trim() || !email.trim() || !password.trim()) {
       setSignupStatus({ type: 'error', message: 'Please fill in name, username, email, and password.' });
+      return;
+    }
+    if (password !== confirmPassword) {
+      setSignupStatus({ type: 'error', message: 'Passwords do not match.' });
       return;
     }
     if (!selectedCountry) {
@@ -491,7 +503,7 @@ export default function RegistrationPage() {
                 />
                 {usernameStatus.type === 'success' && (
                   <div className={`${styles.statusInline} ${styles.successInline}`}>
-                    ✓ {usernameMessage || 'Username is available'}
+                    {usernameMessage || 'Username is available'}
                   </div>
                 )}
                 {usernameStatus.type === 'error' && (
@@ -530,19 +542,59 @@ export default function RegistrationPage() {
                 </div>
 
                 <div className={styles.fieldGroup}>
-                <label className={styles.label} htmlFor="password">
-                  Password
-                </label>
-                <input
-                  id="password"
-                    className={styles.input}
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                  autoComplete="new-password"
-                />
-              </div>
+                  <label className={styles.label} htmlFor="password">
+                    Password
+                  </label>
+                  <div className={styles.inputWithToggle}>
+                    <input
+                      id="password"
+                      className={styles.input}
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="new-password"
+                    />
+                    <button
+                      type="button"
+                      className={styles.eyeButton}
+                      onClick={() => setShowPassword(prev => !prev)}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className={styles.fieldGroup}>
+                  <label className={styles.label} htmlFor="confirm-password">
+                    Confirm password
+                  </label>
+                  <div className={styles.inputWithToggle}>
+                    <input
+                      id="confirm-password"
+                      className={styles.input}
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      autoComplete="off"
+                    />
+                    <button
+                      type="button"
+                      className={styles.eyeButton}
+                      onClick={() => setShowConfirmPassword(prev => !prev)}
+                      aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                    >
+                      {showConfirmPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  {confirmPassword && confirmPassword !== password && (
+                    <div className={`${styles.statusInline} ${styles.errorInline}`}>
+                      Passwords must match.
+                    </div>
+                  )}
+                </div>
 
               <div className={styles.fieldGroup} ref={countryDropdownRef}>
                 <div className={styles.labelRow}>

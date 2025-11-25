@@ -245,6 +245,22 @@
   transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
+.inputWithToggle {
+  position: relative;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #888;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .input:focus {
   outline: none;
   border-color: #0096dd;
