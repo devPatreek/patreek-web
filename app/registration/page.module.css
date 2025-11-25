@@ -334,18 +334,18 @@
 }
 
 .countryList {
-  position: absolute;
-  z-index: 100;
+  position: relative;
+  z-index: 1;
   max-height: 180px;
-  overflow: auto;
+  overflow-y: auto;
   border: 1px solid #e6e6e6;
   border-radius: 12px;
   padding: 6px;
   background: #ffffff;
   display: grid;
   gap: 6px;
-  margin-top: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   width: 100%;
   box-sizing: border-box;
 }
