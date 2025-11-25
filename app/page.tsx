@@ -129,7 +129,10 @@ function LinksHomePage() {
             className={styles.logo}
             priority
           />
-          {!hasSession && (
+        </div>
+
+        {!hasSession && (
+          <div className={styles.topCenter}>
             <div className={styles.getApp}>
               <span className={styles.getAppText}>Get the App</span>
               <a
@@ -159,16 +162,41 @@ function LinksHomePage() {
                 />
               </a>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className={styles.topRight}>
           <nav className={styles.navLinks} aria-label="Primary">
-            <button className={styles.navButtonLink}>Coins</button>
-            <button className={styles.navButtonLink}>Store</button>
-            <button className={styles.navButtonLink}>Videos</button>
-            <button className={styles.navButtonLink}>Podcasts</button>
-            <button className={styles.navButtonLink}>Opinion</button>
+            <button 
+              className={`${styles.navButtonLink} ${styles.coinsLink}`}
+              onClick={() => router.push('/coins')}
+            >
+              Coins
+            </button>
+            <button 
+              className={`${styles.navButtonLink} ${styles.storeLink}`}
+              onClick={() => window.open('https://store.patreek.com', '_blank')}
+            >
+              Store
+            </button>
+            <button 
+              className={`${styles.navButtonLink} ${styles.mediaLink}`}
+              onClick={() => router.push('/media')}
+            >
+              Media
+            </button>
+            <button 
+              className={`${styles.navButtonLink} ${styles.communityLink}`}
+              onClick={() => router.push('/community')}
+            >
+              Community
+            </button>
+            <button 
+              className={`${styles.navButtonLink} ${styles.opinionLink}`}
+              onClick={() => router.push('/opinion')}
+            >
+              Opinion
+            </button>
           </nav>
           {hasSession ? (
             <button className={styles.profileButton} aria-label="User Profile" onClick={() => router.push('/profile')}>

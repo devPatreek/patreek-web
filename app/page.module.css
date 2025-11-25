@@ -160,6 +160,16 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  flex: 0 0 auto;
+}
+
+.topCenter {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .navLinks {
@@ -169,21 +179,78 @@
 }
 
 .navButtonLink {
-  border: 1px solid #e6e6e6;
-  background: #f7f7f7;
-  color: #2b2b2b;
+  border: none;
   padding: 8px 14px;
   border-radius: 14px;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
 
 .navButtonLink:hover {
-  background: #ffffff;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
+}
+
+/* Coins - Gold/Yellow theme (financial, valuable) */
+.coinsLink {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #8b6914;
+  border: 1px solid #ffd700;
+}
+
+.coinsLink:hover {
+  background: linear-gradient(135deg, #ffed4e, #fff176);
+  color: #6b4e0f;
+}
+
+/* Store - Purple/Violet theme (premium, shopping) */
+.storeLink {
+  background: linear-gradient(135deg, #7a4bce, #a65df6);
+  color: #ffffff;
+  border: 1px solid #7a4bce;
+}
+
+.storeLink:hover {
+  background: linear-gradient(135deg, #8b5fdf, #b870ff);
+  color: #ffffff;
+}
+
+/* Media - Blue/Cyan theme (media, content) */
+.mediaLink {
+  background: linear-gradient(135deg, #0096dd, #00b4ff);
+  color: #ffffff;
+  border: 1px solid #0096dd;
+}
+
+.mediaLink:hover {
+  background: linear-gradient(135deg, #00a8f0, #1ac5ff);
+  color: #ffffff;
+}
+
+/* Community - Green/Emerald theme (growth, community) */
+.communityLink {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #ffffff;
+  border: 1px solid #10b981;
+}
+
+.communityLink:hover {
+  background: linear-gradient(135deg, #059669, #2dd4bf);
+  color: #ffffff;
+}
+
+/* Opinion - Orange/Coral theme (warmth, discussion) */
+.opinionLink {
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  color: #ffffff;
+  border: 1px solid #f97316;
+}
+
+.opinionLink:hover {
+  background: linear-gradient(135deg, #ea580c, #fd7e14);
+  color: #ffffff;
 }
 
 .navLink {
