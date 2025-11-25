@@ -56,37 +56,57 @@ export default function RegistrationPage() {
   const [usernameStatus, setUsernameStatus] = useState<Status>({ type: 'idle' });
   const [usernameMessage, setUsernameMessage] = useState('');
 
+  // Load categories on component mount and when switching to signup form
   useEffect(() => {
+    // Only load categories when on signup form
+    if (activeForm !== 'signup') {
+      return;
+    }
+    
     let mounted = true;
+    let isCancelled = false;
+    
     async function loadCategories() {
+      if (isCancelled || !mounted) return;
+      
+      console.log('[Registration] useEffect triggered - Loading categories...');
       setIsLoadingCategories(true);
       setCategoriesError(null);
+      
       try {
+        console.log('[Registration] Calling getPublicCategories()...');
         const data = await getPublicCategories();
-        if (mounted) {
-          if (data && data.length > 0) {
-            setCategories(data);
-            setCategoriesError(null);
-          } else {
-            setCategories([]);
-            setCategoriesError('No categories available. Please try again later.');
-          }
-          setIsLoadingCategories(false);
+        console.log('[Registration] Categories response received:', data);
+        
+        if (!mounted || isCancelled) return;
+        
+        if (data && Array.isArray(data) && data.length > 0) {
+          console.log('[Registration] Setting', data.length, 'categories');
+          setCategories(data);
+          setCategoriesError(null);
+        } else {
+          console.warn('[Registration] No categories returned or empty array');
+          setCategories([]);
+          setCategoriesError('No categories available. Please try again later.');
         }
+        setIsLoadingCategories(false);
       } catch (error) {
         console.error('[Registration] Failed to load public categories:', error);
-        if (mounted) {
+        if (mounted && !isCancelled) {
           setCategories([]);
           setCategoriesError('Failed to load categories. Please refresh the page.');
           setIsLoadingCategories(false);
         }
       }
     }
+    
     loadCategories();
+    
     return () => {
       mounted = false;
+      isCancelled = true;
     };
-  }, []);
+  }, [activeForm]);
 
   // Close country dropdown when clicking outside
   useEffect(() => {

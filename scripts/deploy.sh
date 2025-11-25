@@ -24,6 +24,10 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
+# Install dependencies (ensure all packages are up to date)
+echo "📥 Installing dependencies..."
+npm install
+
 # Export static site
 echo "🌐 Exporting static site..."
 npx next export
