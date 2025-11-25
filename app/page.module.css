@@ -214,13 +214,14 @@
 }
 
 /* Store - Purple/Violet theme (premium, shopping) */
-.storeLink {
+.navButtonLink.storeLink {
   background: linear-gradient(135deg, #7a4bce, #a65df6);
   color: #ffffff;
   border-color: #7a4bce;
+  height: 35px !important;
 }
 
-.storeLink:hover {
+.navButtonLink.storeLink:hover {
   background: linear-gradient(135deg, #8b5fdf, #b870ff);
   color: #ffffff;
   border-color: #8b5fdf;
