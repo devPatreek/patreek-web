@@ -188,6 +188,7 @@
 }
 
 .fieldGroup {
+  position: relative;
   display: grid;
   gap: 6px;
 }
@@ -288,6 +289,8 @@
 }
 
 .countryList {
+  position: absolute;
+  z-index: 100;
   max-height: 180px;
   overflow: auto;
   border: 1px solid #e6e6e6;
@@ -296,6 +299,10 @@
   background: #ffffff;
   display: grid;
   gap: 6px;
+  margin-top: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .countryItem {

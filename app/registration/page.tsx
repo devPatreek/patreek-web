@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -40,7 +40,10 @@ export default function RegistrationPage() {
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
   const [countryQuery, setCountryQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [isCountryDropdownOpen, setIsCountryDropdownOpen] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [categoriesError, setCategoriesError] = useState<string | null>(null);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
   const [signupStatus, setSignupStatus] = useState<Status>({ type: 'idle' });
   const [isSigningUp, setIsSigningUp] = useState(false);
 
@@ -57,16 +60,24 @@ export default function RegistrationPage() {
     let mounted = true;
     async function loadCategories() {
       setIsLoadingCategories(true);
+      setCategoriesError(null);
       try {
         const data = await getPublicCategories();
         if (mounted) {
-          setCategories(data && data.length ? data : []);
+          if (data && data.length > 0) {
+            setCategories(data);
+            setCategoriesError(null);
+          } else {
+            setCategories([]);
+            setCategoriesError('No categories available. Please try again later.');
+          }
           setIsLoadingCategories(false);
         }
       } catch (error) {
         console.error('[Registration] Failed to load public categories:', error);
         if (mounted) {
           setCategories([]);
+          setCategoriesError('Failed to load categories. Please refresh the page.');
           setIsLoadingCategories(false);
         }
       }
@@ -76,6 +87,26 @@ export default function RegistrationPage() {
       mounted = false;
     };
   }, []);
+
+  // Close country dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        countryDropdownRef.current &&
+        !countryDropdownRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement)?.closest(`#country`)
+      ) {
+        setIsCountryDropdownOpen(false);
+      }
+    }
+
+    if (isCountryDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [isCountryDropdownOpen]);
 
   const canSelectMore = selectedCategories.length < 5;
 
@@ -91,8 +122,23 @@ export default function RegistrationPage() {
     if (isLoadingCategories) {
       return <div className={styles.muted}>Loading categories…</div>;
     }
+    if (categoriesError) {
+      return (
+        <div className={`${styles.muted} ${styles.error}`}>
+          {categoriesError}
+          <button
+            type="button"
+            onClick={() => window.location.reload()}
+            className={styles.retryButton}
+            style={{ marginLeft: '8px', padding: '4px 8px', fontSize: '12px' }}
+          >
+            Retry
+          </button>
+        </div>
+      );
+    }
     if (!categories.length) {
-      return <div className={styles.muted}>Categories will appear here soon.</div>;
+      return <div className={styles.muted}>No categories available. Please try again later.</div>;
     }
     return (
       <div className={styles.categoryGrid}>
@@ -118,7 +164,7 @@ export default function RegistrationPage() {
         })}
       </div>
     );
-  }, [categories, selectedCategories, canSelectMore, isLoadingCategories]);
+  }, [categories, selectedCategories, canSelectMore, isLoadingCategories, categoriesError]);
 
   const filteredCountries = useMemo(() => {
     if (!countryQuery.trim()) return countriesData as Country[];
@@ -394,7 +440,7 @@ export default function RegistrationPage() {
                 />
               </div>
 
-              <div className={styles.fieldGroup}>
+              <div className={styles.fieldGroup} ref={countryDropdownRef}>
                 <div className={styles.labelRow}>
                   <label className={styles.label} htmlFor="country">
                     Country
@@ -407,26 +453,36 @@ export default function RegistrationPage() {
                   id="country"
                   className={styles.input}
                   value={countryQuery}
-                  onChange={e => setCountryQuery(e.target.value)}
+                  onChange={e => {
+                    setCountryQuery(e.target.value);
+                    setIsCountryDropdownOpen(true);
+                  }}
+                  onFocus={() => setIsCountryDropdownOpen(true)}
                   placeholder="Search country"
                   autoComplete="off"
                 />
-                <div className={styles.countryList}>
-                  {filteredCountries.map(country => (
-                    <button
-                      key={country.code}
-                      type="button"
-                      className={`${styles.countryItem} ${
-                        selectedCountry === country.code ? styles.countryItemSelected : ''
-                      }`}
-                      onClick={() => setSelectedCountry(country.code)}
-                    >
-                      <span className={styles.countryName}>{country.name}</span>
-                      <span className={styles.countryCode}>{country.code}</span>
-                    </button>
-                  ))}
-                </div>
-                {!selectedCountry && (
+                {isCountryDropdownOpen && filteredCountries.length > 0 && (
+                  <div className={styles.countryList}>
+                    {filteredCountries.map(country => (
+                      <button
+                        key={country.code}
+                        type="button"
+                        className={`${styles.countryItem} ${
+                          selectedCountry === country.code ? styles.countryItemSelected : ''
+                        }`}
+                        onClick={() => {
+                          setSelectedCountry(country.code);
+                          setCountryQuery('');
+                          setIsCountryDropdownOpen(false);
+                        }}
+                      >
+                        <span className={styles.countryName}>{country.name}</span>
+                        <span className={styles.countryCode}>{country.code}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {!selectedCountry && !isCountryDropdownOpen && (
                   <div className={`${styles.statusInline} ${styles.errorInline}`}>
                     Select your country to continue.
                   </div>
