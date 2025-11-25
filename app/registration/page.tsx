@@ -9,6 +9,7 @@ import styles from './page.module.css';
 import {
   Category,
   getCategories,
+  getAllCategories,
   getPublicCategories,
   getSocialAuthUrl,
   checkUsernameAvailability,
@@ -74,8 +75,8 @@ export default function RegistrationPage() {
       setCategoriesError(null);
       
       try {
-        console.log('[Registration] Calling getPublicCategories()...');
-        const data = await getPublicCategories();
+        console.log('[Registration] Calling getAllCategories()...');
+        const data = await getAllCategories();
         console.log('[Registration] Categories response received:', data);
         
         if (!mounted || isCancelled) return;
@@ -130,6 +131,21 @@ export default function RegistrationPage() {
 
   const canSelectMore = selectedCategories.length < 5;
 
+  // Flatten hierarchical categories (parent + children) into a single flat list
+  const flattenedCategories = useMemo(() => {
+    const flatten = (cats: Category[]): Category[] => {
+      const result: Category[] = [];
+      for (const cat of cats) {
+        result.push(cat);
+        if (cat.children && cat.children.length > 0) {
+          result.push(...flatten(cat.children));
+        }
+      }
+      return result;
+    };
+    return flatten(categories);
+  }, [categories]);
+
   const toggleCategory = (id: number) => {
     if (selectedCategories.includes(id)) {
       setSelectedCategories(selectedCategories.filter(item => item !== id));
@@ -157,14 +173,15 @@ export default function RegistrationPage() {
         </div>
       );
     }
-    if (!categories.length) {
+    if (!flattenedCategories.length) {
       return <div className={styles.muted}>No categories available. Please try again later.</div>;
     }
     return (
       <div className={styles.categoryGrid}>
-        {categories.map(category => {
+        {flattenedCategories.map(category => {
           const isSelected = selectedCategories.includes(category.id);
           const disabled = !isSelected && !canSelectMore;
+          const isSubcategory = category.parentId != null;
           return (
             <button
               key={category.id}
@@ -173,18 +190,21 @@ export default function RegistrationPage() {
                 styles.chip,
                 isSelected ? styles.chipSelected : '',
                 disabled ? styles.chipDisabled : '',
+                isSubcategory ? styles.chipSubcategory : '',
               ].join(' ')}
               onClick={() => toggleCategory(category.id)}
               disabled={disabled}
               aria-pressed={isSelected}
+              title={isSubcategory ? `Subcategory of parent category` : undefined}
             >
+              {isSubcategory && '└ '}
               {category.name}
             </button>
           );
         })}
       </div>
     );
-  }, [categories, selectedCategories, canSelectMore, isLoadingCategories, categoriesError]);
+  }, [flattenedCategories, selectedCategories, canSelectMore, isLoadingCategories, categoriesError]);
 
   const filteredCountries = useMemo(() => {
     if (!countryQuery.trim()) return countriesData as Country[];

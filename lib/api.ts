@@ -14,7 +14,10 @@ export interface Feed {
 export interface Category {
   id: number;
   name: string;
-  parentId?: number;
+  parentId?: number | null;
+  imageUrl?: string | null;
+  subscribed?: boolean;
+  children?: Category[];
 }
 
 export interface FeedsResponse {
@@ -286,6 +289,57 @@ export async function getCategories(): Promise<Category[]> {
       console.warn('[API] Categories request timed out');
     } else {
       console.warn('[API] Error fetching categories', error);
+    }
+    return [];
+  }
+}
+
+/**
+ * Get ALL categories (public endpoint, no authentication required)
+ * Returns hierarchical structure with parent categories and their children (subcategories)
+ */
+export async function getAllCategories(): Promise<Category[]> {
+  try {
+    console.log('[API] Fetching all categories from:', `${API_BASE_URL}/api/v1/categories`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(`${API_BASE_URL}/api/v1/categories`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    console.log('[API] All categories response status:', response.status);
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch all categories:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.warn('[API] Error response body:', errorText);
+      return [];
+    }
+    const data = await response.json();
+    console.log('[API] All categories data received:', data);
+    if (Array.isArray(data)) {
+      console.log('[API] Returning', data.length, 'top-level categories');
+      return data;
+    }
+    if (Array.isArray(data?.content)) {
+      console.log('[API] Returning', data.content.length, 'categories from content');
+      return data.content;
+    }
+    if (Array.isArray(data?.categories)) {
+      console.log('[API] Returning', data.categories.length, 'categories from categories');
+      return data.categories;
+    }
+    console.warn('[API] Unexpected data format:', data);
+    return [];
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.warn('[API] All categories request timed out');
+    } else {
+      console.error('[API] Error fetching all categories', error);
     }
     return [];
   }

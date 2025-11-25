@@ -283,6 +283,13 @@
   cursor: not-allowed;
 }
 
+.chipSubcategory {
+  font-size: 0.9em;
+  padding: 6px 10px;
+  margin-left: 12px;
+  opacity: 0.85;
+}
+
 .muted {
   color: #7c7c7c;
   font-size: 13px;
