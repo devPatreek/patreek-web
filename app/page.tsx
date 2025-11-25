@@ -129,39 +129,38 @@ function LinksHomePage() {
             className={styles.logo}
             priority
           />
+          {!hasSession && (
+            <div className={styles.getApp}>
+              <span className={styles.getAppText}>Get the App</span>
+              <a
+                href="https://apps.apple.com/us/app/patreek/id6547858283"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.storeIcon}
+                aria-label="Download on the App Store"
+              >
+                <Image
+                  src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3729b558347b9bf210a5a_Store%3DApp%20Store%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
+                  alt="App Store"
+                  width={90}
+                  height={28}
+                />
+              </a>
+              <a
+                href=""
+                className={styles.storeIcon}
+                aria-label="Get it on Google Play (coming soon)"
+              >
+                <Image
+                  src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
+                  alt="Google Play"
+                  width={90}
+                  height={28}
+                />
+              </a>
+            </div>
+          )}
         </div>
-
-        {!hasSession && (
-          <div className={styles.getApp}>
-            <span className={styles.getAppText}>Get the App</span>
-            <a
-              href="https://apps.apple.com/us/app/patreek/id6547858283"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.storeIcon}
-              aria-label="Download on the App Store"
-            >
-              <Image
-                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3729b558347b9bf210a5a_Store%3DApp%20Store%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
-                alt="App Store"
-                width={90}
-                height={28}
-              />
-            </a>
-            <a
-              href=""
-              className={styles.storeIcon}
-              aria-label="Get it on Google Play (coming soon)"
-            >
-              <Image
-                src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
-                alt="Google Play"
-                width={90}
-                height={28}
-              />
-            </a>
-          </div>
-        )}
 
         <div className={styles.topRight}>
           <nav className={styles.navLinks} aria-label="Primary">
