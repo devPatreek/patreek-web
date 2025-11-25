@@ -179,12 +179,18 @@
 }
 
 .navButtonLink {
-  border: none;
+  border: 1px solid transparent;
   padding: 8px 14px;
   border-radius: 14px;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
+  box-sizing: border-box;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
 
@@ -197,60 +203,65 @@
 .coinsLink {
   background: linear-gradient(135deg, #ffd700, #ffed4e);
   color: #8b6914;
-  border: 1px solid #ffd700;
+  border-color: #ffd700;
 }
 
 .coinsLink:hover {
   background: linear-gradient(135deg, #ffed4e, #fff176);
   color: #6b4e0f;
+  border-color: #ffed4e;
 }
 
 /* Store - Purple/Violet theme (premium, shopping) */
 .storeLink {
   background: linear-gradient(135deg, #7a4bce, #a65df6);
   color: #ffffff;
-  border: 1px solid #7a4bce;
+  border-color: #7a4bce;
 }
 
 .storeLink:hover {
   background: linear-gradient(135deg, #8b5fdf, #b870ff);
   color: #ffffff;
+  border-color: #8b5fdf;
 }
 
 /* Media - Blue/Cyan theme (media, content) */
 .mediaLink {
   background: linear-gradient(135deg, #0096dd, #00b4ff);
   color: #ffffff;
-  border: 1px solid #0096dd;
+  border-color: #0096dd;
 }
 
 .mediaLink:hover {
   background: linear-gradient(135deg, #00a8f0, #1ac5ff);
   color: #ffffff;
+  border-color: #00a8f0;
 }
 
 /* Community - Green/Emerald theme (growth, community) */
 .communityLink {
   background: linear-gradient(135deg, #10b981, #34d399);
   color: #ffffff;
-  border: 1px solid #10b981;
+  border-color: #10b981;
 }
 
 .communityLink:hover {
   background: linear-gradient(135deg, #059669, #2dd4bf);
   color: #ffffff;
+  border-color: #059669;
 }
 
 /* Opinion - Orange/Coral theme (warmth, discussion) */
 .opinionLink {
   background: linear-gradient(135deg, #f97316, #fb923c);
   color: #ffffff;
-  border: 1px solid #f97316;
+  border-color: #f97316;
 }
 
 .opinionLink:hover {
   background: linear-gradient(135deg, #ea580c, #fd7e14);
   color: #ffffff;
+  border-color: #ea580c;
 }
 
 .navLink {
