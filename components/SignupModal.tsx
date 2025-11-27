@@ -90,11 +90,25 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
     }
   };
 
+  const isValidEmailFormat = (email: string): boolean => {
+    if (!email || !email.trim()) return false;
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailPattern.test(email.trim());
+  };
+
   const handleEmailBlur = async () => {
     if (!email.trim()) {
       setEmailStatus({ type: 'idle', message: '' });
       return;
     }
+    
+    // Validate email format first (client-side)
+    if (!isValidEmailFormat(email)) {
+      setEmailStatus({ type: 'error', message: 'Email is invalid' });
+      return;
+    }
+    
+    // Only check availability if email format is valid
     setEmailStatus({ type: 'idle', message: '' });
     try {
       const result = await checkEmailAvailability(email.trim());

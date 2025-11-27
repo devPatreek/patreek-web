@@ -473,13 +473,28 @@ export async function checkUsernameAvailability(username: string): Promise<Usern
         message: data?.data?.message || 'Username is available',
       };
     }
-    const text = await response.text();
-    const message = text || 'Username is not available';
+    // Try to parse JSON error response
+    let message = 'Username is not available';
+    try {
+      const errorData = await response.json();
+      // Extract message from API response structure
+      message = errorData?.error?.message || errorData?.message || errorData?.data?.message || message;
+    } catch {
+      // If JSON parsing fails, try to get text
+      try {
+        const text = await response.text();
+        message = text || message;
+      } catch {
+        // Use default message if all else fails
+      }
+    }
+    
     if (response.status === 403) {
       return { available: false, message };
     }
     if (response.status === 400) {
-      return { available: false, message: 'Invalid username format' };
+      // Use the specific error message from the backend
+      return { available: false, message };
     }
     return { available: false, message };
   } catch (error) {
@@ -508,12 +523,20 @@ export async function checkEmailAvailability(email: string): Promise<EmailAvaila
         message: data?.data?.message || 'Email is available',
       };
     }
+    // Try to parse JSON error response
     let message = 'Email is not available';
     try {
       const errorData = await response.json();
-      message = errorData?.message || errorData?.data?.message || message;
+      // Extract message from API response structure
+      message = errorData?.error?.message || errorData?.message || errorData?.data?.message || message;
     } catch {
-      // If JSON parsing fails, use default message
+      // If JSON parsing fails, try to get text
+      try {
+        const text = await response.text();
+        message = text || message;
+      } catch {
+        // Use default message if all else fails
+      }
     }
     if (response.status === 403) {
       return { available: false, message: message || 'Email is already registered' };
