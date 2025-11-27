@@ -81,6 +81,11 @@ export interface UsernameAvailability {
   message: string;
 }
 
+export interface EmailAvailability {
+  available: boolean;
+  message: string;
+}
+
 export async function getPublicFeeds(): Promise<Feed[]> {
   try {
     const controller = new AbortController();
@@ -480,6 +485,46 @@ export async function checkUsernameAvailability(username: string): Promise<Usern
   } catch (error) {
     clearTimeout(timeoutId);
     throw error instanceof Error ? error : new Error('Unable to check username');
+  }
+}
+
+export async function checkEmailAvailability(email: string): Promise<EmailAvailability> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/user/email/${encodeURIComponent(email)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        available: true,
+        message: data?.data?.message || 'Email is available',
+      };
+    }
+    let message = 'Email is not available';
+    try {
+      const errorData = await response.json();
+      message = errorData?.message || errorData?.data?.message || message;
+    } catch {
+      // If JSON parsing fails, use default message
+    }
+    if (response.status === 403) {
+      return { available: false, message: message || 'Email is already registered' };
+    }
+    if (response.status === 400) {
+      return { available: false, message: message || 'Invalid email format' };
+    }
+    return { available: false, message };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error instanceof Error ? error : new Error('Unable to check email');
   }
 }
 

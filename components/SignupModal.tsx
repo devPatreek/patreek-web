@@ -6,6 +6,7 @@ import {
   Category,
   getCategories,
   checkUsernameAvailability,
+  checkEmailAvailability,
   registerUser,
   SignupPayload,
 } from '@/lib/api';
@@ -32,6 +33,7 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<StatusState>({ type: 'idle' });
   const [usernameStatus, setUsernameStatus] = useState<{ type: 'idle' | 'success' | 'error'; message: string }>({ type: 'idle', message: '' });
+  const [emailStatus, setEmailStatus] = useState<{ type: 'idle' | 'success' | 'error'; message: string }>({ type: 'idle', message: '' });
 
   useEffect(() => {
     if (!open) return;
@@ -88,8 +90,35 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
     }
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleEmailBlur = async () => {
+    if (!email.trim()) {
+      setEmailStatus({ type: 'idle', message: '' });
+      return;
+    }
+    setEmailStatus({ type: 'idle', message: '' });
+    try {
+      const result = await checkEmailAvailability(email.trim());
+      if (result.available) {
+        setEmailStatus({ type: 'success', message: result.message });
+      } else {
+        setEmailStatus({ type: 'error', message: result.message });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Email unavailable';
+      setEmailStatus({ type: 'error', message });
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
+    
+    // Check native HTML5 validation first
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    
     if (!name.trim() || !username.trim() || !email.trim() || !password.trim()) {
       setStatus({ type: 'error', message: 'Please fill in name, username, email, and password.' });
       return;
@@ -237,12 +266,27 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
                 id="email"
                 className={styles.input}
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => {
+                  setEmail(e.target.value);
+                  setEmailStatus({ type: 'idle', message: '' });
+                }}
+                onBlur={handleEmailBlur}
                 placeholder="you@example.com"
                 autoComplete="email"
                 type="email"
+                pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
                 required
               />
+              {emailStatus.type === 'success' && (
+                <div style={{ color: '#10b981', fontSize: '12px', marginTop: '4px' }}>
+                  {emailStatus.message || 'Email is available'}
+                </div>
+              )}
+              {emailStatus.type === 'error' && (
+                <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
+                  {emailStatus.message || 'Email is already registered'}
+                </div>
+              )}
             </div>
             <div className={styles.fieldGroup}>
               <label className={styles.label} htmlFor="password">

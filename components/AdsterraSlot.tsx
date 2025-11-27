@@ -48,7 +48,7 @@ export default function AdsterraSlot({ variant, className }: Props) {
       const script = document.createElement('script');
       script.async = true;
       script.setAttribute('data-cfasync', 'false');
-      script.src = 'https://pl28102082.effectivegatecpm.com/e43b9924b35e5d713560143434db77a3/invoke.js';
+      script.src = '//pl28102082.effectivegatecpm.com/e43b9924b35e5d713560143434db77a3/invoke.js';
       containerRef.current.appendChild(script);
 
       return () => {

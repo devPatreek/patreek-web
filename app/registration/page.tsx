@@ -12,6 +12,7 @@ import {
   getAllCategories,
   getPublicCategories,
   checkUsernameAvailability,
+  checkEmailAvailability,
   loginUser,
   registerUser,
   SigninPayload,
@@ -59,6 +60,8 @@ export default function RegistrationPage() {
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [usernameStatus, setUsernameStatus] = useState<Status>({ type: 'idle' });
   const [usernameMessage, setUsernameMessage] = useState('');
+  const [emailStatus, setEmailStatus] = useState<Status>({ type: 'idle' });
+  const [emailMessage, setEmailMessage] = useState('');
 
   // Load categories on component mount and when switching to signup form
   useEffect(() => {
@@ -303,6 +306,29 @@ export default function RegistrationPage() {
     }
   };
 
+  const handleEmailBlur = async () => {
+    if (!email.trim()) {
+      setEmailStatus({ type: 'idle' });
+      setEmailMessage('');
+      return;
+    }
+    setEmailStatus({ type: 'idle' });
+    try {
+      const result = await checkEmailAvailability(email.trim());
+      if (result.available) {
+        setEmailStatus({ type: 'success', message: result.message || 'Email is available' });
+        setEmailMessage(result.message || 'Email is available');
+      } else {
+        setEmailStatus({ type: 'error', message: result.message || 'Email is already registered' });
+        setEmailMessage(result.message || 'Email is already registered');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Email unavailable';
+      setEmailStatus({ type: 'error', message });
+      setEmailMessage(message);
+    }
+  };
+
   // SSO temporarily disabled - all users must complete the registration form
   // const handleSocial = (provider: 'google' | 'apple') => {
   //   if (typeof window === 'undefined') return;
@@ -311,8 +337,16 @@ export default function RegistrationPage() {
   //   window.location.href = url;
   // };
 
-  const handleSignupSubmit = async (event: React.FormEvent) => {
+  const handleSignupSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
+    
+    // Check native HTML5 validation first
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    
     if (!name.trim() || !username.trim() || !email.trim() || !password.trim()) {
       setSignupStatus({ type: 'error', message: 'Please fill in name, username, email, and password.' });
       return;
@@ -354,8 +388,16 @@ export default function RegistrationPage() {
     }
   };
 
-  const handleSigninSubmit = async (event: React.FormEvent) => {
+  const handleSigninSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
+    
+    // Check native HTML5 validation first
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    
     if (!signinEmail.trim() || !signinPassword.trim()) {
       setSigninStatus({ type: 'error', message: 'Enter your email and password to continue.' });
       return;
@@ -535,10 +577,27 @@ export default function RegistrationPage() {
                     className={styles.input}
                     type="email"
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={e => {
+                      setEmail(e.target.value);
+                      setEmailStatus({ type: 'idle' });
+                      setEmailMessage('');
+                    }}
+                    onBlur={handleEmailBlur}
                     placeholder="you@example.com"
                     autoComplete="email"
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    required
                   />
+                  {emailStatus.type === 'success' && (
+                    <div className={`${styles.statusInline} ${styles.successInline}`}>
+                      {emailMessage || 'Email is available'}
+                    </div>
+                  )}
+                  {emailStatus.type === 'error' && (
+                    <div className={`${styles.statusInline} ${styles.errorInline}`}>
+                      {emailMessage || 'Email is already registered'}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.fieldGroup}>
@@ -680,6 +739,8 @@ export default function RegistrationPage() {
                     onChange={e => setSigninEmail(e.target.value)}
                     placeholder="you@example.com"
                     autoComplete="email"
+                    pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                    required
                   />
                 </div>
 
