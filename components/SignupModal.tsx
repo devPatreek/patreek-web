@@ -5,7 +5,7 @@ import styles from './SignupModal.module.css';
 import {
   Category,
   getCategories,
-  getSocialAuthUrl,
+  checkUsernameAvailability,
   registerUser,
   SignupPayload,
 } from '@/lib/api';
@@ -23,6 +23,7 @@ type StatusState =
 
 export default function SignupModal({ open, onClose, onSuccess }: SignupModalProps) {
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
@@ -30,6 +31,7 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [status, setStatus] = useState<StatusState>({ type: 'idle' });
+  const [usernameStatus, setUsernameStatus] = useState<{ type: 'idle' | 'success' | 'error'; message: string }>({ type: 'idle', message: '' });
 
   useEffect(() => {
     if (!open) return;
@@ -71,10 +73,25 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
     }
   };
 
+  const handleUsernameBlur = async () => {
+    if (!username.trim()) {
+      setUsernameStatus({ type: 'idle', message: '' });
+      return;
+    }
+    setUsernameStatus({ type: 'idle', message: '' });
+    try {
+      const result = await checkUsernameAvailability(username.trim());
+      setUsernameStatus({ type: 'success', message: result.message });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Username unavailable';
+      setUsernameStatus({ type: 'error', message });
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      setStatus({ type: 'error', message: 'Please fill in name, email, and password.' });
+    if (!name.trim() || !username.trim() || !email.trim() || !password.trim()) {
+      setStatus({ type: 'error', message: 'Please fill in name, username, email, and password.' });
       return;
     }
     if (selectedCategories.length === 0) {
@@ -85,6 +102,7 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
     setStatus({ type: 'idle' });
     const payload: SignupPayload = {
       name: name.trim(),
+      username: username.trim(),
       email: email.trim(),
       password,
       categoryIds: selectedCategories,
@@ -102,12 +120,13 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
     }
   };
 
-  const handleSocial = (provider: 'google' | 'apple') => {
-    if (typeof window === 'undefined') return;
-    const redirectUri = window.location.origin + '/';
-    const url = getSocialAuthUrl(provider, redirectUri);
-    window.location.href = url;
-  };
+  // SSO temporarily disabled - all users must complete the registration form manually
+  // const handleSocial = (provider: 'google' | 'apple') => {
+  //   if (typeof window === 'undefined') return;
+  //   const redirectUri = window.location.origin + '/';
+  //   const url = getSocialAuthUrl(provider, redirectUri);
+  //   window.location.href = url;
+  // };
 
   const categoryChips = useMemo(() => {
     if (isLoadingCategories) {
@@ -179,7 +198,36 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
                 onChange={e => setName(e.target.value)}
                 placeholder="Jane Doe"
                 autoComplete="name"
+                required
               />
+            </div>
+            <div className={styles.fieldGroup}>
+              <label className={styles.label} htmlFor="username">
+                Username
+              </label>
+              <input
+                id="username"
+                className={styles.input}
+                value={username}
+                onChange={e => {
+                  setUsername(e.target.value);
+                  setUsernameStatus({ type: 'idle', message: '' });
+                }}
+                onBlur={handleUsernameBlur}
+                placeholder="yourhandle"
+                autoComplete="username"
+                required
+              />
+              {usernameStatus.type === 'success' && (
+                <div style={{ color: '#10b981', fontSize: '12px', marginTop: '4px' }}>
+                  {usernameStatus.message || 'Username is available'}
+                </div>
+              )}
+              {usernameStatus.type === 'error' && (
+                <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
+                  {usernameStatus.message || 'Username is taken or invalid'}
+                </div>
+              )}
             </div>
             <div className={styles.fieldGroup}>
               <label className={styles.label} htmlFor="email">
@@ -193,6 +241,7 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
                 placeholder="you@example.com"
                 autoComplete="email"
                 type="email"
+                required
               />
             </div>
             <div className={styles.fieldGroup}>
@@ -229,20 +278,6 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Signing you up…' : 'Sign up'}
-              </button>
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={() => handleSocial('google')}
-              >
-                Continue with Google
-              </button>
-              <button
-                type="button"
-                className={styles.secondaryButton}
-                onClick={() => handleSocial('apple')}
-              >
-                Continue with Apple
               </button>
             </div>
           </form>

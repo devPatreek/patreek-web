@@ -11,7 +11,6 @@ import {
   getCategories,
   getAllCategories,
   getPublicCategories,
-  getSocialAuthUrl,
   checkUsernameAvailability,
   loginUser,
   registerUser,
@@ -304,12 +303,13 @@ export default function RegistrationPage() {
     }
   };
 
-  const handleSocial = (provider: 'google' | 'apple') => {
-    if (typeof window === 'undefined') return;
-    const redirectUri = window.location.origin + '/';
-    const url = getSocialAuthUrl(provider, redirectUri);
-    window.location.href = url;
-  };
+  // SSO temporarily disabled - all users must complete the registration form
+  // const handleSocial = (provider: 'google' | 'apple') => {
+  //   if (typeof window === 'undefined') return;
+  //   const redirectUri = window.location.origin + '/';
+  //   const url = getSocialAuthUrl(provider, redirectUri);
+  //   window.location.href = url;
+  // };
 
   const handleSignupSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -450,7 +450,7 @@ export default function RegistrationPage() {
             </p>
             <div className={styles.heroBadges}>
               <span className={styles.badge}>Stay signed in sync</span>
-              <span className={styles.badge}>Google & Apple SSO</span>
+              <span className={styles.badge}>Secure registration</span>
               <span className={styles.badge}>Fast desktop flow</span>
             </div>
           </div>
@@ -664,60 +664,6 @@ export default function RegistrationPage() {
                   <button type="submit" className={styles.primary} disabled={isSigningUp}>
                     {isSigningUp ? 'Signing you up…' : 'Create account'}
                   </button>
-                  <div className={styles.socialRow}>
-                    <button
-                      type="button"
-                      className={styles.social}
-                      onClick={() => handleSocial('google')}
-                    aria-label="Continue with Google"
-                    >
-                      <svg
-                        className={styles.socialIcon}
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 488 512"
-                        role="img"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fill="#EA4335"
-                          d="M488 261.8c0-17.4-1.6-34.1-4.6-50.4H249v95.4h135.5c-5.9 32-23.5 59.1-50.1 77.3v64.3h80.9c47.3-43.6 74.7-107.9 74.7-186.6z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M249 492c67.6 0 124.3-22.4 165.7-60.9l-80.9-64.3c-22.6 15.2-51.5 24.2-84.8 24.2-65 0-120.1-43.9-139.8-103.1H25.9v64.8C67.2 438.4 151.7 492 249 492z"
-                        />
-                        <path
-                          fill="#4A90E2"
-                          d="M109.2 287.9c-4.9-15.2-7.7-31.4-7.7-48s2.8-32.8 7.7-48.1v-64.8H25.9C9.4 160.9 0 202.6 0 247.9s9.4 87 25.9 120.9l83.3-64.9z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M249 141.8c35.7 0 67.6 12.3 92.7 36.2l69.5-69.5C373.3 60.3 316.6 36 249 36c-97.3 0-181.8 53.6-223.1 131.9l83.3 64.9C128.9 185.7 184 141.8 249 141.8z"
-                        />
-                      </svg>
-                      <span className={styles.srOnly}>Continue with Google</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.social}
-                      onClick={() => handleSocial('apple')}
-                    aria-label="Continue with Apple"
-                    >
-                      <svg
-                        className={styles.socialIcon}
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 448 512"
-                        role="img"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fill="currentColor"
-                          d="M350.14 129.15c-22.01 26.18-52.8 41.47-84.43 38.64-4.08-32.69 10.71-67.43 30.33-88.82 22.01-24.89 57.6-42.32 86.6-43.03 3.84 31.77-8.98 66.04-32.5 93.21zm-47.45 62.03c-47.57-.28-88.24 27.63-110.88 27.63-23.63 0-55.67-26.54-92.06-25.85-47.47.74-91.21 27.57-115.15 70.09-49.06 85.1-12.65 211.14 35.23 280.5 23.36 33.75 51.44 71.74 88.25 70.04 35.29-1.43 48.65-22.79 91.31-22.79 42.67 0 54.89 22.79 91.38 22.06 37.91-.59 61.73-34.44 84.98-68.2 26.67-38.97 37.63-76.68 37.99-78.7-.82-.36-72.76-27.94-73.3-110.95-.59-69.24 56.17-101.58 58.72-102.94-32.07-47.1-81.79-52.33-99.47-53.79z"
-                        />
-                      </svg>
-                      <span className={styles.srOnly}>Continue with Apple</span>
-                    </button>
-                  </div>
                 </div>
               </form>
             ) : (
@@ -775,52 +721,18 @@ export default function RegistrationPage() {
 
                 <div className={styles.actions}>
                   <button type="submit" className={styles.primary} disabled={isSigningIn}>
-                    {isSigningIn ? 'Signing in…' : 'Next'}
+                    {isSigningIn ? 'Signing in…' : 'Sign in'}
                   </button>
-                  <div className={styles.socialRow}>
-                    <button
-                      type="button"
-                      className={styles.social}
-                      onClick={() => handleSocial('google')}
-                      aria-label="Sign in with Google"
-                    >
-                      <svg
-                        className={styles.socialIcon}
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 488 512"
-                        role="img"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fill="#EA4335"
-                          d="M488 261.8c0-17.4-1.6-34.1-4.6-50.4H249v95.4h135.5c-5.9 32-23.5 59.1-50.1 77.3v64.3h80.9c47.3-43.6 74.7-107.9 74.7-186.6z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M249 492c67.6 0 124.3-22.4 165.7-60.9l-80.9-64.3c-22.6 15.2-51.5 24.2-84.8 24.2-65 0-120.1-43.9-139.8-103.1H25.9v64.8C67.2 438.4 151.7 492 249 492z"
-                        />
-                        <path
-                          fill="#4A90E2"
-                          d="M109.2 287.9c-4.9-15.2-7.7-31.4-7.7-48s2.8-32.8 7.7-48.1v-64.8H25.9C9.4 160.9 0 202.6 0 247.9s9.4 87 25.9 120.9l83.3-64.9z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M249 141.8c35.7 0 67.6 12.3 92.7 36.2l69.5-69.5C373.3 60.3 316.6 36 249 36c-97.3 0-181.8 53.6-223.1 131.9l83.3 64.9C128.9 185.7 184 141.8 249 141.8z"
-                        />
-                      </svg>
-                      <span className={styles.srOnly}>Sign in with Google</span>
-                    </button>
-                  </div>
-                  <div className={styles.switchRow}>
-                    <span>New to Patreek?</span>
-                    <button
-                      type="button"
-                      className={styles.textButton}
-                      onClick={() => setActiveForm('signup')}
-                    >
-                      Create an account
-                    </button>
-                  </div>
+                </div>
+                <div className={styles.switchRow}>
+                  <span>New to Patreek?</span>
+                  <button
+                    type="button"
+                    className={styles.textButton}
+                    onClick={() => setActiveForm('signup')}
+                  >
+                    Create an account
+                  </button>
                 </div>
               </form>
             )}

@@ -57,7 +57,7 @@ export interface CommentsResponse {
 
 export interface SignupPayload {
   name: string;
-  username?: string;
+  username: string; // Required - all users must provide a username
   email: string;
   password: string;
   categoryIds: number[];
@@ -483,7 +483,39 @@ export async function checkUsernameAvailability(username: string): Promise<Usern
   }
 }
 
+/**
+ * Get Cognito Hosted UI URL for social authentication (Google/Apple SSO)
+ * Uses Cognito's Hosted UI directly, not Spring OAuth2
+ * 
+ * Note: You need to configure NEXT_PUBLIC_COGNITO_CLIENT_ID and NEXT_PUBLIC_COGNITO_OAUTH_DOMAIN
+ * in your environment variables or update the hardcoded values below.
+ */
 export function getSocialAuthUrl(provider: 'google' | 'apple', redirectUri: string) {
-  const encodedRedirect = encodeURIComponent(redirectUri);
-  return `${API_BASE_URL}/oauth2/authorization/${provider}?redirect_uri=${encodedRedirect}`;
+  // Cognito OAuth configuration
+  // TODO: Move these to environment variables
+  const OAUTH_DOMAIN = process.env.NEXT_PUBLIC_COGNITO_OAUTH_DOMAIN || 'patreek-prod.auth.us-east-1.amazoncognito.com';
+  const CLIENT_ID = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID || ''; // REQUIRED: Set this in your environment
+  
+  if (!CLIENT_ID) {
+    console.error('[OAuth] Cognito CLIENT_ID is not configured. Please set NEXT_PUBLIC_COGNITO_CLIENT_ID environment variable.');
+    throw new Error('OAuth configuration missing: CLIENT_ID is required');
+  }
+  
+  const REDIRECT_URI = encodeURIComponent(redirectUri);
+  
+  // Cognito identity provider names (must match what's configured in Cognito)
+  const providerMap: Record<string, string> = {
+    google: 'Google',
+    apple: 'SignInWithApple'
+  };
+  
+  const identityProvider = providerMap[provider] || provider;
+  
+  // Cognito Hosted UI OAuth URL
+  // Format: https://{domain}/oauth2/authorize?client_id={clientId}&response_type=code&scope=email+openid+profile&redirect_uri={redirectUri}&identity_provider={provider}
+  const scope = encodeURIComponent('email openid profile aws.cognito.signin.user.admin');
+  const cognitoUrl = `https://${OAUTH_DOMAIN}/oauth2/authorize?client_id=${CLIENT_ID}&response_type=code&scope=${scope}&redirect_uri=${REDIRECT_URI}&identity_provider=${identityProvider}`;
+  
+  console.log('[OAuth] Redirecting to Cognito Hosted UI:', cognitoUrl);
+  return cognitoUrl;
 }
