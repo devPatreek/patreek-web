@@ -62,6 +62,25 @@ export default function RegistrationPage() {
   const [usernameMessage, setUsernameMessage] = useState('');
   const [emailStatus, setEmailStatus] = useState<Status>({ type: 'idle' });
   const [emailMessage, setEmailMessage] = useState('');
+  
+  // Password validation
+  const validatePassword = (pwd: string) => {
+    const requirements = {
+      minLength: pwd.length >= 8,
+      hasUppercase: /[A-Z]/.test(pwd),
+      hasNumber: /[0-9]/.test(pwd),
+    };
+    return requirements;
+  };
+  
+  const getPasswordErrors = (pwd: string): string[] => {
+    const errors: string[] = [];
+    const reqs = validatePassword(pwd);
+    if (!reqs.minLength) errors.push('At least 8 characters');
+    if (!reqs.hasUppercase) errors.push('At least one uppercase letter');
+    if (!reqs.hasNumber) errors.push('At least one number');
+    return errors;
+  };
 
   // Load categories on component mount and when switching to signup form
   useEffect(() => {
@@ -351,6 +370,14 @@ export default function RegistrationPage() {
       setSignupStatus({ type: 'error', message: 'Please fill in name, username, email, and password.' });
       return;
     }
+    
+    // Validate password requirements
+    const passwordErrors = getPasswordErrors(password);
+    if (passwordErrors.length > 0) {
+      setSignupStatus({ type: 'error', message: `Password must have: ${passwordErrors.join(', ')}` });
+      return;
+    }
+    
     if (password !== confirmPassword) {
       setSignupStatus({ type: 'error', message: 'Passwords do not match.' });
       return;
@@ -613,6 +640,9 @@ export default function RegistrationPage() {
                       onChange={e => setPassword(e.target.value)}
                       placeholder="••••••••"
                       autoComplete="new-password"
+                      required
+                      minLength={8}
+                      pattern="^(?=.*[A-Z])(?=.*[0-9]).{8,}$"
                     />
                     <button
                       type="button"
@@ -623,6 +653,11 @@ export default function RegistrationPage() {
                       {showPassword ? 'Hide' : 'Show'}
                     </button>
                   </div>
+                  {password && getPasswordErrors(password).length > 0 && (
+                    <div className={`${styles.statusInline} ${styles.errorInline}`}>
+                      Password must have: {getPasswordErrors(password).join(', ')}
+                    </div>
+                  )}
                 </div>
 
                 <div className={styles.fieldGroup}>

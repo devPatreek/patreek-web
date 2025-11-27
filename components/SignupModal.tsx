@@ -109,6 +109,25 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
     }
   };
 
+  // Password validation
+  const validatePassword = (pwd: string) => {
+    const requirements = {
+      minLength: pwd.length >= 8,
+      hasUppercase: /[A-Z]/.test(pwd),
+      hasNumber: /[0-9]/.test(pwd),
+    };
+    return requirements;
+  };
+  
+  const getPasswordErrors = (pwd: string): string[] => {
+    const errors: string[] = [];
+    const reqs = validatePassword(pwd);
+    if (!reqs.minLength) errors.push('At least 8 characters');
+    if (!reqs.hasUppercase) errors.push('At least one uppercase letter');
+    if (!reqs.hasNumber) errors.push('At least one number');
+    return errors;
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -123,6 +142,14 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
       setStatus({ type: 'error', message: 'Please fill in name, username, email, and password.' });
       return;
     }
+    
+    // Validate password requirements
+    const passwordErrors = getPasswordErrors(password);
+    if (passwordErrors.length > 0) {
+      setStatus({ type: 'error', message: `Password must have: ${passwordErrors.join(', ')}` });
+      return;
+    }
+    
     if (selectedCategories.length === 0) {
       setStatus({ type: 'error', message: 'Pick at least one category (up to 5).' });
       return;
@@ -300,7 +327,15 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
                 placeholder="••••••••"
                 type="password"
                 autoComplete="new-password"
+                required
+                minLength={8}
+                pattern="^(?=.*[A-Z])(?=.*[0-9]).{8,}$"
               />
+              {password && getPasswordErrors(password).length > 0 && (
+                <div style={{ color: '#a4001d', fontSize: '13px', marginTop: '4px', fontWeight: 700 }}>
+                  Password must have: {getPasswordErrors(password).join(', ')}
+                </div>
+              )}
             </div>
             <div className={styles.fieldGroup}>
               <div className={styles.label}>Pick up to 5 categories</div>
