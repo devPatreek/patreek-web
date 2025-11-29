@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import Footer from '@/components/Footer';
 
 export default function CoinsPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [coins, setCoins] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,47 +66,39 @@ export default function CoinsPage() {
           />
         </Link>
 
-        <div className={styles.getApp}>
-          <span className={styles.getAppText}>Get the App</span>
-          <a
-            href="https://apps.apple.com/us/app/patreek/id6547858283"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.storeIcon}
-            aria-label="Download on the App Store"
+        <nav className={styles.headerNav} aria-label="Primary navigation">
+          <button
+            className={`${styles.navButtonLink} ${pathname === '/coins' ? styles.activeLink : ''}`}
+            onClick={() => router.push('/coins')}
+            type="button"
           >
-            <Image
-              src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3729b558347b9bf210a5a_Store%3DApp%20Store%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
-              alt="App Store"
-              width={95}
-              height={30}
-            />
-          </a>
-          <a
-            href=""
-            className={styles.storeIcon}
-            aria-label="Get it on Google Play (coming soon)"
-          >
-            <Image
-              src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67a3727c8abb3515ab42d712_Store%3DGoogle%20Play%2C%20Type%3DDark%2C%20Language%3DEnglish%402x.png"
-              alt="Google Play"
-              width={95}
-              height={30}
-            />
-          </a>
-        </div>
-
-        <nav className={styles.headerNav} aria-label="Coins navigation">
-          <Link className={styles.headerLink} href="/contact">
-            Help
-          </Link>
-          <Link className={styles.headerLink} href="/terms">
-            Terms
-          </Link>
-          <Link className={styles.headerLink} href="/privacy">
-            Privacy
-          </Link>
+            Coins
+          </button>
+          <button className={styles.navButtonLink} onClick={() => window.open('https://store.patreek.com', '_blank')} type="button">
+            Store
+          </button>
+          <button className={styles.navButtonLink} onClick={() => router.push('/media')} type="button">
+            Media
+          </button>
+          <button className={styles.navButtonLink} onClick={() => router.push('/community')} type="button">
+            Community
+          </button>
+          <button className={styles.navButtonLink} onClick={() => router.push('/opinion')} type="button">
+            Opinion
+          </button>
         </nav>
+
+        <div className={styles.headerActions}>
+          {sessionToken ? (
+            <button className={styles.profileButton} type="button" onClick={() => router.push('/home')}>
+              Profile
+            </button>
+          ) : (
+            <Link className={styles.signInButton} href="/registration">
+              Sign in
+            </Link>
+          )}
+        </div>
       </header>
 
       <main className={styles.main}>
@@ -147,4 +140,3 @@ export default function CoinsPage() {
     </div>
   );
 }
-
