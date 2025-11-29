@@ -167,6 +167,85 @@
   display: block;
 }
 
+.mobileNavWrap {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 20;
+  display: none;
+}
+
+.mobileNavButton {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(11, 42, 102, 0.85);
+  display: grid;
+  padding: 8px 10px;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.mobileNavButton span {
+  display: block;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 2px;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 260px;
+  background: #0b1f3a;
+  color: #ffffff;
+  padding: 16px;
+  box-shadow: 12px 0 24px rgba(0, 0, 0, 0.25);
+  z-index: 25;
+  display: grid;
+  gap: 12px;
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawerTitle {
+  font-weight: 800;
+}
+
+.closeButton {
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.drawerLinks {
+  display: grid;
+  gap: 10px;
+}
+
+.drawerLink {
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 @media (max-width: 720px) {
   .hero {
     padding: 42px 14px 24px;
@@ -198,5 +277,9 @@
 
   .navItem {
     white-space: nowrap;
+  }
+
+  .mobileNavWrap {
+    display: block;
   }
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import styles from './page.module.css';
 
 type OpinionItem = {
@@ -13,6 +14,7 @@ type OpinionItem = {
 };
 
 const navTags = ['White House', 'Congress', 'Civil Rights', 'World', 'Science'];
+const appNav = ['Coins', 'Store', 'Media', 'Community', 'Opinion'];
 
 const opinions: OpinionItem[] = [
   {
@@ -63,8 +65,45 @@ const opinions: OpinionItem[] = [
 ];
 
 export default function OpinionPage() {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   return (
     <div className={styles.page}>
+      <div className={styles.mobileNavWrap}>
+        <button
+          className={styles.mobileNavButton}
+          type="button"
+          aria-label="Open navigation"
+          onClick={() => setDrawerOpen(true)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+        {drawerOpen && (
+          <div className={styles.drawer} role="dialog" aria-label="Navigation menu">
+            <div className={styles.drawerHeader}>
+              <span className={styles.drawerTitle}>Navigate</span>
+              <button
+                className={styles.closeButton}
+                type="button"
+                onClick={() => setDrawerOpen(false)}
+                aria-label="Close navigation"
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.drawerLinks}>
+              {appNav.map(item => (
+                <button key={item} className={styles.drawerLink} type="button">
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
       <header className={styles.hero}>
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>
