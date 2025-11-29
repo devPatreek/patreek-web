@@ -417,10 +417,8 @@ export default function RegistrationPage() {
     };
     try {
       await registerUser(payload);
-      setSignupStatus({
-        type: 'success',
-        message: 'Account created! Please check your email to verify and then sign in.',
-      });
+      // Redirect to submission success page
+      router.push('/submission');
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unable to sign up right now. Please try again.';

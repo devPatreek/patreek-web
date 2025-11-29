@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './SignupModal.module.css';
 import {
   Category,
@@ -23,6 +24,7 @@ type StatusState =
   | { type: 'error'; message: string };
 
 export default function SignupModal({ open, onClose, onSuccess }: SignupModalProps) {
+  const router = useRouter();
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -179,7 +181,8 @@ export default function SignupModal({ open, onClose, onSuccess }: SignupModalPro
     };
     try {
       await registerUser(payload);
-      setStatus({ type: 'success', message: 'Account created! Redirecting…' });
+      // Redirect to submission success page
+      router.push('/submission');
       onSuccess?.();
     } catch (error) {
       const message =

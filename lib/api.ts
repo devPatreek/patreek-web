@@ -20,6 +20,26 @@ export interface Category {
   children?: Category[];
 }
 
+export interface UserProfile {
+  id?: number | string;
+  name?: string;
+  username?: string;
+  email?: string;
+  createdAt?: string;
+  totalPats?: number;
+  totalShares?: number;
+  totalComments?: number;
+  coins?: number;
+}
+
+function authHeaders(token: string) {
+  return {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 export interface FeedsResponse {
   content: Feed[];
   totalElements: number;
@@ -86,6 +106,18 @@ export interface EmailAvailability {
   message: string;
 }
 
+export interface UserProfile {
+  id?: number | string;
+  name?: string;
+  username?: string;
+  email?: string;
+  createdAt?: string;
+  totalPats?: number;
+  totalShares?: number;
+  totalComments?: number;
+  coins?: number;
+}
+
 export async function getPublicFeeds(): Promise<Feed[]> {
   try {
     const controller = new AbortController();
@@ -132,6 +164,96 @@ export async function getPublicFeeds(): Promise<Feed[]> {
     } else {
       console.warn('[API] Unknown error fetching public feeds:', error);
     }
+    return [];
+  }
+}
+
+export async function getUserProfile(token: string): Promise<UserProfile | null> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(`${API_BASE_URL}/api/v1/user/profile`, {
+      method: 'GET',
+      headers: authHeaders(token),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch user profile:', response.status);
+      return null;
+    }
+    return response.json();
+  } catch (error) {
+    console.warn('[API] Error fetching user profile', error);
+    return null;
+  }
+}
+
+export async function getUserCategoriesAuth(token: string): Promise<Category[]> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(`${API_BASE_URL}/api/v1/categories`, {
+      method: 'GET',
+      headers: authHeaders(token),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch user categories:', response.status);
+      return [];
+    }
+    const data = await response.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.content)) return data.content;
+    if (Array.isArray(data?.categories)) return data.categories;
+    return [];
+  } catch (error) {
+    console.warn('[API] Error fetching user categories', error);
+    return [];
+  }
+}
+
+export async function getUserFeedsAuth(token: string): Promise<Feed[]> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(`${API_BASE_URL}/api/v1/feeds`, {
+      method: 'GET',
+      headers: authHeaders(token),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch user feeds:', response.status);
+      return [];
+    }
+    const data: FeedsResponse = await response.json();
+    return data.content || [];
+  } catch (error) {
+    console.warn('[API] Error fetching user feeds', error);
+    return [];
+  }
+}
+
+export async function getUserFeedsByCategoryAuth(token: string, categoryId: number): Promise<Feed[]> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(`${API_BASE_URL}/api/v1/feeds/category/${categoryId}`, {
+      method: 'GET',
+      headers: authHeaders(token),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch feeds for category:', response.status);
+      return [];
+    }
+    const data: FeedsResponse = await response.json();
+    return data.content || [];
+  } catch (error) {
+    console.warn('[API] Error fetching category feeds', error);
     return [];
   }
 }
