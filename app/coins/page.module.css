@@ -1,0 +1,214 @@
+.page {
+  min-height: 100vh;
+  background: #f7f8fa;
+  color: #1f1f1f;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: #ffffff;
+  border-bottom: 1px solid #e6e6e6;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logo {
+  height: auto;
+}
+
+.getApp {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.getAppText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4f5663;
+  margin-right: 4px;
+}
+
+.storeIcon {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.headerNav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.headerLink {
+  color: #4f5663;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.12s ease;
+}
+
+.headerLink:hover {
+  color: #0096dd;
+}
+
+.main {
+  flex: 1;
+  padding: 40px 16px;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.heading {
+  margin: 0 0 8px 0;
+  font-size: 36px;
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subhead {
+  margin: 0 0 32px 0;
+  color: #4f5663;
+  font-size: 16px;
+  text-align: center;
+}
+
+.coinsCard {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.coinsDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.coinsIcon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.coinsAmount {
+  font-size: 48px;
+  font-weight: 800;
+  color: #ffd700;
+  line-height: 1;
+}
+
+.coinsLabel {
+  font-size: 18px;
+  font-weight: 700;
+  color: #4f5663;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.coinsDescription {
+  margin: 0;
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.loading,
+.error {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
+.error {
+  background: #ffeef0;
+  color: #a4001d;
+  font-weight: 600;
+}
+
+.signInPrompt {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
+.signInPrompt p {
+  margin: 0 0 16px 0;
+  color: #4f5663;
+  font-size: 16px;
+}
+
+.signInLink {
+  display: inline-block;
+  background: linear-gradient(135deg, #7a4bce, #a65df6);
+  color: #ffffff;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.signInLink:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(122, 75, 206, 0.3);
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+
+  .getApp {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .headerNav {
+    order: 2;
+  }
+
+  .heading {
+    font-size: 28px;
+  }
+
+  .coinsCard {
+    padding: 24px;
+  }
+
+  .coinsAmount {
+    font-size: 36px;
+  }
+}
+
