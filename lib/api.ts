@@ -1,3 +1,5 @@
+import { getAuthHeaders, getSessionTokenFromStorage, setSessionTokenInStorage, removeSessionTokenFromStorage } from './session';
+
 const API_BASE_URL = 'https://api.patreek.com';
 
 export interface Feed {
@@ -6,6 +8,8 @@ export interface Feed {
   description: string;
   content: string;
   imageUrl: string;
+  source?: string;
+  publishedAt?: string;
   categoryName: string;
   createdAt: string;
   updatedAt: string;
@@ -25,11 +29,72 @@ export interface UserProfile {
   name?: string;
   username?: string;
   email?: string;
+  fullName?: string;
   createdAt?: string;
   totalPats?: number;
   totalShares?: number;
   totalComments?: number;
   coins?: number;
+  patCoins?: number;
+  countryCode?: string;
+  headline?: string;
+  bio?: string;
+  avatarUrl?: string;
+  rank?: {
+    name?: string;
+    level?: number;
+  } | null;
+  website?: string;
+  location?: string;
+}
+
+export interface MiniFeedItem {
+  id: number | string;
+  title: string;
+  link?: string;
+  categoryName?: string;
+  imageUrl?: string;
+  createdAt?: string;
+  engagementScore?: number;
+}
+
+// Community models
+export type LeaderboardMetric = 'shares' | 'comments' | 'pats' | 'coins';
+
+export interface LeaderboardEntry {
+  username: string;
+  displayName?: string;
+  avatarUrl?: string;
+  total: number;
+  rank: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  username: string;
+  displayName?: string;
+  avatarUrl?: string;
+  text: string;
+  createdAt: string;
+}
+
+export type NotificationType =
+  | 'tip_received'
+  | 'comment_reply'
+  | 'pat_received'
+  | 'share_milestone'
+  | 'system';
+
+export interface NotificationItem {
+  id: string;
+  type: NotificationType | string;
+  title: string;
+  message: string;
+  actorUsername?: string;
+  resourceType?: string;
+  resourceId?: string;
+  isRead: boolean;
+  createdAt: string;
 }
 
 function authHeaders(token: string) {
@@ -106,18 +171,6 @@ export interface EmailAvailability {
   message: string;
 }
 
-export interface UserProfile {
-  id?: number | string;
-  name?: string;
-  username?: string;
-  email?: string;
-  createdAt?: string;
-  totalPats?: number;
-  totalShares?: number;
-  totalComments?: number;
-  coins?: number;
-}
-
 export async function getPublicFeeds(): Promise<Feed[]> {
   try {
     const controller = new AbortController();
@@ -168,13 +221,58 @@ export async function getPublicFeeds(): Promise<Feed[]> {
   }
 }
 
-export async function getUserProfile(token: string): Promise<UserProfile | null> {
+export async function getUserProfileByUsername(username: string): Promise<UserProfile | null> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const response = await fetch(`${API_BASE_URL}/api/v1/user/profile/username/${encodeURIComponent(username)}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      credentials: 'include',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null; // User not found
+      }
+      console.warn('[API] Failed to fetch user profile by username:', response.status);
+      return null;
+    }
+    
+    const data = await response.json();
+    const profile = data.data || data || null;
+    return applyAvatarCache(profile, username);
+  } catch (error) {
+    console.warn('[API] Error fetching user profile by username', error);
+    return null;
+  }
+}
+
+export async function getUserProfile(token?: string): Promise<UserProfile | null> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+    };
+    
+    // Priority: 1. Explicit token parameter, 2. localStorage token, 3. Cookie (via credentials)
+    if (token) {
+      Object.assign(headers, authHeaders(token));
+    } else {
+      // Add localStorage token as header (fallback for cookie-restricted jurisdictions)
+      Object.assign(headers, getAuthHeaders());
+    }
+    
     const response = await fetch(`${API_BASE_URL}/api/v1/user/profile`, {
       method: 'GET',
-      headers: authHeaders(token),
+      headers,
+      credentials: 'include', // Include cookies (preferred method)
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -182,20 +280,35 @@ export async function getUserProfile(token: string): Promise<UserProfile | null>
       console.warn('[API] Failed to fetch user profile:', response.status);
       return null;
     }
-    return response.json();
+    const data = await response.json();
+    const profile = data.data || data || null;
+    return applyAvatarCache(profile);
   } catch (error) {
     console.warn('[API] Error fetching user profile', error);
     return null;
   }
 }
 
-export async function getUserCategoriesAuth(token: string): Promise<Category[]> {
+export async function getUserCategoriesAuth(token?: string): Promise<Category[]> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+    };
+    
+    // Priority: 1. Explicit token parameter, 2. localStorage token, 3. Cookie (via credentials)
+    if (token) {
+      Object.assign(headers, authHeaders(token));
+    } else {
+      Object.assign(headers, getAuthHeaders());
+    }
+    
     const response = await fetch(`${API_BASE_URL}/api/v1/categories`, {
       method: 'GET',
-      headers: authHeaders(token),
+      headers,
+      credentials: 'include', // Include cookies (preferred method)
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -214,13 +327,26 @@ export async function getUserCategoriesAuth(token: string): Promise<Category[]> 
   }
 }
 
-export async function getUserFeedsAuth(token: string): Promise<Feed[]> {
+export async function getUserFeedsAuth(token?: string): Promise<Feed[]> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+    };
+    
+    // Priority: 1. Explicit token parameter, 2. localStorage token, 3. Cookie (via credentials)
+    if (token) {
+      Object.assign(headers, authHeaders(token));
+    } else {
+      Object.assign(headers, getAuthHeaders());
+    }
+    
     const response = await fetch(`${API_BASE_URL}/api/v1/feeds`, {
       method: 'GET',
-      headers: authHeaders(token),
+      headers,
+      credentials: 'include', // Include cookies (preferred method)
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -236,13 +362,26 @@ export async function getUserFeedsAuth(token: string): Promise<Feed[]> {
   }
 }
 
-export async function getUserFeedsByCategoryAuth(token: string, categoryId: number): Promise<Feed[]> {
+export async function getUserFeedsByCategoryAuth(token: string | undefined, categoryId: number): Promise<Feed[]> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+    };
+    
+    // Priority: 1. Explicit token parameter, 2. localStorage token, 3. Cookie (via credentials)
+    if (token) {
+      Object.assign(headers, authHeaders(token));
+    } else {
+      Object.assign(headers, getAuthHeaders());
+    }
+    
     const response = await fetch(`${API_BASE_URL}/api/v1/feeds/category/${categoryId}`, {
       method: 'GET',
-      headers: authHeaders(token),
+      headers,
+      credentials: 'include', // Include cookies (preferred method)
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -529,6 +668,7 @@ export async function registerUser(payload: SignupPayload): Promise<SignupRespon
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      credentials: 'include', // Include cookies in request (preferred method)
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
@@ -537,7 +677,18 @@ export async function registerUser(payload: SignupPayload): Promise<SignupRespon
       const errorText = await response.text();
       throw new Error(errorText || 'Unable to sign up right now');
     }
-    return response.json();
+    const data = await response.json();
+    
+    // Store session token in localStorage as fallback for cookie-restricted jurisdictions
+    // Backend sets HTTP-only cookie (preferred), but we also store in localStorage
+    // Backend will check cookie first, then X-Session-Token header from localStorage
+    if (data.token) {
+      setSessionTokenInStorage(data.token);
+    } else if (data.data?.token) {
+      setSessionTokenInStorage(data.data.token);
+    }
+    
+    return data;
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === 'AbortError') {
@@ -557,6 +708,7 @@ export async function loginUser(payload: SigninPayload): Promise<SignupResponse>
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
+      credentials: 'include', // Include cookies in request (preferred method)
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
@@ -565,13 +717,60 @@ export async function loginUser(payload: SigninPayload): Promise<SignupResponse>
       const errorText = await response.text();
       throw new Error(errorText || 'Unable to sign in right now');
     }
-    return response.json();
+    const data = await response.json();
+    
+    // Store session token in localStorage as fallback for cookie-restricted jurisdictions
+    // Backend sets HTTP-only cookie (preferred), but we also store in localStorage
+    // Backend will check cookie first, then X-Session-Token header from localStorage
+    if (data.token) {
+      setSessionTokenInStorage(data.token);
+    } else if (data.data?.token) {
+      setSessionTokenInStorage(data.data.token);
+    }
+    
+    return data;
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Sign in timed out, please try again');
     }
     throw error instanceof Error ? error : new Error('Unknown sign in error');
+  }
+}
+
+/**
+ * Check if user has a valid session
+ * Tries cookie first (preferred), then localStorage token as header (fallback)
+ */
+export async function checkSessionStatus(): Promise<{ authenticated: boolean; message?: string }> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    // Get auth headers from localStorage (fallback for cookie-restricted jurisdictions)
+    const authHeaders = getAuthHeaders();
+    
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/session`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        ...authHeaders, // Include X-Session-Token header if available in localStorage
+      },
+      credentials: 'include', // Include cookies in request (preferred method)
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      return { authenticated: false };
+    }
+    const data = await response.json();
+    return {
+      authenticated: data.data?.authenticated === true,
+      message: data.data?.message,
+    };
+  } catch (error) {
+    console.warn('[API] Error checking session status:', error);
+    return { authenticated: false };
   }
 }
 
@@ -673,6 +872,901 @@ export async function checkEmailAvailability(email: string): Promise<EmailAvaila
   }
 }
 
+// Community APIs
+export async function getTopCoinHolder(): Promise<{ username?: string; name?: string; patCoins?: number }> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const response = await fetch(`${API_BASE_URL}/api/v1/analytics/top-coin-holder`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch top coin holder:', response.status);
+      return {};
+    }
+    const data = await response.json();
+    return {
+      username: data.username,
+      name: data.name,
+      patCoins: data.patCoins,
+    };
+  } catch (error) {
+    console.warn('[API] Error fetching top coin holder:', error);
+    return {};
+  }
+}
+
+function normalizeMiniFeedItems(payload: any): MiniFeedItem[] {
+  if (!payload) return [];
+  const data = payload.data || payload.content || payload.items || payload.trendingFeeds || payload;
+  if (!Array.isArray(data)) return [];
+  return data
+    .map((item: any) => ({
+      id: item.id ?? item.feedId ?? item.slug ?? Math.random().toString(),
+      title: item.title ?? item.name ?? 'Untitled',
+      link: item.link ?? item.url ?? (item.id ? `/pat/${item.id}` : undefined),
+      categoryName: item.categoryName ?? item.category ?? item.type,
+      imageUrl: item.imageUrl,
+      createdAt: item.createdAt,
+      engagementScore: item.engagementScore ?? item.count ?? item.score,
+    }))
+    .filter((item: MiniFeedItem) => Boolean(item.title));
+}
+
+/**
+ * Fetch the most recently read articles for a specific user.
+ * Falls back to global "top-5-recently-read-articles" if a user-specific endpoint isn't available yet.
+ */
+export async function getUserRecentReads(username: string): Promise<MiniFeedItem[]> {
+  const candidates = [
+    `${API_BASE_URL}/api/v1/analytics/user/${encodeURIComponent(username)}/recently-read`,
+    `${API_BASE_URL}/api/v1/analytics/user/${encodeURIComponent(username)}/top-5-recently-read`,
+    `${API_BASE_URL}/api/v1/analytics/top-5-recently-read-articles`,
+  ];
+
+  for (const url of candidates) {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const data = await response.json();
+      const items = normalizeMiniFeedItems(data);
+      if (items.length > 0) {
+        return items;
+      }
+    } catch (error) {
+      console.warn('[API] recent reads request failed', error);
+    }
+  }
+
+  return [];
+}
+
+/**
+ * Fetch the most recently patted articles for a specific user.
+ * Falls back to global "top-5-most-patted-articles" if a user-specific endpoint isn't available yet.
+ */
+export async function getUserRecentPats(username: string): Promise<MiniFeedItem[]> {
+  const candidates = [
+    `${API_BASE_URL}/api/v1/analytics/user/${encodeURIComponent(username)}/recent-pats`,
+    `${API_BASE_URL}/api/v1/analytics/user/${encodeURIComponent(username)}/top-5-pats`,
+    `${API_BASE_URL}/api/v1/analytics/top-5-most-patted-articles`,
+  ];
+
+  for (const url of candidates) {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const data = await response.json();
+      const items = normalizeMiniFeedItems(data);
+      if (items.length > 0) {
+        return items;
+      }
+    } catch (error) {
+      console.warn('[API] recent pats request failed', error);
+    }
+  }
+
+  return [];
+}
+
+export async function getCommunityLeaderboard(metric: LeaderboardMetric, limit = 10): Promise<LeaderboardEntry[]> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/community/leaderboard?metric=${metric}&limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] leaderboard request failed', response.status);
+      return mockLeaderboard(metric);
+    }
+    const data = await response.json();
+    const entries: LeaderboardEntry[] =
+      data?.data || data?.content || data || [];
+    return entries.map((item: any, idx: number) => ({
+      username: item.username || item.name || `user-${idx + 1}`,
+      displayName: item.displayName || item.name,
+      avatarUrl: item.avatarUrl,
+      total: item.total ?? item.score ?? 0,
+      rank: item.rank ?? idx + 1,
+    }));
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.warn('[API] leaderboard error', error);
+    return mockLeaderboard(metric);
+  }
+}
+
+export async function getCommunityChatHistory(roomId = 'global', cursor?: string): Promise<ChatMessage[]> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    const url = new URL(`${API_BASE_URL}/api/v1/community/chat/history`);
+    url.searchParams.set('roomId', roomId);
+    if (cursor) url.searchParams.set('cursor', cursor);
+
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        ...getAuthHeaders(),
+      },
+      credentials: 'include',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] chat history request failed', response.status);
+      return mockChat();
+    }
+    const data = await response.json();
+    return (data?.data || data?.messages || data || []).map((m: any, idx: number) => ({
+      id: m.id?.toString() || `${roomId}-${idx}`,
+      username: m.username || m.user || 'anon',
+      displayName: m.displayName || m.name,
+      avatarUrl: m.avatarUrl,
+      text: m.text || m.message || '',
+      createdAt: m.createdAt || m.timestamp || new Date().toISOString(),
+    }));
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.warn('[API] chat history error', error);
+    return mockChat();
+  }
+}
+
+export async function sendCommunityChatMessage(
+  roomId: string,
+  text: string,
+  command?: { name: string; args?: string[] }
+): Promise<boolean> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    const body: Record<string, any> = { roomId, text };
+    if (command?.name) {
+      body.command = command.name;
+      if (command.args) body.args = command.args;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/community/chat/message`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...getAuthHeaders(),
+      },
+      credentials: 'include',
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] chat send failed', response.status);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.warn('[API] chat send error', error);
+    return false;
+  }
+}
+
+export async function getNotifications(limit = 20): Promise<NotificationItem[]> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/notifications?limit=${limit}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json', ...getAuthHeaders() },
+      credentials: 'include',
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] notifications request failed', response.status);
+      return mockNotifications();
+    }
+    const data = await response.json();
+    return (data?.data || data?.content || data || []).map((n: any, idx: number) => ({
+      id: String(n.id ?? `notif-${idx}`),
+      type: n.type ?? 'system',
+      title: n.title ?? 'Notification',
+      message: n.message ?? '',
+      actorUsername: n.actorUsername,
+      resourceType: n.resourceType,
+      resourceId: n.resourceId,
+      isRead: Boolean(n.isRead),
+      createdAt: n.createdAt ?? new Date().toISOString(),
+    }));
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.warn('[API] notifications error', error);
+    return mockNotifications();
+  }
+}
+
+export interface MessageNestItem {
+  id: number | string;
+  senderId?: string;
+  senderUsername?: string;
+  senderName?: string;
+  recipientId?: string;
+  recipientUsername?: string;
+  recipientName?: string;
+  subject?: string;
+  body: string;
+  read: boolean;
+  readAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export async function getMessageNest(page = 0, size = 20): Promise<{ content: MessageNestItem[]; totalElements: number; totalPages: number }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/message-nest?page=${page}&size=${size}&sort=createdAt&direction=DESC`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        ...getAuthHeaders(),
+      },
+      credentials: 'include',
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] message nest request failed', response.status);
+      return { content: [], totalElements: 0, totalPages: 0 };
+    }
+    const data = await response.json();
+    const messages = data?.data?.content || data?.content || data?.data || [];
+    return {
+      content: messages.map((m: any) => ({
+        id: m.id ?? m.messageId,
+        senderId: m.senderId,
+        senderUsername: m.senderUsername,
+        senderName: m.senderName,
+        recipientId: m.recipientId,
+        recipientUsername: m.recipientUsername,
+        recipientName: m.recipientName,
+        subject: m.subject,
+        body: m.body ?? m.message ?? '',
+        read: Boolean(m.read),
+        readAt: m.readAt,
+        createdAt: m.createdAt ?? m.created_at ?? new Date().toISOString(),
+        updatedAt: m.updatedAt ?? m.updated_at,
+      })),
+      totalElements: data?.data?.totalElements ?? data?.totalElements ?? messages.length,
+      totalPages: data?.data?.totalPages ?? data?.totalPages ?? 1,
+    };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.warn('[API] message nest error', error);
+    return { content: [], totalElements: 0, totalPages: 0 };
+  }
+}
+
+export interface AdminFeedbackMessage {
+  id: number;
+  userId?: string;
+  name?: string;
+  email?: string;
+  title?: string;
+  body: string;
+  status: 'open' | 'closed';
+  read: boolean;
+  readAt?: string;
+  createdAt: string;
+}
+
+export interface AdminFeedbackPage {
+  content: AdminFeedbackMessage[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+export async function checkAdminSession(): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/admin/session`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      credentials: 'include',
+    });
+    const data = await response.json();
+    return data.data?.authenticated === true;
+  } catch {
+    return false;
+  }
+}
+
+export async function adminLogin(username: string, password: string): Promise<boolean> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ username, password }),
+  });
+  const data = await response.json();
+  return data.data?.authenticated === true;
+}
+
+export async function getAdminSupportMessages(
+  page = 0,
+  size = 20,
+  status?: 'open' | 'closed'
+): Promise<AdminFeedbackPage> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  });
+  if (status) {
+    params.append('status', status);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/support-messages?${params}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch support messages');
+  }
+
+  const data = await response.json();
+  return data.data || { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20 };
+}
+
+export async function markSupportMessageAsRead(id: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/support-messages/${id}/read`, {
+    method: 'PATCH',
+    headers: {
+      Accept: 'application/json',
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to mark message as read');
+  }
+}
+
+export async function updateSupportMessageStatus(
+  id: number,
+  status: 'open' | 'closed'
+): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/support-messages/${id}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update message status');
+  }
+}
+
+// ========== Admin User Management ==========
+
+export interface AdminUser {
+  id: string;
+  username?: string;
+  name?: string;
+  email?: string;
+  headline?: string;
+  countryCode?: string;
+  avatarUrl?: string;
+  emailVerified?: boolean;
+  suspended?: boolean;
+  suspendedAt?: string;
+  suspensionReason?: string;
+  totalPats?: number;
+  totalShares?: number;
+  totalComments?: number;
+  patCoins?: number;
+  rankName?: string;
+  rankLevel?: number;
+  referralCode?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminUserPage {
+  content: AdminUser[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+export async function getAdminUsers(
+  page = 0,
+  size = 20,
+  search?: string
+): Promise<AdminUserPage> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  });
+  if (search) {
+    params.append('search', search);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users?${params}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch users');
+  }
+
+  const data = await response.json();
+  return data.data || { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20 };
+}
+
+export async function getAdminUser(userId: string): Promise<AdminUser> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch user');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function updateAdminUser(
+  userId: string,
+  updates: { name?: string; headline?: string; email?: string }
+): Promise<AdminUser> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to update user');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function suspendAdminUser(userId: string, reason: string): Promise<AdminUser> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}/suspend`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ reason }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to suspend user');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function unsuspendAdminUser(userId: string): Promise<AdminUser> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}/unsuspend`, {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to unsuspend user');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function updateAdminUserCoins(userId: string, coins: number): Promise<AdminUser> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}/coins`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ coins }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to update user coins');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+// ========== Admin Feed Management ==========
+
+export interface AdminFeed {
+  id: number;
+  title?: string;
+  excerpt?: string;
+  body?: string;
+  imageUrl?: string;
+  sourceUrl?: string;
+  countryCode?: string;
+  published?: boolean;
+  featured?: boolean;
+  hidden?: boolean;
+  readCount?: number;
+  categoryId?: number;
+  categoryName?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminFeedPage {
+  content: AdminFeed[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+export async function getAdminFeeds(
+  page = 0,
+  size = 20,
+  search?: string
+): Promise<AdminFeedPage> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  });
+  if (search) {
+    params.append('search', search);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/feeds?${params}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch feeds');
+  }
+
+  const data = await response.json();
+  return data.data || { content: [], totalElements: 0, totalPages: 0, number: 0, size: 20 };
+}
+
+export async function getAdminFeed(feedId: number): Promise<AdminFeed> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/feeds/${feedId}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch feed');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function deleteAdminFeed(feedId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/feeds/${feedId}`, {
+    method: 'DELETE',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to delete feed');
+  }
+}
+
+export async function hideAdminFeed(feedId: number): Promise<AdminFeed> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/feeds/${feedId}/hide`, {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to hide feed');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function unhideAdminFeed(feedId: number): Promise<AdminFeed> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/feeds/${feedId}/unhide`, {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to unhide feed');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function featureAdminFeed(feedId: number): Promise<AdminFeed> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/feeds/${feedId}/feature`, {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to feature feed');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function unfeatureAdminFeed(feedId: number): Promise<AdminFeed> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/feeds/${feedId}/unfeature`, {
+    method: 'POST',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to unfeature feed');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function updateAdminFeedPublished(feedId: number, published: boolean): Promise<AdminFeed> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/feeds/${feedId}/published`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ published }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to update feed published status');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+// ========== Admin Activity Logs ==========
+
+export interface AdminActivityLog {
+  id: number;
+  actionType: string;
+  actionDescription: string;
+  adminIp?: string;
+  targetType?: string;
+  targetId?: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+}
+
+export interface AdminActivityLogPage {
+  content: AdminActivityLog[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+export async function getAdminActivityLogs(
+  page = 0,
+  size = 50,
+  actionType?: string
+): Promise<AdminActivityLogPage> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  });
+  if (actionType) {
+    params.append('actionType', actionType);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/activity-logs?${params}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch activity logs');
+  }
+
+  const data = await response.json();
+  return data.data || { content: [], totalElements: 0, totalPages: 0, number: 0, size: 50 };
+}
+
+export async function markNotificationsRead(ids?: string[]): Promise<void> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    await fetch(`${API_BASE_URL}/api/v1/notifications/read`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...getAuthHeaders() },
+      credentials: 'include',
+      cache: 'no-store',
+      signal: controller.signal,
+      body: JSON.stringify({ ids: ids && ids.length ? ids : undefined, all: !ids || !ids.length }),
+    });
+  } catch (error) {
+    console.warn('[API] mark notifications read error', error);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+export async function getUnreadNotificationCount(): Promise<number> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/notifications/unread-count`, {
+      method: 'GET',
+      headers: { Accept: 'application/json', ...getAuthHeaders() },
+      credentials: 'include',
+      cache: 'no-store',
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    if (!response.ok) {
+      console.warn('[API] unread count request failed', response.status);
+      return mockNotifications().filter(n => !n.isRead).length;
+    }
+    const data = await response.json();
+    return data?.count ?? data?.total ?? 0;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.warn('[API] unread count error', error);
+    return mockNotifications().filter(n => !n.isRead).length;
+  }
+}
+
+function mockLeaderboard(metric: LeaderboardMetric): LeaderboardEntry[] {
+  const sampleNames = ['Ava', 'Liam', 'Noah', 'Mia', 'Ethan', 'Zara', 'Leo', 'Sofia', 'Mateo', 'Isla'];
+  return sampleNames.map((name, idx) => ({
+    username: `${name.toLowerCase()}${idx + 1}`,
+    displayName: name,
+    total: 1200 - idx * 47 + (metric === 'pats' ? 30 : 0),
+    rank: idx + 1,
+  }));
+}
+
+function mockChat(): ChatMessage[] {
+  const now = Date.now();
+  return [
+    {
+      id: 'c1',
+      username: 'sam',
+      displayName: 'Sam',
+      text: 'Welcome to the community lounge!',
+      createdAt: new Date(now - 1000 * 60 * 2).toISOString(),
+    },
+    {
+      id: 'c2',
+      username: 'jules',
+      displayName: 'Jules',
+      text: 'Leaderboard just updated — go sharers!',
+      createdAt: new Date(now - 1000 * 30).toISOString(),
+    },
+  ];
+}
+
+function mockNotifications(): NotificationItem[] {
+  const now = Date.now();
+  return [
+    {
+      id: 'n1',
+      type: 'tip_received',
+      title: 'You received a tip',
+      message: '@jules sent you 2.5 Pat Coins',
+      actorUsername: 'jules',
+      isRead: false,
+      createdAt: new Date(now - 1000 * 60 * 5).toISOString(),
+    },
+    {
+      id: 'n2',
+      type: 'comment_reply',
+      title: 'New reply on your post',
+      message: '@sam replied to your comment',
+      actorUsername: 'sam',
+      isRead: true,
+      createdAt: new Date(now - 1000 * 60 * 45).toISOString(),
+    },
+  ];
+}
+
 /**
  * Get Cognito Hosted UI URL for social authentication (Google/Apple SSO)
  * Uses Cognito's Hosted UI directly, not Spring OAuth2
@@ -680,6 +1774,228 @@ export async function checkEmailAvailability(email: string): Promise<EmailAvaila
  * Note: You need to configure NEXT_PUBLIC_COGNITO_CLIENT_ID and NEXT_PUBLIC_COGNITO_OAUTH_DOMAIN
  * in your environment variables or update the hardcoded values below.
  */
+/**
+ * Sign out the current user
+ * Clears both cookie (via backend) and localStorage (fallback)
+ */
+export interface UpdateProfilePayload {
+  name?: string;
+  headline?: string;
+}
+
+type AvatarCacheEntry = {
+  url: string;
+  expiresAt: number;
+};
+
+const AVATAR_CACHE_PREFIX = 'pat_avatar_';
+const AVATAR_CACHE_TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
+const isBrowser = () => typeof window !== 'undefined';
+
+const avatarCacheKey = (username?: string) =>
+  username ? `${AVATAR_CACHE_PREFIX}${username.toLowerCase()}` : '';
+
+function readAvatarFromCache(username?: string): string | null {
+  if (!isBrowser() || !username) return null;
+  try {
+    const raw = localStorage.getItem(avatarCacheKey(username));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as AvatarCacheEntry;
+    if (!parsed?.url || !parsed?.expiresAt) {
+      localStorage.removeItem(avatarCacheKey(username));
+      return null;
+    }
+    if (Date.now() > parsed.expiresAt) {
+      localStorage.removeItem(avatarCacheKey(username));
+      return null;
+    }
+    return parsed.url;
+  } catch {
+    return null;
+  }
+}
+
+function writeAvatarCache(username: string | undefined, url: string | undefined, ttlMs = AVATAR_CACHE_TTL_MS) {
+  if (!isBrowser() || !username || !url) return;
+  try {
+    const entry: AvatarCacheEntry = { url, expiresAt: Date.now() + ttlMs };
+    localStorage.setItem(avatarCacheKey(username), JSON.stringify(entry));
+    const maxAge = Math.floor(ttlMs / 1000);
+    document.cookie = `${avatarCacheKey(username)}=${encodeURIComponent(url)}; max-age=${maxAge}; path=/`;
+  } catch {
+    // non-fatal
+  }
+}
+
+function applyAvatarCache(profile: UserProfile | null, fallbackUsername?: string): UserProfile | null {
+  if (!profile) return profile;
+  const username = profile.username || fallbackUsername;
+  const cached = readAvatarFromCache(username);
+  if (cached && !profile.avatarUrl) {
+    profile.avatarUrl = cached;
+  } else if (profile.avatarUrl && username) {
+    writeAvatarCache(username, profile.avatarUrl);
+  }
+  return profile;
+}
+
+export async function updateProfile(payload: UpdateProfilePayload): Promise<UserProfile> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const headers = getAuthHeaders(); // Get X-Session-Token from localStorage if available
+
+    const response = await fetch(`${API_BASE_URL}/api/v1/user/profile`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...headers, // Include X-Session-Token header if available
+      },
+      credentials: 'include', // Include cookies
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = 'Failed to update profile';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch {
+        errorMessage = errorText || errorMessage;
+      }
+      throw new Error(errorMessage);
+    }
+    
+    const data = await response.json();
+    return data.data || data;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Update timed out, please try again');
+    }
+    throw error instanceof Error ? error : new Error('Unknown error updating profile');
+  }
+}
+
+export async function uploadAvatar(file: File): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+    const headers = {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    };
+
+    // 1) Request presigned URL
+    const presignRes = await fetch(`${API_BASE_URL}/api/v1/user/profile/avatar/presign`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        contentType: file.type || 'application/octet-stream',
+        contentLength: file.size,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!presignRes.ok) {
+      clearTimeout(timeoutId);
+      console.warn('[API] Avatar presign failed:', presignRes.status);
+      return null;
+    }
+
+    const presignJson = await presignRes.json();
+    const presign = presignJson?.data || presignJson;
+    if (!presign?.uploadUrl || !presign?.key) {
+      clearTimeout(timeoutId);
+      console.warn('[API] Invalid presign payload', presignJson);
+      return null;
+    }
+
+    // 2) Upload to S3
+    const uploadHeaders: Record<string, string> = {};
+    if (file.type) uploadHeaders['Content-Type'] = file.type;
+    const uploadRes = await fetch(presign.uploadUrl, {
+      method: 'PUT',
+      headers: uploadHeaders,
+      body: file,
+      signal: controller.signal,
+    });
+    if (!uploadRes.ok) {
+      clearTimeout(timeoutId);
+      console.warn('[API] Avatar PUT failed:', uploadRes.status);
+      return null;
+    }
+
+    // 3) Confirm and persist
+    const confirmRes = await fetch(`${API_BASE_URL}/api/v1/user/profile/avatar/confirm`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        key: presign.key,
+        publicUrl: presign.publicUrl,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!confirmRes.ok) {
+      console.warn('[API] Avatar confirm failed:', confirmRes.status);
+      return presign.publicUrl || null;
+    }
+
+    const confirmJson = await confirmRes.json();
+    const updatedProfile: UserProfile | null = confirmJson?.data || confirmJson || null;
+    const url = updatedProfile?.avatarUrl || presign.publicUrl || null;
+    if (url) {
+      writeAvatarCache(updatedProfile?.username, url);
+    }
+    return url;
+  } catch (error) {
+    console.warn('[API] Avatar upload error:', error);
+    return null;
+  }
+}
+
+export async function signOut(): Promise<void> {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    // Get auth headers from localStorage (fallback for cookie-restricted jurisdictions)
+    const authHeaders = getAuthHeaders();
+    
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/signout`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        ...authHeaders, // Include X-Session-Token header if available in localStorage
+      },
+      credentials: 'include', // Include cookies (preferred method)
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    
+    // Always clear localStorage regardless of response (best effort)
+    removeSessionTokenFromStorage();
+    
+    if (!response.ok) {
+      console.warn('[API] Sign-out request failed:', response.status);
+    }
+  } catch (error) {
+    // Still clear localStorage even if request fails
+    removeSessionTokenFromStorage();
+    console.warn('[API] Error during sign-out:', error);
+  }
+}
+
 export function getSocialAuthUrl(provider: 'google' | 'apple', redirectUri: string) {
   // Cognito OAuth configuration
   // TODO: Move these to environment variables

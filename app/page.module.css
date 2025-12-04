@@ -425,9 +425,21 @@
   max-width: 1280px;
   margin: 0 auto 20px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   padding: 0 16px;
+}
+
+@media (max-width: 1024px) {
+  .analyticsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .analyticsRow {
+    grid-template-columns: 1fr;
+  }
 }
 
 .analyticsCard {
@@ -770,6 +782,54 @@
   margin-top: 12px;
 }
 
+.forYouHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.forYouLink {
+  color: #0096dd;
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.forYouLink:hover {
+  text-decoration: underline;
+}
+
+.forYouTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.forYouTabButton {
+  border: 1px solid #e3e3e3;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.forYouTabButton:hover {
+  border-color: #00b0ad;
+  color: #00b0ad;
+}
+
+.forYouTabActive {
+  background: #00b0ad;
+  border-color: #00b0ad;
+  color: #ffffff;
+  box-shadow: 0 6px 16px rgba(0, 176, 173, 0.25);
+}
+
 .forYouFeed {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -857,6 +917,24 @@
   margin: 0;
   font-size: 18px;
   font-weight: 800;
+}
+
+@media (prefers-color-scheme: dark) {
+  .forYou {
+    background: #2e2e2e;
+  }
+  .forYouTabButton {
+    border-color: #444;
+    background: #2e2e2e;
+    color: #eaeaea;
+  }
+  .forYouTabButton:hover {
+    border-color: #00b0ad;
+    color: #00b0ad;
+  }
+  .forYouTabActive {
+    color: #ffffff;
+  }
 }
 
 .signupSubhead {

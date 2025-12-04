@@ -30,7 +30,7 @@ type Status =
 
 export default function RegistrationPage() {
   const router = useRouter();
-  const [activeForm, setActiveForm] = useState<'signup' | 'signin'>('signup');
+  const [activeForm, setActiveForm] = useState<'signup' | 'signin'>('signin');
 
   // Sign up form state
   const [name, setName] = useState('');
@@ -451,12 +451,19 @@ export default function RegistrationPage() {
     };
     try {
       const response = await loginUser(payload);
-      const sessionValue = response.token || 'signed_in';
-      if (typeof window !== 'undefined') {
-        window.localStorage.setItem('patreek_session', sessionValue);
-      }
+      // Session token is now set as HTTP-only cookie by backend
+      // No need to store in localStorage - cookie is automatically sent with requests
       setSigninStatus({ type: 'success', message: 'Signed in! Redirecting…' });
-      router.push('/');
+      
+      // Get user profile to redirect to their home page
+      const { getUserProfile } = await import('@/lib/api');
+      const profile = await getUserProfile();
+      if (profile?.username) {
+        router.push(`/u/${profile.username}`);
+      } else {
+        // Fallback to home if username not available
+        router.push('/home');
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unable to sign in right now. Please try again.';

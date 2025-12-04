@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -44,7 +45,26 @@ export default function RootLayout({
           href="https://cdn.prod.website-files.com/675ca775325477a121669e3c/67ab990473bace7594cd4617_patreek-logo.png"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <Script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-FB8Z4PH6J9"
+          strategy="afterInteractive"
+        />
+        <Script
+          id="ga-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-FB8Z4PH6J9');
+            `,
+          }}
+        />
+        {children}
+      </body>
     </html>
   );
 }
