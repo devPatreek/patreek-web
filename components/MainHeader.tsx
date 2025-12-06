@@ -16,7 +16,7 @@ import {
 import ProfileIcon from './ProfileIcon';
 import NestIcon from './NestIcon';
 
-type ActiveKey = 'coins' | 'store' | 'media' | 'community' | 'opinion' | 'home';
+type ActiveKey = 'coins' | 'shop' | 'media' | 'community' | 'opinion' | 'home' | 'auth';
 
 type Props = {
   active?: ActiveKey;
@@ -122,7 +122,7 @@ export default function MainHeader({ active, hasSession = false }: Props) {
   const navButtons: { key: ActiveKey; label: string; onClick: () => void }[] = [
     { key: 'home', label: 'Home', onClick: handleHomeClick },
     { key: 'coins', label: 'Coins', onClick: () => router.push('/coins') },
-    { key: 'store', label: 'Store', onClick: () => window.open('https://store.patreek.com', '_blank') },
+    { key: 'shop', label: 'Shop', onClick: () => window.open('https://shop.patreek.com', '_blank') },
     { key: 'media', label: 'Media', onClick: () => router.push('/media') },
     { key: 'community', label: 'Community', onClick: () => router.push('/community') },
     { key: 'opinion', label: 'Opinion', onClick: () => router.push('/opinion') },
@@ -265,6 +265,7 @@ function deriveActive(pathname?: string | null): ActiveKey | undefined {
   if (pathname.startsWith('/media')) return 'media';
   if (pathname.startsWith('/community')) return 'community';
   if (pathname.startsWith('/opinion')) return 'opinion';
+  if (pathname.startsWith('/registration') || pathname.startsWith('/forgot-password')) return 'auth';
   if (pathname === '/' || pathname.startsWith('/u/')) return 'home';
   return undefined;
 }
