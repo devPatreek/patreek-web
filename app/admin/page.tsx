@@ -68,9 +68,12 @@ export default function AdminPage() {
   const [activityTypeFilter, setActivityTypeFilter] = useState<string>('');
 
   useEffect(() => {
+    let isMounted = true;
     const checkAuth = async () => {
       try {
         const authenticated = await checkAdminSession();
+        if (!isMounted) return;
+        
         if (authenticated) {
           setIsAuthenticated(true);
         } else {
@@ -78,13 +81,30 @@ export default function AdminPage() {
         }
       } catch (error) {
         console.error('Error checking admin session:', error);
+        if (!isMounted) return;
         router.replace('/admin/passcode');
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     checkAuth();
+    
+    // Fallback timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (isMounted) {
+        console.warn('Admin session check timed out, redirecting to login');
+        setIsLoading(false);
+        router.replace('/admin/passcode');
+      }
+    }, 10000); // 10 second fallback
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
   }, [router]);
 
   useEffect(() => {

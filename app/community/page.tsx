@@ -25,6 +25,7 @@ const metrics: MetricConfig[] = [
   { key: 'shares', label: 'Top Sharers', accent: 'var(--accent-blue)', helper: 'Most article shares' },
   { key: 'comments', label: 'Top Commenters', accent: 'var(--accent-orange)', helper: 'Most comments' },
   { key: 'pats', label: 'Top Patters', accent: 'var(--accent-teal)', helper: 'Most pats given' },
+  { key: 'coins', label: 'Top Coin Holders', accent: 'var(--accent-gold, #f2c94c)', helper: 'Largest Pat Coin balances' },
 ];
 
 export default function CommunityPage() {
@@ -64,12 +65,10 @@ export default function CommunityPage() {
       try {
         setLoadingBoards(true);
         const results = await Promise.all(metrics.map(m => getCommunityLeaderboard(m.key, 10)));
-        const next: Record<LeaderboardMetric, LeaderboardEntry[]> = {
-          shares: results[0],
-          comments: results[1],
-          pats: results[2],
-          coins: [],
-        };
+        const next = metrics.reduce((acc, cfg, idx) => {
+          acc[cfg.key] = results[idx] ?? [];
+          return acc;
+        }, {} as Record<LeaderboardMetric, LeaderboardEntry[]>);
         setLeaderboards(next);
       } finally {
         setLoadingBoards(false);

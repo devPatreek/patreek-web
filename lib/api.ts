@@ -161,6 +161,15 @@ export interface SigninPayload {
   rememberMe?: boolean;
 }
 
+export interface ResetPasswordRequestPayload {
+  email: string;
+}
+
+export interface ResetPasswordConfirmPayload {
+  token: string;
+  newPassword: string;
+}
+
 export interface UsernameAvailability {
   available: boolean;
   message: string;
@@ -738,6 +747,40 @@ export async function loginUser(payload: SigninPayload): Promise<SignupResponse>
   }
 }
 
+export async function requestPasswordReset(email: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/reset-request`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ email } as ResetPasswordRequestPayload),
+    });
+    return response.ok;
+  } catch (error) {
+    console.warn('[API] Error requesting password reset', error);
+    return false;
+  }
+}
+
+export async function confirmPasswordReset(token: string, newPassword: string): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/reset-confirm`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ token, newPassword } as ResetPasswordConfirmPayload),
+    });
+    return response.ok;
+  } catch (error) {
+    console.warn('[API] Error confirming password reset', error);
+    return false;
+  }
+}
+
 /**
  * Check if user has a valid session
  * Tries cookie first (preferred), then localStorage token as header (fallback)
@@ -1220,18 +1263,114 @@ export interface AdminFeedbackPage {
   size: number;
 }
 
+// Opinion models
+export interface Opinion {
+  id: number;
+  content: string;
+  image?: string;
+  timestamp: string;
+  userId: string;
+  userName?: string;
+  userAvatarUrl?: string;
+  source1?: string;
+  source2?: string;
+  categoryId: number;
+  categoryName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OpinionPage {
+  content: Opinion[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
+}
+
+/**
+ * Get all opinions (public endpoint)
+ * @param page Page number (0-indexed)
+ * @param size Page size
+ * @param categoryId Optional category filter
+ */
+export async function getOpinions(page = 0, size = 20, categoryId?: number): Promise<OpinionPage> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+  });
+  if (categoryId) {
+    params.append('categoryId', categoryId.toString());
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/v1/opinions?${params}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    credentials: 'omit',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch opinions: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+/**
+ * Get opinion by ID (public endpoint)
+ */
+export async function getOpinionById(id: number): Promise<Opinion | null> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/opinions/${id}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+    credentials: 'omit',
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null;
+    }
+    throw new Error(`Failed to fetch opinion: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
 export async function checkAdminSession(): Promise<boolean> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
     const response = await fetch(`${API_BASE_URL}/api/v1/admin/session`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
       },
       credentials: 'include',
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      console.error('Admin session check failed:', response.status, response.statusText);
+      return false;
+    }
+    
     const data = await response.json();
     return data.data?.authenticated === true;
-  } catch {
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error('Admin session check timed out');
+    } else {
+      console.error('Admin session check error:', error);
+    }
     return false;
   }
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import MainHeader from '@/components/MainHeader';
 import styles from './page.module.css';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
@@ -16,6 +17,11 @@ export default function ContactPage() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    const trimmedBody = body.trim();
+    if (trimmedBody.length < 5) {
+      setError('Message must be at least 5 characters.');
+      return;
+    }
     setStatus('submitting');
     setError(null);
     try {
@@ -29,12 +35,22 @@ export default function ContactPage() {
           name,
           email,
           title,
-          body,
+          body: trimmedBody,
         }),
       });
       if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || 'Unable to submit feedback right now');
+        let message = 'Unable to submit feedback right now';
+        try {
+          const data = await response.json();
+          message =
+            data?.error?.details?.message ||
+            data?.error?.message ||
+            data?.message ||
+            message;
+        } catch {
+          // fall through
+        }
+        throw new Error(message);
       }
       setStatus('success');
     } catch (err) {
@@ -43,11 +59,21 @@ export default function ContactPage() {
     }
   };
 
-  const disabled = status === 'submitting' || status === 'success';
+  const disabled =
+    status === 'submitting' ||
+    status === 'success' ||
+    body.trim().length < 5;
 
   return (
     <div className={styles.page}>
+      <MainHeader hasSession={false} />
+
       <header className={styles.header}>
+        <div className={styles.breadcrumb}>
+          <Link href="/" className={styles.backLink}>
+            ← Back to home
+          </Link>
+        </div>
         <h1 className={styles.heading}>Contact Patreek</h1>
         <p className={styles.subhead}>Send us feedback, requests, or partnership ideas.</p>
       </header>
@@ -117,8 +143,11 @@ export default function ContactPage() {
                 placeholder="My contact message here"
                 rows={6}
                 required
+                minLength={5}
+                maxLength={10000}
                 disabled={disabled}
               />
+              <p className={styles.helper}>Minimum 5 characters. Max 10,000.</p>
             </div>
             {status === 'error' && <div className={styles.error}>{error}</div>}
             <button type="submit" className={styles.submit} disabled={disabled}>

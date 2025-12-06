@@ -13,6 +13,12 @@
   text-align: center;
 }
 
+.breadcrumb {
+  max-width: 720px;
+  margin: 0 auto 8px;
+  text-align: left;
+}
+
 .heading {
   margin: 0 0 6px 0;
   font-size: 28px;

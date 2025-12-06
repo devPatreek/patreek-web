@@ -1,71 +1,76 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './page.module.css';
-
-type OpinionItem = {
-  id: number;
-  title: string;
-  dek: string;
-  author: string;
-  ageLabel: string;
-  image?: string;
-  tag?: string;
-};
+import { getOpinions, Opinion } from '@/lib/api';
 
 const navTags = ['White House', 'Congress', 'Civil Rights', 'World', 'Science'];
 const appNav = ['Coins', 'Store', 'Media', 'Community', 'Opinion'];
 
-const opinions: OpinionItem[] = [
-  {
-    id: 1,
-    title: 'Too many parents are prosecuted due to junk science. New Jersey finally admitted it.',
-    dek: 'The New Jersey ruling underscores how thin empirical support is for much of the forensic evidence used in criminal cases.',
-    author: 'John Pfaff',
-    ageLabel: '4d ago',
-    image: 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?auto=format&fit=crop&w=600&q=80',
-    tag: 'Justice',
-  },
-  {
-    id: 2,
-    title: 'There’s nothing subtle about the politics of “Wicked: For Good.”',
-    dek: 'The similarities between our country and the fictional Oz are unmissable. But will movie-goers react to political messaging?',
-    author: 'Jen Chaney',
-    ageLabel: '7d ago',
-    image: 'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=600&q=80',
-    tag: 'Culture',
-  },
-  {
-    id: 3,
-    title: 'Let’s count the ways a reported Ukraine plan rewards Vladimir Putin.',
-    dek: 'The proposal rewards Russian aggression — no real surprise given the history of leaning harder on Zelenskyy than Putin.',
-    author: 'Nicholas Grossman',
-    ageLabel: '7d ago',
-    image: 'https://images.unsplash.com/photo-1521292270410-a8c0c9f6d37e?auto=format&fit=crop&w=600&q=80',
-    tag: 'World',
-  },
-  {
-    id: 4,
-    title: 'One stat reveals how much of a “populist” agenda is funded by billionaires.',
-    dek: 'A new report shows an astonishing trend in the way the ultra-wealthy are intervening in politics.',
-    author: 'Zeeshan Aleem',
-    ageLabel: '1w ago',
-    image: 'https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=600&q=80',
-    tag: 'Economy',
-  },
-  {
-    id: 5,
-    title: 'Why a “quiet, piggy” comment should be seen as a warning.',
-    dek: 'The vicious and casual comment represents the normalization of misogyny in political culture — and is a potential threat to democracy.',
-    author: 'Cynthia Miller-Idriss',
-    ageLabel: '1w ago',
-    image: 'https://images.unsplash.com/photo-1509099836639-18ba02e2e1ba?auto=format&fit=crop&w=600&q=80',
-    tag: 'Culture',
-  },
-];
+function formatTimeAgo(timestamp: string): string {
+  const now = new Date();
+  const time = new Date(timestamp);
+  const diffMs = now.getTime() - time.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  const diffWeeks = Math.floor(diffDays / 7);
+  const diffMonths = Math.floor(diffDays / 30);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffWeeks < 4) return `${diffWeeks}w ago`;
+  if (diffMonths < 12) return `${diffMonths}mo ago`;
+  return `${Math.floor(diffDays / 365)}y ago`;
+}
+
+function extractTitle(content: string): string {
+  // Extract first sentence or first 100 chars
+  const sentenceEnd = content.search(/[.!?]/);
+  if (sentenceEnd > 0 && sentenceEnd < 200) {
+    return content.substring(0, sentenceEnd + 1);
+  }
+  return content.length > 100 ? content.substring(0, 100) + '...' : content;
+}
+
+function extractDek(content: string): string {
+  // Extract second sentence or content after first sentence
+  const firstSentenceEnd = content.search(/[.!?]/);
+  if (firstSentenceEnd > 0) {
+    const remaining = content.substring(firstSentenceEnd + 1).trim();
+    const secondSentenceEnd = remaining.search(/[.!?]/);
+    if (secondSentenceEnd > 0) {
+      return remaining.substring(0, secondSentenceEnd + 1);
+    }
+    return remaining.length > 150 ? remaining.substring(0, 150) + '...' : remaining;
+  }
+  return content.length > 150 ? content.substring(0, 150) + '...' : content;
+}
 
 export default function OpinionPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [opinions, setOpinions] = useState<Opinion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchOpinions = async () => {
+      try {
+        setLoading(true);
+        const data = await getOpinions(0, 20);
+        setOpinions(data.content);
+      } catch (err: any) {
+        console.error('Error fetching opinions:', err);
+        setError(err.message || 'Failed to load opinions');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOpinions();
+  }, []);
 
   return (
     <div className={styles.page}>
@@ -120,27 +125,38 @@ export default function OpinionPage() {
       </header>
 
       <main className={styles.feed}>
-        {opinions.map(item => (
-          <article key={item.id} className={styles.card}>
-            <div className={styles.meta}>
-              <span className={styles.timestamp}>{item.ageLabel}</span>
-              {item.tag && <span className={styles.tag}>{item.tag}</span>}
-            </div>
-            <div className={styles.cardBody}>
-              <div className={styles.textBlock}>
-                <h2 className={styles.headline}>{item.title}</h2>
-                <p className={styles.dek}>{item.dek}</p>
-                <p className={styles.author}>{item.author}</p>
+        {loading && <div style={{ padding: '40px', textAlign: 'center' }}>Loading opinions...</div>}
+        {error && <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>Error: {error}</div>}
+        {!loading && !error && opinions.length === 0 && (
+          <div style={{ padding: '40px', textAlign: 'center' }}>No opinions found.</div>
+        )}
+        {!loading && !error && opinions.map(item => {
+          const title = extractTitle(item.content);
+          const dek = extractDek(item.content);
+          const ageLabel = formatTimeAgo(item.timestamp);
+          
+          return (
+            <article key={item.id} className={styles.card}>
+              <div className={styles.meta}>
+                <span className={styles.timestamp}>{ageLabel}</span>
+                {item.categoryName && <span className={styles.tag}>{item.categoryName}</span>}
               </div>
-              {item.image && (
-                <div className={styles.imageWrapper}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.image} alt={item.title} className={styles.image} />
+              <div className={styles.cardBody}>
+                <div className={styles.textBlock}>
+                  <h2 className={styles.headline}>{title}</h2>
+                  <p className={styles.dek}>{dek}</p>
+                  <p className={styles.author}>{item.userName || 'Anonymous'}</p>
                 </div>
-              )}
-            </div>
-          </article>
-        ))}
+                {item.image && (
+                  <div className={styles.imageWrapper}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={item.image} alt={title} className={styles.image} />
+                  </div>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </main>
     </div>
   );
