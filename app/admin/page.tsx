@@ -67,9 +67,25 @@ export default function AdminPage() {
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout | undefined;
+    
     const checkAuth = async () => {
       try {
-        const authenticated = await checkAdminSession();
+        // Set a shorter timeout for the check
+        const authPromise = checkAdminSession();
+        const timeoutPromise = new Promise<boolean>((resolve) => {
+          timeoutId = setTimeout(() => {
+            console.warn('Admin session check timed out');
+            resolve(false);
+          }, 3000); // 3 second timeout
+        });
+        
+        const authenticated = await Promise.race([authPromise, timeoutPromise]);
+        
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        
         if (!isMounted) return;
         
         if (authenticated) {
@@ -79,6 +95,9 @@ export default function AdminPage() {
         }
       } catch (error) {
         console.error('Error checking admin session:', error);
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
         if (!isMounted) return;
         router.replace('/admin/passcode');
       } finally {
@@ -88,20 +107,24 @@ export default function AdminPage() {
       }
     };
 
+    // Start auth check immediately
     checkAuth();
     
-    // Fallback timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
+    // Absolute fallback timeout - always resolve after 5 seconds
+    const fallbackTimeout = setTimeout(() => {
       if (isMounted) {
-        console.warn('Admin session check timed out, redirecting to login');
+        console.warn('Absolute timeout reached, forcing redirect');
         setIsLoading(false);
         router.replace('/admin/passcode');
       }
-    }, 10000); // 10 second fallback
+    }, 5000);
 
     return () => {
       isMounted = false;
-      clearTimeout(timeoutId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      clearTimeout(fallbackTimeout);
     };
   }, [router]);
 

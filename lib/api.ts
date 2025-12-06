@@ -1345,7 +1345,7 @@ export async function getOpinionById(id: number): Promise<Opinion | null> {
 export async function checkAdminSession(): Promise<boolean> {
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
     
     const response = await fetch(`${API_BASE_URL}/api/v1/admin/session`, {
       method: 'GET',
@@ -1359,17 +1359,19 @@ export async function checkAdminSession(): Promise<boolean> {
     clearTimeout(timeoutId);
     
     if (!response.ok) {
-      console.error('Admin session check failed:', response.status, response.statusText);
+      console.warn('[Admin] Session check failed:', response.status, response.statusText);
       return false;
     }
     
     const data = await response.json();
-    return data.data?.authenticated === true;
+    const authenticated = data.data?.authenticated === true;
+    console.log('[Admin] Session check result:', authenticated);
+    return authenticated;
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      console.error('Admin session check timed out');
+      console.warn('[Admin] Session check timed out');
     } else {
-      console.error('Admin session check error:', error);
+      console.warn('[Admin] Session check error:', error.message || error);
     }
     return false;
   }
