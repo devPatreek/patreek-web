@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import MainHeader from '@/components/MainHeader';
-import Footer from '@/components/Footer';
 import {
   checkAdminSession,
   getAdminSupportMessages,
@@ -303,11 +301,14 @@ export default function AdminPage() {
   if (isLoading) {
     return (
       <div className={styles.page}>
-        <MainHeader hasSession={false} />
+        <div className={styles.adminHeader}>
+          <div className={styles.adminHeaderContent}>
+            <h1 className={styles.adminLogo}>Admin Panel</h1>
+          </div>
+        </div>
         <div className={styles.loading}>
           <p>Loading admin panel...</p>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -318,7 +319,21 @@ export default function AdminPage() {
 
   return (
     <div className={styles.page}>
-      <MainHeader hasSession={false} />
+      <div className={styles.adminHeader}>
+        <div className={styles.adminHeaderContent}>
+          <h1 className={styles.adminLogo}>Admin Panel</h1>
+          <button 
+            className={styles.logoutButton}
+            onClick={() => {
+              // Clear admin session and redirect
+              document.cookie = 'admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+              router.push('/admin/passcode');
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
 
       <main className={styles.main}>
         <div className={styles.container}>
@@ -917,8 +932,6 @@ export default function AdminPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
