@@ -697,9 +697,10 @@
 
 .carouselCard {
   position: relative;
-  min-height: 320px;
-  height: 320px;
-  flex: 1;
+  height: 360px;
+  min-height: 360px;
+  aspect-ratio: 16 / 9;
+  flex: none;
 }
 
 .carouselImage {
@@ -748,6 +749,20 @@
   padding: 24px;
   text-align: center;
   color: #666;
+}
+
+@media (max-width: 900px) {
+  .carouselCard {
+    height: 300px;
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 600px) {
+  .carouselCard {
+    height: 240px;
+    min-height: 240px;
+  }
 }
 
 .navButton {
