@@ -111,13 +111,21 @@ export default function MainHeader({ active, hasSession = false }: Props) {
     router.push('/profile');
   };
 
+  const handleHomeClick = () => {
+    if (hasSession && currentUsername) {
+      router.push(`/u/${currentUsername}`);
+    } else {
+      router.push('/');
+    }
+  };
+
   const navButtons: { key: ActiveKey; label: string; onClick: () => void }[] = [
+    { key: 'home', label: 'Home', onClick: handleHomeClick },
     { key: 'coins', label: 'Coins', onClick: () => router.push('/coins') },
     { key: 'store', label: 'Store', onClick: () => window.open('https://store.patreek.com', '_blank') },
     { key: 'media', label: 'Media', onClick: () => router.push('/media') },
     { key: 'community', label: 'Community', onClick: () => router.push('/community') },
     { key: 'opinion', label: 'Opinion', onClick: () => router.push('/opinion') },
-    { key: 'home', label: 'API', onClick: () => window.open('https://developer.patreek.com', '_blank') },
   ];
 
   return (
@@ -257,6 +265,7 @@ function deriveActive(pathname?: string | null): ActiveKey | undefined {
   if (pathname.startsWith('/media')) return 'media';
   if (pathname.startsWith('/community')) return 'community';
   if (pathname.startsWith('/opinion')) return 'opinion';
+  if (pathname === '/' || pathname.startsWith('/u/')) return 'home';
   return undefined;
 }
 

@@ -128,8 +128,38 @@
   gap: 12px;
 }
 
+.rightRailSticky {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 80px;
+  align-self: flex-start;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.rightRailSticky::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rightRailSticky::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rightRailSticky::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.rightRailSticky::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
 @media (max-width: 1024px) {
-  .rightRail {
+  .rightRail,
+  .rightRailSticky {
     display: none;
   }
 }

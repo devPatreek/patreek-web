@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { getPublicFeed, FeedArticle } from '@/lib/api';
+import { getPublicFeed, FeedArticle, checkSessionStatus } from '@/lib/api';
 import { getCachedArticle, setCachedArticle } from '@/lib/cache';
 import ArticleReader from '@/components/ArticleReader';
 import AdsterraSlot from '@/components/AdsterraSlot';
+import MainHeader from '@/components/MainHeader';
 import styles from '../../page.module.css';
 
 export default function PatPageClient() {
@@ -13,6 +14,7 @@ export default function PatPageClient() {
   const [article, setArticle] = useState<FeedArticle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasSession, setHasSession] = useState(false);
 
   const articleId = useMemo(() => {
     if (typeof window !== 'undefined') {
@@ -25,6 +27,19 @@ export default function PatPageClient() {
     }
     return null;
   }, [pathname]);
+
+  useEffect(() => {
+    // Check session status
+    const checkSession = async () => {
+      try {
+        const result = await checkSessionStatus();
+        setHasSession(result.authenticated);
+      } catch (error) {
+        setHasSession(false);
+      }
+    };
+    checkSession();
+  }, []);
 
   useEffect(() => {
     if (!articleId) {
@@ -86,14 +101,19 @@ export default function PatPageClient() {
   }
 
   return (
-    <main className={`${styles.main} ${styles.mainRow}`}>
-      <div className={styles.mainColumn}>
-        <ArticleReader article={article} />
-      </div>
-      <aside className={styles.rightRail} aria-label="Sponsored">
-        <AdsterraSlot variant="iframe300x250" />
-        <AdsterraSlot variant="native" />
-      </aside>
-    </main>
+    <div>
+      <MainHeader hasSession={hasSession} />
+      <main className={`${styles.main} ${styles.mainRow}`}>
+        <div className={styles.mainColumn}>
+          <ArticleReader article={article} />
+        </div>
+        <aside className={styles.rightRailSticky} aria-label="Sponsored">
+          <AdsterraSlot variant="iframe300x250" />
+          <AdsterraSlot variant="iframe300x250" />
+          <AdsterraSlot variant="native" />
+          <AdsterraSlot variant="native" />
+        </aside>
+      </main>
+    </div>
   );
 }

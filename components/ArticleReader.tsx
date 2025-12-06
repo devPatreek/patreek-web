@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { FeedArticle, Comment, getArticleComments } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
@@ -120,24 +119,6 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
 
   return (
     <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <Link href="/" className={styles.logoLink}>
-            <Image
-              src="https://cdn.prod.website-files.com/675ca775325477a121669e3c/675caa3a2f73ad268a86b51a_Patreek%20logo_slogan.png"
-              alt="Patreek"
-              width={50}
-              height={50}
-              className={styles.logo}
-            />
-          </Link>
-          <div className={styles.headerCenter}>
-            <h1 className={styles.categoryName}>{article.categoryName}</h1>
-            <p className={styles.date}>{formattedDate}</p>
-          </div>
-        </div>
-      </header>
-
       <main className={styles.main}>
         <article className={styles.article}>
           {article.imageUrl && (
