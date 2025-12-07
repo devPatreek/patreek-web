@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   checkAdminSession,
@@ -16,6 +16,7 @@ import {
   suspendAdminUser,
   unsuspendAdminUser,
   updateAdminUserCoins,
+  updateAdminUserRank,
   getAdminFeeds,
   AdminFeed,
   AdminFeedPage,
@@ -65,7 +66,13 @@ export default function AdminPage() {
   const [activityLoading, setActivityLoading] = useState(false);
   const [activityTypeFilter, setActivityTypeFilter] = useState<string>('');
 
+  const hasCheckedAuth = useRef(false);
+  
   useEffect(() => {
+    // Only check auth once on mount - prevent constant polling
+    if (hasCheckedAuth.current) return;
+    hasCheckedAuth.current = true;
+    
     let isMounted = true;
     let timeoutId: NodeJS.Timeout | undefined;
     
@@ -232,6 +239,26 @@ export default function AdminPage() {
       setSelectedUser(null);
     } catch (error: any) {
       alert(error.message || 'Failed to update user coins');
+    }
+  };
+
+  const handleUpdateUserRank = async (userId: string, level: number) => {
+    try {
+      await updateAdminUserRank(userId, level);
+      await loadUsers();
+      setSelectedUser(null);
+    } catch (error: any) {
+      alert(error.message || 'Failed to update user rank');
+    }
+  };
+
+  const handleUpdateUser = async (userId: string, updates: { name?: string; headline?: string; email?: string }) => {
+    try {
+      await updateAdminUser(userId, updates);
+      await loadUsers();
+      setSelectedUser(null);
+    } catch (error: any) {
+      alert(error.message || 'Failed to update user');
     }
   };
 
@@ -405,10 +432,10 @@ export default function AdminPage() {
                   <h2 className={styles.sectionTitle}>API Documentation</h2>
                   <div className={styles.sectionContent}>
                     <p>Interactive Swagger API documentation and testing tools.</p>
-                    <a href="/admin/api" target="_blank" rel="noopener noreferrer" className={styles.actionButton}>
+                    <a href="https://developer.patreek.com" target="_blank" rel="noopener noreferrer" className={styles.actionButton}>
                       Open Swagger Docs
                     </a>
-                    <a href="/admin/api-test" className={styles.actionButton}>
+                    <a href="/admin/api-test" target="_blank" rel="noopener noreferrer" className={styles.actionButton}>
                       API Testing Tool
                     </a>
                   </div>
@@ -695,11 +722,44 @@ export default function AdminPage() {
                         <button
                           className={styles.actionBtn}
                           onClick={() => {
+                            const name = prompt('Enter new name (or leave empty to skip):', selectedUser.name || '');
+                            const headline = prompt('Enter new headline (or leave empty to skip):', selectedUser.headline || '');
+                            const email = prompt('Enter new email (or leave empty to skip):', selectedUser.email || '');
+                            const updates: { name?: string; headline?: string; email?: string } = {};
+                            if (name !== null && name.trim() !== '') updates.name = name.trim();
+                            if (headline !== null && headline.trim() !== '') updates.headline = headline.trim();
+                            if (email !== null && email.trim() !== '') updates.email = email.trim();
+                            if (Object.keys(updates).length > 0) {
+                              handleUpdateUser(selectedUser.id, updates);
+                            }
+                          }}
+                        >
+                          Edit User
+                        </button>
+                        <button
+                          className={styles.actionBtn}
+                          onClick={() => {
                             const coins = prompt('Enter new coin amount:');
                             if (coins) handleUpdateUserCoins(selectedUser.id, parseInt(coins));
                           }}
                         >
                           Update Coins
+                        </button>
+                        <button
+                          className={styles.actionBtn}
+                          onClick={() => {
+                            const level = prompt('Enter rank level (1-8):\n1=Cell, 2=Egg, 3=Neonate, 4=Nestling, 5=Fledgling, 6=Juvenile, 7=Adult, 8=Pundit', selectedUser.rankLevel?.toString() || '1');
+                            if (level) {
+                              const levelNum = parseInt(level);
+                              if (levelNum >= 1 && levelNum <= 8) {
+                                handleUpdateUserRank(selectedUser.id, levelNum);
+                              } else {
+                                alert('Rank level must be between 1 and 8');
+                              }
+                            }
+                          }}
+                        >
+                          Change Rank
                         </button>
                         <button
                           className={styles.actionBtn}

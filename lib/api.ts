@@ -1528,6 +1528,22 @@ export async function getAdminUser(userId: string): Promise<AdminUser> {
   return data.data;
 }
 
+export async function getAdminUserByEmail(email: string): Promise<AdminUser> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/email/${encodeURIComponent(email)}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to fetch user by email');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
 export async function updateAdminUser(
   userId: string,
   updates: { name?: string; headline?: string; email?: string }
@@ -1592,6 +1608,23 @@ export async function updateAdminUserCoins(userId: string, coins: number): Promi
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to update user coins');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function updateAdminUserRank(userId: string, level: number): Promise<AdminUser> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${userId}/rank`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ level }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Failed to update user rank');
   }
 
   const data = await response.json();
