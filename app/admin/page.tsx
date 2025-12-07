@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   checkAdminSession,
@@ -66,35 +66,14 @@ export default function AdminPage() {
   const [activityLoading, setActivityLoading] = useState(false);
   const [activityTypeFilter, setActivityTypeFilter] = useState<string>('');
 
-  const hasCheckedAuth = useRef(false);
-  
   useEffect(() => {
-    // Only check auth once on mount - prevent constant polling
-    if (hasCheckedAuth.current) return;
-    hasCheckedAuth.current = true;
-    
-    let isMounted = true;
-    let timeoutId: NodeJS.Timeout | undefined;
-    
-    const checkAuth = async () => {
+    let cancelled = false;
+
+    (async () => {
       try {
-        // Set a shorter timeout for the check
-        const authPromise = checkAdminSession();
-        const timeoutPromise = new Promise<boolean>((resolve) => {
-          timeoutId = setTimeout(() => {
-            console.warn('Admin session check timed out');
-            resolve(false);
-          }, 3000); // 3 second timeout
-        });
-        
-        const authenticated = await Promise.race([authPromise, timeoutPromise]);
-        
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-        
-        if (!isMounted) return;
-        
+        const authenticated = await checkAdminSession();
+        if (cancelled) return;
+
         if (authenticated) {
           setIsAuthenticated(true);
         } else {
@@ -102,36 +81,18 @@ export default function AdminPage() {
         }
       } catch (error) {
         console.error('Error checking admin session:', error);
-        if (timeoutId) {
-          clearTimeout(timeoutId);
+        if (!cancelled) {
+          router.replace('/admin/passcode');
         }
-        if (!isMounted) return;
-        router.replace('/admin/passcode');
       } finally {
-        if (isMounted) {
+        if (!cancelled) {
           setIsLoading(false);
         }
       }
-    };
-
-    // Start auth check immediately
-    checkAuth();
-    
-    // Absolute fallback timeout - always resolve after 5 seconds
-    const fallbackTimeout = setTimeout(() => {
-      if (isMounted) {
-        console.warn('Absolute timeout reached, forcing redirect');
-        setIsLoading(false);
-        router.replace('/admin/passcode');
-      }
-    }, 5000);
+    })();
 
     return () => {
-      isMounted = false;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      clearTimeout(fallbackTimeout);
+      cancelled = true;
     };
   }, [router]);
 
