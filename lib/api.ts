@@ -1054,13 +1054,22 @@ export async function getCommunityLeaderboard(metric: LeaderboardMetric, limit =
     const data = await response.json();
     const entries: LeaderboardEntry[] =
       data?.data || data?.content || data || [];
-    return entries.map((item: any, idx: number) => ({
-      username: item.username || item.name || `user-${idx + 1}`,
-      displayName: item.displayName || item.name,
-      avatarUrl: item.avatarUrl,
-      total: item.total ?? item.score ?? 0,
-      rank: item.rank ?? idx + 1,
-    }));
+    return entries.map((item: any, idx: number) => {
+      const rankValue =
+        typeof item.rank === 'number'
+          ? item.rank
+          : typeof item.rank?.level === 'number'
+          ? item.rank.level
+          : idx + 1;
+
+      return {
+        username: item.username || item.name || `user-${idx + 1}`,
+        displayName: item.displayName || item.name,
+        avatarUrl: item.avatarUrl,
+        total: item.total ?? item.score ?? 0,
+        rank: rankValue,
+      };
+    });
   } catch (error) {
     clearTimeout(timeoutId);
     console.warn('[API] leaderboard error', error);
