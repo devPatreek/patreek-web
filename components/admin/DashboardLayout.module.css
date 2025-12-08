@@ -1,0 +1,91 @@
+.layout {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #f8fafc;
+  display: flex;
+  align-items: stretch;
+}
+
+.sidebar {
+  width: 260px;
+  padding: 2.5rem 1.75rem;
+  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  border-right: 1px solid rgba(248, 250, 252, 0.08);
+}
+
+.brand {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tagline {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(248, 250, 252, 0.72);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navButton {
+  background: transparent;
+  border: none;
+  color: inherit;
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.navButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.navButton[aria-pressed='true'] {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.navLabel {
+  flex: 1;
+}
+
+.contentArea {
+  flex: 1;
+  background: #f8fafc;
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 960px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid rgba(248, 250, 252, 0.15);
+  }
+
+  .contentArea {
+    padding: 1.5rem;
+  }
+}

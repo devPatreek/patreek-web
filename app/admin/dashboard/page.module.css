@@ -1,0 +1,275 @@
+.section {
+  margin-bottom: 2.25rem;
+}
+
+.sectionHeader {
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.sectionSubtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.4rem 1.25rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.statLabel {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+
+.statSubtext {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.tableWrapper {
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  padding: 1.25rem;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.1);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.85rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.table th {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tr {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.avatarCell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatarBubble {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0f172a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.userName {
+  font-weight: 600;
+}
+
+.metaText {
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.statusBadge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.statusActive {
+  background: #ecfdf5;
+  color: #0f766e;
+}
+
+.statusSuspended {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.actionButton {
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.approveButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 10px 15px rgba(102, 126, 234, 0.35);
+}
+
+.secondaryButton {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.feedList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.feedItem {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.feedContent {
+  flex: 1;
+}
+
+.feedTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.feedMeta {
+  margin: 0.35rem 0;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.feedExcerpt {
+  margin: 0;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+.feedActions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.reportsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.reportItem {
+  padding: 1rem;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.reportDetails {
+  flex: 1;
+}
+
+.reportTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.reportDescription {
+  margin: 0.4rem 0 0;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.reportTime {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.emptyState {
+  background: #fff;
+  border-radius: 18px;
+  border: 1px dashed #cbd5f5;
+  padding: 2rem;
+  text-align: center;
+  color: #475569;
+  margin-top: 1rem;
+}
+
+.messageTag {
+  display: inline-flex;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: #f0f9ff;
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .statCard {
+    padding: 1rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.6rem;
+  }
+
+  .feedItem {
+    flex-direction: column;
+  }
+}
