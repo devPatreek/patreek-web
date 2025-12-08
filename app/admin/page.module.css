@@ -569,6 +569,57 @@
   backdrop-filter: blur(10px);
 }
 
+.alertDanger {
+  padding: 12px 18px;
+  margin-top: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(248, 113, 113, 0.15);
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.userDetailCard {
+  background: rgba(248, 250, 252, 0.9);
+  border-radius: 16px;
+  padding: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+}
+
+.userDetailRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.userDetailLabel {
+  font-size: 12px;
+  color: #6b7280;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.userDetailValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.userDetailMeta {
+  font-size: 14px;
+  color: #374151;
+  margin-top: 8px;
+}
+
+.userActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
 .searchBox {
   flex: 1;
   max-width: 450px;
@@ -608,6 +659,33 @@
   transform: translateY(-50%);
   font-size: 18px;
   pointer-events: none;
+}
+
+.userSearchForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.userSearchType {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.userSearchOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.userHelperText {
+  font-size: 14px;
+  color: #4b5563;
+  margin-top: 12px;
 }
 
 .tableContainer {
@@ -808,6 +886,41 @@
   flex-wrap: wrap;
   padding-top: 24px;
   border-top: 2px solid rgba(229, 231, 235, 0.5);
+}
+
+.categoryFormRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.categoryFormLabel {
+  font-size: 13px;
+  color: #4b5563;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.categoryCheckboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.categoryCheckbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.categoryCheckbox input {
+  width: 16px;
+  height: 16px;
 }
 
 .actionBtnDanger {

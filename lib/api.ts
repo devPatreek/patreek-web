@@ -1546,7 +1546,25 @@ export async function getAdminUserByEmail(email: string): Promise<AdminUser> {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to fetch user by email');
+    const message = errorData?.message || errorData?.error?.message || 'Failed to fetch user by email';
+    throw new Error(message);
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+export async function getAdminUserByUsername(username: string): Promise<AdminUser> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/username/${encodeURIComponent(username)}`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    const message = errorData?.message || errorData?.error?.message || 'Failed to fetch user by username';
+    throw new Error(message);
   }
 
   const data = await response.json();
@@ -1634,6 +1652,68 @@ export async function updateAdminUserRank(userId: string, level: number): Promis
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.message || 'Failed to update user rank');
+  }
+
+  const data = await response.json();
+  return data.data;
+}
+
+// ========== Admin Category Management ==========
+
+export interface AdminCategory {
+  id: number;
+  parentId?: number | null;
+  parentName?: string;
+  name?: string;
+  imageUrl?: string | null;
+  query?: string | null;
+  concept?: string | null;
+  publicCategory?: boolean | null;
+  localized?: boolean | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AdminCategoryUpdatePayload {
+  name?: string | null;
+  imageUrl?: string | null;
+  query?: string | null;
+  concept?: string | null;
+  publicCategory?: boolean | null;
+  localized?: boolean | null;
+  parentId?: number | null;
+}
+
+export async function getAdminCategories(): Promise<AdminCategory[]> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/categories`, {
+    method: 'GET',
+    headers: { Accept: 'application/json' },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch categories');
+  }
+
+  const data = await response.json();
+  return data.data || [];
+}
+
+export async function updateAdminCategory(
+  categoryId: number,
+  updates: AdminCategoryUpdatePayload
+): Promise<AdminCategory> {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/categories/${categoryId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(updates),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    const message = errorData?.message || errorData?.error?.message || 'Failed to update category';
+    throw new Error(message);
   }
 
   const data = await response.json();

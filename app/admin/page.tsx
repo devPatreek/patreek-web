@@ -9,55 +9,68 @@ import {
   updateSupportMessageStatus,
   AdminFeedbackMessage,
   AdminFeedbackPage,
-  getAdminUsers,
+  getAdminUserByEmail,
+  getAdminUserByUsername,
   AdminUser,
-  AdminUserPage,
   updateAdminUser,
   suspendAdminUser,
   unsuspendAdminUser,
   updateAdminUserCoins,
   updateAdminUserRank,
-  getAdminFeeds,
-  AdminFeed,
-  AdminFeedPage,
-  deleteAdminFeed,
-  hideAdminFeed,
-  unhideAdminFeed,
-  featureAdminFeed,
-  unfeatureAdminFeed,
-  updateAdminFeedPublished,
+  getAdminCategories,
+  updateAdminCategory,
+  AdminCategory,
+  AdminCategoryUpdatePayload,
   getAdminActivityLogs,
   AdminActivityLog,
   AdminActivityLogPage,
 } from '@/lib/api';
 import styles from './page.module.css';
 
+type CategoryFormState = {
+  name: string;
+  imageUrl: string;
+  query: string;
+  concept: string;
+  parentId: number | null;
+  publicCategory: boolean;
+  localized: boolean;
+};
+
+const INITIAL_CATEGORY_FORM: CategoryFormState = {
+  name: '',
+  imageUrl: '',
+  query: '',
+  concept: '',
+  parentId: null,
+  publicCategory: false,
+  localized: false,
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'support' | 'users' | 'content' | 'activity'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'support' | 'users' | 'categories' | 'activity'>('dashboard');
   const [supportMessages, setSupportMessages] = useState<AdminFeedbackMessage[]>([]);
   const [supportPage, setSupportPage] = useState(0);
   const [supportTotalPages, setSupportTotalPages] = useState(0);
   const [supportLoading, setSupportLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'closed'>('all');
   
-  // User management state
-  const [users, setUsers] = useState<AdminUser[]>([]);
-  const [userPage, setUserPage] = useState(0);
-  const [userTotalPages, setUserTotalPages] = useState(0);
-  const [userLoading, setUserLoading] = useState(false);
-  const [userSearch, setUserSearch] = useState('');
-  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-  
-  // Feed management state
-  const [feeds, setFeeds] = useState<AdminFeed[]>([]);
-  const [feedPage, setFeedPage] = useState(0);
-  const [feedTotalPages, setFeedTotalPages] = useState(0);
-  const [feedLoading, setFeedLoading] = useState(false);
-  const [feedSearch, setFeedSearch] = useState('');
-  const [selectedFeed, setSelectedFeed] = useState<AdminFeed | null>(null);
+  const [userSearchType, setUserSearchType] = useState<'email' | 'username'>('email');
+  const [userSearchValue, setUserSearchValue] = useState('');
+  const [userSearchResult, setUserSearchResult] = useState<AdminUser | null>(null);
+  const [userSearchLoading, setUserSearchLoading] = useState(false);
+  const [userSearchError, setUserSearchError] = useState('');
+  const [lastUserSearch, setLastUserSearch] = useState<{ type: 'email' | 'username'; value: string } | null>(null);
+
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<AdminCategory | null>(null);
+  const [categoryForm, setCategoryForm] = useState<CategoryFormState>({ ...INITIAL_CATEGORY_FORM });
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState('');
   
   // Activity logs state
   const [activityLogs, setActivityLogs] = useState<AdminActivityLog[]>([]);
@@ -97,16 +110,18 @@ export default function AdminPage() {
   }, [router]);
 
   useEffect(() => {
-    if (isAuthenticated && activeTab === 'support') {
+    if (!isAuthenticated) {
+      return;
+    }
+
+    if (activeTab === 'support') {
       loadSupportMessages();
-    } else if (isAuthenticated && activeTab === 'users') {
-      loadUsers();
-    } else if (isAuthenticated && activeTab === 'content') {
-      loadFeeds();
-    } else if (isAuthenticated && activeTab === 'activity') {
+    } else if (activeTab === 'categories') {
+      loadCategories();
+    } else if (activeTab === 'activity') {
       loadActivityLogs();
     }
-  }, [isAuthenticated, activeTab, supportPage, statusFilter, userPage, userSearch, feedPage, feedSearch, activityPage, activityTypeFilter]);
+  }, [isAuthenticated, activeTab, supportPage, statusFilter, activityPage, activityTypeFilter]);
 
   const loadSupportMessages = async () => {
     setSupportLoading(true);
@@ -159,25 +174,58 @@ export default function AdminPage() {
     }
   };
 
-  // User management functions
-  const loadUsers = async () => {
-    setUserLoading(true);
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const trimmedUserSearchValue = userSearchValue.trim();
+  const isUserSearchValid =
+    trimmedUserSearchValue.length > 0 &&
+    (userSearchType === 'email'
+      ? emailPattern.test(trimmedUserSearchValue)
+      : !trimmedUserSearchValue.includes('@'));
+
+  const fetchUser = async ({
+    type,
+    value,
+    updateHistory = false,
+  }: {
+    type: 'email' | 'username';
+    value: string;
+    updateHistory?: boolean;
+  }) => {
+    setUserSearchLoading(true);
+    setUserSearchError('');
     try {
-      const result = await getAdminUsers(userPage, 20, userSearch || undefined);
-      setUsers(result.content);
-      setUserTotalPages(result.totalPages);
-    } catch (error) {
-      console.error('Error loading users:', error);
+      const fetcher = type === 'email' ? getAdminUserByEmail : getAdminUserByUsername;
+      const user = await fetcher(value);
+      setUserSearchResult(user);
+      if (updateHistory) {
+        setLastUserSearch({ type, value });
+      }
+    } catch (error: any) {
+      setUserSearchResult(null);
+      setUserSearchError(error?.message || 'User not found');
     } finally {
-      setUserLoading(false);
+      setUserSearchLoading(false);
     }
+  };
+
+  const handleUserSearch = () => {
+    if (!isUserSearchValid) {
+      return;
+    }
+    fetchUser({ type: userSearchType, value: trimmedUserSearchValue, updateHistory: true });
+  };
+
+  const refreshLastUserSearch = async () => {
+    if (!lastUserSearch) {
+      return;
+    }
+    await fetchUser({ type: lastUserSearch.type, value: lastUserSearch.value });
   };
 
   const handleSuspendUser = async (userId: string, reason: string) => {
     try {
       await suspendAdminUser(userId, reason);
-      await loadUsers();
-      setSelectedUser(null);
+      await refreshLastUserSearch();
     } catch (error: any) {
       alert(error.message || 'Failed to suspend user');
     }
@@ -186,8 +234,7 @@ export default function AdminPage() {
   const handleUnsuspendUser = async (userId: string) => {
     try {
       await unsuspendAdminUser(userId);
-      await loadUsers();
-      setSelectedUser(null);
+      await refreshLastUserSearch();
     } catch (error: any) {
       alert(error.message || 'Failed to unsuspend user');
     }
@@ -196,8 +243,7 @@ export default function AdminPage() {
   const handleUpdateUserCoins = async (userId: string, coins: number) => {
     try {
       await updateAdminUserCoins(userId, coins);
-      await loadUsers();
-      setSelectedUser(null);
+      await refreshLastUserSearch();
     } catch (error: any) {
       alert(error.message || 'Failed to update user coins');
     }
@@ -206,92 +252,87 @@ export default function AdminPage() {
   const handleUpdateUserRank = async (userId: string, level: number) => {
     try {
       await updateAdminUserRank(userId, level);
-      await loadUsers();
-      setSelectedUser(null);
+      await refreshLastUserSearch();
     } catch (error: any) {
       alert(error.message || 'Failed to update user rank');
     }
   };
 
-  const handleUpdateUser = async (userId: string, updates: { name?: string; headline?: string; email?: string }) => {
+  const handleUpdateUser = async (
+    userId: string,
+    updates: { name?: string; headline?: string; email?: string }
+  ) => {
     try {
       await updateAdminUser(userId, updates);
-      await loadUsers();
-      setSelectedUser(null);
+      await refreshLastUserSearch();
     } catch (error: any) {
       alert(error.message || 'Failed to update user');
     }
   };
 
-  // Feed management functions
-  const loadFeeds = async () => {
-    setFeedLoading(true);
+  const resetCategoryForm = () => {
+    setCategoryForm({ ...INITIAL_CATEGORY_FORM });
+  };
+
+  const loadCategories = async () => {
+    setCategoriesLoading(true);
     try {
-      const result = await getAdminFeeds(feedPage, 20, feedSearch || undefined);
-      setFeeds(result.content);
-      setFeedTotalPages(result.totalPages);
+      const result = await getAdminCategories();
+      setCategories(result);
     } catch (error) {
-      console.error('Error loading feeds:', error);
+      console.error('Error loading categories:', error);
     } finally {
-      setFeedLoading(false);
+      setCategoriesLoading(false);
     }
   };
 
-  const handleDeleteFeed = async (feedId: number) => {
-    if (!confirm('Are you sure you want to delete this feed? This action cannot be undone.')) {
+  const openCategoryEditor = (category: AdminCategory) => {
+    setSelectedCategory(category);
+    setCategoryForm({
+      name: category.name || '',
+      imageUrl: category.imageUrl || '',
+      query: category.query || '',
+      concept: category.concept || '',
+      parentId: category.parentId ?? null,
+      publicCategory: category.publicCategory ?? false,
+      localized: category.localized ?? false,
+    });
+    setCategoryError('');
+  };
+
+  const closeCategoryEditor = () => {
+    setSelectedCategory(null);
+    resetCategoryForm();
+    setCategoryError('');
+  };
+
+  const handleCategorySave = async () => {
+    if (!selectedCategory) {
       return;
     }
-    try {
-      await deleteAdminFeed(feedId);
-      await loadFeeds();
-      setSelectedFeed(null);
-    } catch (error: any) {
-      alert(error.message || 'Failed to delete feed');
+    if (!categoryForm.name.trim()) {
+      setCategoryError('Category name is required.');
+      return;
     }
-  };
-
-  const handleHideFeed = async (feedId: number) => {
+    setCategoryError('');
+    setCategorySaving(true);
     try {
-      await hideAdminFeed(feedId);
-      await loadFeeds();
+      const payload: AdminCategoryUpdatePayload = {
+        name: categoryForm.name.trim(),
+        imageUrl: categoryForm.imageUrl.trim() === '' ? null : categoryForm.imageUrl.trim(),
+        query: categoryForm.query.trim() === '' ? null : categoryForm.query.trim(),
+        concept: categoryForm.concept.trim() === '' ? null : categoryForm.concept.trim(),
+        parentId: categoryForm.parentId,
+        publicCategory: categoryForm.publicCategory,
+        localized: categoryForm.localized,
+      };
+      await updateAdminCategory(selectedCategory.id, payload);
+      await loadCategories();
+      closeCategoryEditor();
     } catch (error: any) {
-      alert(error.message || 'Failed to hide feed');
-    }
-  };
-
-  const handleUnhideFeed = async (feedId: number) => {
-    try {
-      await unhideAdminFeed(feedId);
-      await loadFeeds();
-    } catch (error: any) {
-      alert(error.message || 'Failed to unhide feed');
-    }
-  };
-
-  const handleFeatureFeed = async (feedId: number) => {
-    try {
-      await featureAdminFeed(feedId);
-      await loadFeeds();
-    } catch (error: any) {
-      alert(error.message || 'Failed to feature feed');
-    }
-  };
-
-  const handleUnfeatureFeed = async (feedId: number) => {
-    try {
-      await unfeatureAdminFeed(feedId);
-      await loadFeeds();
-    } catch (error: any) {
-      alert(error.message || 'Failed to unfeature feed');
-    }
-  };
-
-  const handleUpdateFeedPublished = async (feedId: number, published: boolean) => {
-    try {
-      await updateAdminFeedPublished(feedId, published);
-      await loadFeeds();
-    } catch (error: any) {
-      alert(error.message || 'Failed to update feed published status');
+      setCategoryError(error.message || 'Failed to update category');
+    } finally {
+      setCategorySaving(false);
     }
   };
 
@@ -373,10 +414,10 @@ export default function AdminPage() {
               Users
             </button>
             <button
-              className={`${styles.tab} ${activeTab === 'content' ? styles.active : ''}`}
-              onClick={() => setActiveTab('content')}
+              className={`${styles.tab} ${activeTab === 'categories' ? styles.active : ''}`}
+              onClick={() => setActiveTab('categories')}
             >
-              Feeds
+              Categories
             </button>
             <button
               className={`${styles.tab} ${activeTab === 'activity' ? styles.active : ''}`}
@@ -412,8 +453,8 @@ export default function AdminPage() {
                     <button className={styles.actionButton} onClick={() => setActiveTab('users')}>
                       Manage Users
                     </button>
-                    <button className={styles.actionButton} onClick={() => setActiveTab('content')}>
-                      Manage Content
+                    <button className={styles.actionButton} onClick={() => setActiveTab('categories')}>
+                      Manage Categories
                     </button>
                   </div>
                 </section>
@@ -555,336 +596,371 @@ export default function AdminPage() {
             {activeTab === 'users' && (
               <div className={styles.usersSection}>
                 <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>User Management</h2>
-                  <div className={styles.searchBox}>
-                    <input
-                      type="text"
-                      placeholder="Search users by name, email, or username..."
-                      value={userSearch}
-                      onChange={(e) => {
-                        setUserSearch(e.target.value);
-                        setUserPage(0);
-                      }}
-                      className={styles.searchInput}
-                    />
+                  <h2 className={styles.sectionTitle}>User Lookup</h2>
+                  <div className={styles.userSearchForm}>
+                    <div className={styles.userSearchType}>
+                      <label className={styles.userSearchOption}>
+                        <input
+                          type="radio"
+                          name="userSearchType"
+                          value="email"
+                          checked={userSearchType === 'email'}
+                          onChange={() => setUserSearchType('email')}
+                        />
+                        Email
+                      </label>
+                      <label className={styles.userSearchOption}>
+                        <input
+                          type="radio"
+                          name="userSearchType"
+                          value="username"
+                          checked={userSearchType === 'username'}
+                          onChange={() => setUserSearchType('username')}
+                        />
+                        Username
+                      </label>
+                    </div>
+                    <div className={styles.searchBox}>
+                      <input
+                        type="text"
+                        placeholder={
+                          userSearchType === 'email'
+                            ? 'Enter user email'
+                            : 'Enter username (no @)'
+                        }
+                        value={userSearchValue}
+                        onChange={(e) => setUserSearchValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleUserSearch();
+                          }
+                        }}
+                        className={styles.searchInput}
+                      />
+                    </div>
+                    <button
+                      className={styles.actionButton}
+                      onClick={handleUserSearch}
+                      disabled={!isUserSearchValid || userSearchLoading}
+                    >
+                      {userSearchLoading ? 'Searching...' : 'Search'}
+                    </button>
                   </div>
+                  <p className={styles.userHelperText}>
+                    Search by email or username to load a single user profile.
+                  </p>
                 </div>
 
-                {userLoading ? (
-                  <div className={styles.loadingState}>Loading users...</div>
-                ) : users.length === 0 ? (
-                  <div className={styles.emptyState}>No users found.</div>
-                ) : (
-                  <>
-                    <div className={styles.tableContainer}>
-                      <table className={styles.dataTable}>
-                        <thead>
-                          <tr>
-                            <th>ID</th>
-                            <th>Username</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Coins</th>
-                            <th>Rank</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {users.map((user) => (
-                            <tr key={user.id}>
-                              <td>{user.id.substring(0, 8)}...</td>
-                              <td>{user.username || 'N/A'}</td>
-                              <td>{user.name || 'N/A'}</td>
-                              <td>{user.email || 'N/A'}</td>
-                              <td>{user.patCoins || 0}</td>
-                              <td>{user.rankName || 'N/A'}</td>
-                              <td>
-                                {user.suspended ? (
-                                  <span className={styles.badgeDanger}>Suspended</span>
-                                ) : (
-                                  <span className={styles.badgeSuccess}>Active</span>
-                                )}
-                              </td>
-                              <td>
-                                <button
-                                  className={styles.actionBtnSmall}
-                                  onClick={() => setSelectedUser(user)}
-                                >
-                                  View
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {userTotalPages > 1 && (
-                      <div className={styles.pagination}>
-                        <button
-                          className={styles.pageButton}
-                          onClick={() => setUserPage(prev => Math.max(0, prev - 1))}
-                          disabled={userPage === 0}
-                        >
-                          Previous
-                        </button>
-                        <span className={styles.pageInfo}>
-                          Page {userPage + 1} of {userTotalPages}
-                        </span>
-                        <button
-                          className={styles.pageButton}
-                          onClick={() => setUserPage(prev => prev + 1)}
-                          disabled={userPage >= userTotalPages - 1}
-                        >
-                          Next
-                        </button>
-                      </div>
-                    )}
-                  </>
+                {!userSearchLoading && !isUserSearchValid && trimmedUserSearchValue !== '' && (
+                  <p className={styles.alertDanger}>
+                    {userSearchType === 'email'
+                      ? 'Please enter a valid email address.'
+                      : 'A username cannot include the @ symbol.'}
+                  </p>
                 )}
 
-                {selectedUser && (
-                  <div className={styles.modal}>
-                    <div className={styles.modalContent}>
-                      <h3>User Details: {selectedUser.username || selectedUser.name}</h3>
-                      <div className={styles.modalBody}>
-                        <p><strong>ID:</strong> {selectedUser.id}</p>
-                        <p><strong>Name:</strong> {selectedUser.name || 'N/A'}</p>
-                        <p><strong>Email:</strong> {selectedUser.email || 'N/A'}</p>
-                        <p><strong>Headline:</strong> {selectedUser.headline || 'N/A'}</p>
-                        <p><strong>Coins:</strong> {selectedUser.patCoins || 0}</p>
-                        <p><strong>Rank:</strong> {selectedUser.rankName || 'N/A'} (Level {selectedUser.rankLevel || 0})</p>
-                        <p><strong>Stats:</strong> {selectedUser.totalPats || 0} pats, {selectedUser.totalShares || 0} shares, {selectedUser.totalComments || 0} comments</p>
-                        <p><strong>Status:</strong> {selectedUser.suspended ? 'Suspended' : 'Active'}</p>
-                        {selectedUser.suspended && selectedUser.suspensionReason && (
-                          <p><strong>Suspension Reason:</strong> {selectedUser.suspensionReason}</p>
-                        )}
+                {userSearchLoading ? (
+                  <div className={styles.loadingState}>Looking up user...</div>
+                ) : userSearchError ? (
+                  <div className={styles.alertDanger}>{userSearchError}</div>
+                ) : userSearchResult ? (
+                  <div className={styles.userDetailCard}>
+                    <div className={styles.userDetailRow}>
+                      <div>
+                        <div className={styles.userDetailLabel}>Name</div>
+                        <div className={styles.userDetailValue}>{userSearchResult.name || 'N/A'}</div>
                       </div>
-                      <div className={styles.modalActions}>
-                        {selectedUser.suspended ? (
-                          <button
-                            className={styles.actionBtn}
-                            onClick={() => handleUnsuspendUser(selectedUser.id)}
-                          >
-                            Unsuspend
-                          </button>
-                        ) : (
-                          <button
-                            className={styles.actionBtnDanger}
-                            onClick={() => {
-                              const reason = prompt('Enter suspension reason:');
-                              if (reason) handleSuspendUser(selectedUser.id, reason);
-                            }}
-                          >
-                            Suspend
-                          </button>
-                        )}
-                        <button
-                          className={styles.actionBtn}
-                          onClick={() => {
-                            const name = prompt('Enter new name (or leave empty to skip):', selectedUser.name || '');
-                            const headline = prompt('Enter new headline (or leave empty to skip):', selectedUser.headline || '');
-                            const email = prompt('Enter new email (or leave empty to skip):', selectedUser.email || '');
-                            const updates: { name?: string; headline?: string; email?: string } = {};
-                            if (name !== null && name.trim() !== '') updates.name = name.trim();
-                            if (headline !== null && headline.trim() !== '') updates.headline = headline.trim();
-                            if (email !== null && email.trim() !== '') updates.email = email.trim();
-                            if (Object.keys(updates).length > 0) {
-                              handleUpdateUser(selectedUser.id, updates);
-                            }
-                          }}
-                        >
-                          Edit User
-                        </button>
-                        <button
-                          className={styles.actionBtn}
-                          onClick={() => {
-                            const coins = prompt('Enter new coin amount:');
-                            if (coins) handleUpdateUserCoins(selectedUser.id, parseInt(coins));
-                          }}
-                        >
-                          Update Coins
-                        </button>
-                        <button
-                          className={styles.actionBtn}
-                          onClick={() => {
-                            const level = prompt('Enter rank level (1-8):\n1=Cell, 2=Egg, 3=Neonate, 4=Nestling, 5=Fledgling, 6=Juvenile, 7=Adult, 8=Pundit', selectedUser.rankLevel?.toString() || '1');
-                            if (level) {
-                              const levelNum = parseInt(level);
-                              if (levelNum >= 1 && levelNum <= 8) {
-                                handleUpdateUserRank(selectedUser.id, levelNum);
-                              } else {
-                                alert('Rank level must be between 1 and 8');
-                              }
-                            }
-                          }}
-                        >
-                          Change Rank
-                        </button>
-                        <button
-                          className={styles.actionBtn}
-                          onClick={() => setSelectedUser(null)}
-                        >
-                          Close
-                        </button>
+                      <div>
+                        <div className={styles.userDetailLabel}>Username</div>
+                        <div className={styles.userDetailValue}>{userSearchResult.username || 'N/A'}</div>
+                      </div>
+                      <div>
+                        <div className={styles.userDetailLabel}>Email</div>
+                        <div className={styles.userDetailValue}>{userSearchResult.email || 'N/A'}</div>
                       </div>
                     </div>
+                    <div className={styles.userDetailRow}>
+                      <div>
+                        <div className={styles.userDetailLabel}>Coins</div>
+                        <div className={styles.userDetailValue}>{userSearchResult.patCoins || 0}</div>
+                      </div>
+                      <div>
+                        <div className={styles.userDetailLabel}>Rank</div>
+                        <div className={styles.userDetailValue}>
+                          {userSearchResult.rankName || 'N/A'} (Level {userSearchResult.rankLevel || 0})
+                        </div>
+                      </div>
+                      <div>
+                        <div className={styles.userDetailLabel}>Status</div>
+                        <div className={styles.userDetailValue}>
+                          {userSearchResult.suspended ? (
+                            <span className={styles.badgeDanger}>Suspended</span>
+                          ) : (
+                            <span className={styles.badgeSuccess}>Active</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.userDetailRow}>
+                      <div>
+                        <div className={styles.userDetailLabel}>Pats</div>
+                        <div className={styles.userDetailValue}>{userSearchResult.totalPats || 0}</div>
+                      </div>
+                      <div>
+                        <div className={styles.userDetailLabel}>Shares</div>
+                        <div className={styles.userDetailValue}>{userSearchResult.totalShares || 0}</div>
+                      </div>
+                      <div>
+                        <div className={styles.userDetailLabel}>Comments</div>
+                        <div className={styles.userDetailValue}>{userSearchResult.totalComments || 0}</div>
+                      </div>
+                    </div>
+                    <div className={styles.userDetailMeta}>
+                      <p>
+                        <strong>Headline:</strong> {userSearchResult.headline || 'N/A'}
+                      </p>
+                      {userSearchResult.suspensionReason && (
+                        <p>
+                          <strong>Suspension:</strong> {userSearchResult.suspensionReason}
+                        </p>
+                      )}
+                    </div>
+                    <div className={styles.userActions}>
+                      {userSearchResult.suspended ? (
+                        <button
+                          className={styles.actionBtn}
+                          onClick={() => handleUnsuspendUser(userSearchResult.id)}
+                        >
+                          Unsuspend
+                        </button>
+                      ) : (
+                        <button
+                          className={styles.actionBtnDanger}
+                          onClick={() => {
+                            const reason = prompt('Enter suspension reason:');
+                            if (reason) {
+                              handleSuspendUser(userSearchResult.id, reason);
+                            }
+                          }}
+                        >
+                          Suspend
+                        </button>
+                      )}
+                      <button
+                        className={styles.actionBtn}
+                        onClick={() => {
+                          const name = prompt('Enter new name (or leave empty):', userSearchResult.name || '');
+                          const headline = prompt('Enter new headline (or leave empty):', userSearchResult.headline || '');
+                          const email = prompt('Enter new email (or leave empty):', userSearchResult.email || '');
+                          const updates: { name?: string; headline?: string; email?: string } = {};
+                          if (name !== null && name.trim() !== '') updates.name = name.trim();
+                          if (headline !== null && headline.trim() !== '') updates.headline = headline.trim();
+                          if (email !== null && email.trim() !== '') updates.email = email.trim();
+                          if (Object.keys(updates).length > 0) {
+                            handleUpdateUser(userSearchResult.id, updates);
+                          }
+                        }}
+                      >
+                        Edit Profile
+                      </button>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={() => {
+                          const coins = prompt('Enter new coin amount (number):', (userSearchResult.patCoins || 0).toString());
+                          if (coins) handleUpdateUserCoins(userSearchResult.id, parseInt(coins, 10));
+                        }}
+                      >
+                        Update Coins
+                      </button>
+                      <button
+                        className={styles.actionBtn}
+                        onClick={() => {
+                          const level = prompt(
+                            'Enter rank level (1-8):\n1=Cell, 2=Egg, 3=Neonate, 4=Nestling, 5=Fledgling, 6=Juvenile, 7=Adult, 8=Pundit',
+                            (userSearchResult.rankLevel || 1).toString()
+                          );
+                          if (level) {
+                            const levelNum = parseInt(level, 10);
+                            if (levelNum >= 1 && levelNum <= 8) {
+                              handleUpdateUserRank(userSearchResult.id, levelNum);
+                            } else {
+                              alert('Rank level must be between 1 and 8');
+                            }
+                          }
+                        }}
+                      >
+                        Change Rank
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={styles.emptyState}>
+                    Enter an email or username and click Search to inspect a user.
                   </div>
                 )}
               </div>
             )}
 
-            {activeTab === 'content' && (
+            {activeTab === 'categories' && (
               <div className={styles.contentSection}>
                 <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Feed Management</h2>
-                  <div className={styles.searchBox}>
-                    <input
-                      type="text"
-                      placeholder="Search feeds by title or content..."
-                      value={feedSearch}
-                      onChange={(e) => {
-                        setFeedSearch(e.target.value);
-                        setFeedPage(0);
-                      }}
-                      className={styles.searchInput}
-                    />
-                  </div>
+                  <h2 className={styles.sectionTitle}>Category Management</h2>
+                  <p className={styles.userHelperText}>
+                    Manage every attribute of a category and keep the catalog in sync.
+                  </p>
                 </div>
 
-                {feedLoading ? (
-                  <div className={styles.loadingState}>Loading feeds...</div>
-                ) : feeds.length === 0 ? (
-                  <div className={styles.emptyState}>No feeds found.</div>
+                {categoriesLoading ? (
+                  <div className={styles.loadingState}>Loading categories...</div>
+                ) : categories.length === 0 ? (
+                  <div className={styles.emptyState}>No categories available.</div>
                 ) : (
-                  <>
-                    <div className={styles.tableContainer}>
-                      <table className={styles.dataTable}>
-                        <thead>
-                          <tr>
-                            <th>ID</th>
-                            <th>Title</th>
-                            <th>Category</th>
-                            <th>Reads</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                  <div className={styles.tableContainer}>
+                    <table className={styles.dataTable}>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Name</th>
+                          <th>Parent</th>
+                          <th>Visibility</th>
+                          <th>Scope</th>
+                          <th>Query</th>
+                          <th>Concept</th>
+                          <th>Updated</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {categories.map((category) => (
+                          <tr key={category.id}>
+                            <td>{category.id}</td>
+                            <td>{category.name || 'Untitled'}</td>
+                            <td>{category.parentName || '—'}</td>
+                            <td>
+                              <span className={styles.badgeInfo}>
+                                {category.publicCategory ? 'Public' : 'Private'}
+                              </span>
+                            </td>
+                            <td>
+                              <span className={styles.badgeWarning}>
+                                {category.localized ? 'Localized' : 'Global'}
+                              </span>
+                            </td>
+                            <td>{category.query || '—'}</td>
+                            <td>{category.concept || '—'}</td>
+                            <td>{formatDate(category.updatedAt)}</td>
+                            <td>
+                              <button
+                                className={styles.actionBtnSmall}
+                                onClick={() => openCategoryEditor(category)}
+                              >
+                                Edit
+                              </button>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {feeds.map((feed) => (
-                            <tr key={feed.id}>
-                              <td>{feed.id}</td>
-                              <td>{feed.title?.substring(0, 50) || 'No Title'}...</td>
-                              <td>{feed.categoryName || 'N/A'}</td>
-                              <td>{feed.readCount || 0}</td>
-                              <td>
-                                <div className={styles.statusBadges}>
-                                  {feed.published && <span className={styles.badgeSuccess}>Published</span>}
-                                  {feed.hidden && <span className={styles.badgeWarning}>Hidden</span>}
-                                  {feed.featured && <span className={styles.badgeInfo}>Featured</span>}
-                                </div>
-                              </td>
-                              <td>
-                                <button
-                                  className={styles.actionBtnSmall}
-                                  onClick={() => setSelectedFeed(feed)}
-                                >
-                                  View
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {feedTotalPages > 1 && (
-                      <div className={styles.pagination}>
-                        <button
-                          className={styles.pageButton}
-                          onClick={() => setFeedPage(prev => Math.max(0, prev - 1))}
-                          disabled={feedPage === 0}
-                        >
-                          Previous
-                        </button>
-                        <span className={styles.pageInfo}>
-                          Page {feedPage + 1} of {feedTotalPages}
-                        </span>
-                        <button
-                          className={styles.pageButton}
-                          onClick={() => setFeedPage(prev => prev + 1)}
-                          disabled={feedPage >= feedTotalPages - 1}
-                        >
-                          Next
-                        </button>
-                      </div>
-                    )}
-                  </>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
 
-                {selectedFeed && (
+                {selectedCategory && (
                   <div className={styles.modal}>
                     <div className={styles.modalContent}>
-                      <h3>Feed Details: {selectedFeed.title}</h3>
+                      <h3>Edit Category: {selectedCategory.name || 'Unnamed'}</h3>
                       <div className={styles.modalBody}>
-                        <p><strong>ID:</strong> {selectedFeed.id}</p>
-                        <p><strong>Title:</strong> {selectedFeed.title || 'N/A'}</p>
-                        <p><strong>Category:</strong> {selectedFeed.categoryName || 'N/A'}</p>
-                        <p><strong>Reads:</strong> {selectedFeed.readCount || 0}</p>
-                        <p><strong>Published:</strong> {selectedFeed.published ? 'Yes' : 'No'}</p>
-                        <p><strong>Featured:</strong> {selectedFeed.featured ? 'Yes' : 'No'}</p>
-                        <p><strong>Hidden:</strong> {selectedFeed.hidden ? 'Yes' : 'No'}</p>
-                        <p><strong>Created:</strong> {formatDate(selectedFeed.createdAt)}</p>
+                        {categoryError && <div className={styles.alertDanger}>{categoryError}</div>}
+                        <div className={styles.categoryFormRow}>
+                          <label className={styles.categoryFormLabel}>Name</label>
+                          <input
+                            className={styles.searchInput}
+                            type="text"
+                            value={categoryForm.name}
+                            onChange={(e) => setCategoryForm(prev => ({ ...prev, name: e.target.value }))}
+                          />
+                        </div>
+                        <div className={styles.categoryFormRow}>
+                          <label className={styles.categoryFormLabel}>Image URL</label>
+                          <input
+                            className={styles.searchInput}
+                            type="text"
+                            value={categoryForm.imageUrl}
+                            onChange={(e) => setCategoryForm(prev => ({ ...prev, imageUrl: e.target.value }))}
+                          />
+                        </div>
+                        <div className={styles.categoryFormRow}>
+                          <label className={styles.categoryFormLabel}>Query</label>
+                          <input
+                            className={styles.searchInput}
+                            type="text"
+                            value={categoryForm.query}
+                            onChange={(e) => setCategoryForm(prev => ({ ...prev, query: e.target.value }))}
+                          />
+                        </div>
+                        <div className={styles.categoryFormRow}>
+                          <label className={styles.categoryFormLabel}>Concept</label>
+                          <input
+                            className={styles.searchInput}
+                            type="text"
+                            value={categoryForm.concept}
+                            onChange={(e) => setCategoryForm(prev => ({ ...prev, concept: e.target.value }))}
+                          />
+                        </div>
+                        <div className={styles.categoryFormRow}>
+                          <label className={styles.categoryFormLabel}>Parent Category</label>
+                          <select
+                            className={styles.searchInput}
+                            value={categoryForm.parentId ?? ''}
+                            onChange={(e) => {
+                              setCategoryForm(prev => ({
+                                ...prev,
+                                parentId: e.target.value === '' ? null : Number(e.target.value),
+                              }));
+                            }}
+                          >
+                            <option value="">None</option>
+                            {categories
+                              .filter((cat) => cat.id !== selectedCategory.id)
+                              .map((cat) => (
+                                <option key={cat.id} value={cat.id}>
+                                  {cat.name}
+                                </option>
+                              ))}
+                          </select>
+                        </div>
+                        <div className={styles.categoryCheckboxGroup}>
+                          <label className={styles.categoryCheckbox}>
+                            <input
+                              type="checkbox"
+                              checked={categoryForm.publicCategory}
+                              onChange={(e) =>
+                                setCategoryForm(prev => ({ ...prev, publicCategory: e.target.checked }))
+                              }
+                            />
+                            Public
+                          </label>
+                          <label className={styles.categoryCheckbox}>
+                            <input
+                              type="checkbox"
+                              checked={categoryForm.localized}
+                              onChange={(e) =>
+                                setCategoryForm(prev => ({ ...prev, localized: e.target.checked }))
+                              }
+                            />
+                            Localized
+                          </label>
+                        </div>
                       </div>
                       <div className={styles.modalActions}>
-                        {selectedFeed.hidden ? (
-                          <button
-                            className={styles.actionBtn}
-                            onClick={() => handleUnhideFeed(selectedFeed.id)}
-                          >
-                            Unhide
-                          </button>
-                        ) : (
-                          <button
-                            className={styles.actionBtnWarning}
-                            onClick={() => handleHideFeed(selectedFeed.id)}
-                          >
-                            Hide
-                          </button>
-                        )}
-                        {selectedFeed.featured ? (
-                          <button
-                            className={styles.actionBtn}
-                            onClick={() => handleUnfeatureFeed(selectedFeed.id)}
-                          >
-                            Unfeature
-                          </button>
-                        ) : (
-                          <button
-                            className={styles.actionBtn}
-                            onClick={() => handleFeatureFeed(selectedFeed.id)}
-                          >
-                            Feature
-                          </button>
-                        )}
                         <button
                           className={styles.actionBtn}
-                          onClick={() => handleUpdateFeedPublished(selectedFeed.id, !selectedFeed.published)}
+                          onClick={handleCategorySave}
+                          disabled={categorySaving}
                         >
-                          {selectedFeed.published ? 'Unpublish' : 'Publish'}
+                          {categorySaving ? 'Saving...' : 'Save changes'}
                         </button>
-                        <button
-                          className={styles.actionBtnDanger}
-                          onClick={() => handleDeleteFeed(selectedFeed.id)}
-                        >
-                          Delete
-                        </button>
-                        <button
-                          className={styles.actionBtn}
-                          onClick={() => setSelectedFeed(null)}
-                        >
-                          Close
+                        <button className={styles.actionBtn} onClick={closeCategoryEditor}>
+                          Cancel
                         </button>
                       </div>
                     </div>
