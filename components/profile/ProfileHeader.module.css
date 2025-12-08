@@ -1,0 +1,134 @@
+.header {
+  border-radius: 24px;
+  background: #ffffff;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.banner {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+.banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarWrapper {
+  position: absolute;
+  top: 110px;
+  left: 32px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 5px solid #fff;
+  overflow: hidden;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.avatarWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+}
+
+.meta {
+  padding: 40px 32px 32px;
+  padding-top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flexRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.handle {
+  color: #4b5563;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+}
+
+.bio {
+  color: #1f2937;
+  max-width: 640px;
+  line-height: 1.6;
+}
+
+.date {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.statsRow>div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statsRow span {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.statsRow p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.followBtn {
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  padding: 10px 22px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+}
+
+.followBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.followBtn.following {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}

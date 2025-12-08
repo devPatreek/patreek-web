@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styles from './NewsCard.module.css';
 
 export interface FeedItemProps {
@@ -8,6 +8,7 @@ export interface FeedItemProps {
   createdAt: string;
   patCount: number;
   avatarUrl?: string;
+  isPattedByCurrentUser?: boolean;
 }
 
 export default function NewsCard({
@@ -17,9 +18,18 @@ export default function NewsCard({
   createdAt,
   patCount,
   avatarUrl,
+  isPattedByCurrentUser = false,
 }: FeedItemProps) {
-  const [hasPat, setHasPat] = useState(false);
+  const [hasPat, setHasPat] = useState(Boolean(isPattedByCurrentUser));
   const [localPatCount, setLocalPatCount] = useState(patCount);
+
+  useEffect(() => {
+    setLocalPatCount(patCount);
+  }, [patCount]);
+
+  useEffect(() => {
+    setHasPat(Boolean(isPattedByCurrentUser));
+  }, [isPattedByCurrentUser]);
 
   const formattedDate = useMemo(() => {
     const date = new Date(createdAt);
