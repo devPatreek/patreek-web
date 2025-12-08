@@ -8,6 +8,7 @@ import styles from './page.module.css';
 import MainHeader from '@/components/MainHeader';
 import Footer from '@/components/Footer';
 import { checkSessionStatus, getUserProfile, signOut, updateProfile, UserProfile, UpdateProfilePayload } from '@/lib/api';
+import XpProgressBar from '@/components/gamification/XpProgressBar';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -121,6 +122,9 @@ export default function ProfilePage() {
   if (!isAuthenticated) {
     return null; // Will redirect
   }
+
+  const rankLevel = profile?.rank?.level ?? 1;
+  const rankName = profile?.rank?.name ?? 'Fledgling';
 
   const initials = profile?.name
     ? profile.name
@@ -239,7 +243,7 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-            <div className={styles.statsRow}>
+                  <div className={styles.statsRow}>
               <div className={styles.statChip}>
                 <span className={styles.statLabel}>Pats</span>
                 <span className={styles.statValue}>{profile?.totalPats ?? 0}</span>
@@ -259,6 +263,18 @@ export default function ProfilePage() {
             </div>
           </section>
 
+          <div className={styles.progressSection}>
+            <XpProgressBar
+              currentXp={(profile?.totalPats ?? 0) * 10}
+              targetXp={Math.max(4200, (rankLevel + 1) * 1500)}
+              rankName={rankName}
+              dailyXp={Math.min((profile?.totalPats ?? 0) * 2, 200)}
+              dailyCap={200}
+            />
+            <p className={styles.adLoadStatus}>
+              {rankLevel >= 5 ? 'Ad Load: None (Premium Status Active) ✨' : 'Ad Load: Heavy/Medium (Reach Fledgling to remove)'}
+            </p>
+          </div>
           <div className={styles.grid}>
             <div className={styles.card}>
               <div className={styles.cardHeader}>
