@@ -121,8 +121,15 @@ export default function ProfilePage() {
   };
 
   const getNextRankCost = (level: number) => {
-    const costs = {1: 1000, 2: 3000, 3: 10000, 4: 50000, 5: 100000, 6: 200000};
-    return costs[level] || 0;
+    const costs: Record<number, number> = {
+      1: 1000,
+      2: 3000,
+      3: 10000,
+      4: 50000,
+      5: 100000,
+      6: 200000,
+    };
+    return costs[level] ?? 0;
   };
 
   const canBuyRankBoost = (profile: UserProfile | null) => {
