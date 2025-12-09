@@ -13,6 +13,10 @@ interface AdPlaceholderProps {
    * Set to false to hide the ad space completely
    */
   showPlaceholder?: boolean;
+  /**
+   * The viewer's rank level to decide whether ads should be shown
+   */
+  rankLevel?: number;
 }
 
 /**
@@ -23,8 +27,13 @@ interface AdPlaceholderProps {
 export default function AdPlaceholder({
   placementId,
   showPlaceholder = true,
+  rankLevel,
 }: AdPlaceholderProps) {
   if (!showPlaceholder) {
+    return null;
+  }
+
+  if (typeof rankLevel === 'number' && rankLevel >= 5) {
     return null;
   }
 
@@ -36,4 +45,3 @@ export default function AdPlaceholder({
     </div>
   );
 }
-
