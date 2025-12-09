@@ -8,9 +8,9 @@
 # testing
 /coverage
 
-# next.js
 /.next/
-# /out/ - Keep out folder for GitHub Pages deployment
+/out/
+/docs/
 
 # production
 /build
@@ -35,4 +35,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
