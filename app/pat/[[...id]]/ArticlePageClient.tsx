@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { getPublicFeed, FeedArticle, checkSessionStatus } from '@/lib/api';
+import { getUserProfile, getPublicFeed, FeedArticle, checkSessionStatus } from '@/lib/api';
 import { getCachedArticle, setCachedArticle } from '@/lib/cache';
 import ArticleReader from '@/components/ArticleReader';
 import AdsterraSlot from '@/components/AdsterraSlot';
+import AdPlaceholder from '@/components/AdPlaceholder';
 import MainHeader from '@/components/MainHeader';
 import styles from '../../page.module.css';
 
@@ -15,6 +16,7 @@ export default function PatPageClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasSession, setHasSession] = useState(false);
+  const [rankLevel, setRankLevel] = useState(0);
 
   const articleId = useMemo(() => {
     if (typeof window !== 'undefined') {
@@ -34,8 +36,15 @@ export default function PatPageClient() {
       try {
         const result = await checkSessionStatus();
         setHasSession(result.authenticated);
+        if (result.authenticated) {
+          const profile = await getUserProfile();
+          setRankLevel(profile?.rank?.level ?? 0);
+        } else {
+          setRankLevel(0);
+        }
       } catch (error) {
         setHasSession(false);
+        setRankLevel(0);
       }
     };
     checkSession();
@@ -108,10 +117,15 @@ export default function PatPageClient() {
           <ArticleReader article={article} />
         </div>
         <aside className={styles.rightRailSticky} aria-label="Sponsored">
-          <AdsterraSlot variant="iframe300x250" />
-          <AdsterraSlot variant="iframe300x250" />
-          <AdsterraSlot variant="native" />
-          <AdsterraSlot variant="native" />
+          {rankLevel < 5 && (
+            <>
+              <AdsterraSlot variant="iframe300x250" />
+              <AdsterraSlot variant="iframe300x250" />
+              <AdsterraSlot variant="native" />
+              <AdsterraSlot variant="native" />
+            </>
+          )}
+          <AdPlaceholder placementId="pat-right-rail" rankLevel={rankLevel} />
         </aside>
       </main>
     </div>
