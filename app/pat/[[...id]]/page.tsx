@@ -4,10 +4,7 @@ import PatPageClient from './ArticlePageClient';
 // For optional catch-all routes [[...id]], we need to return an object with id as an array
 // This handles both /pat/ (homepage) and /pat/{id} (article) routes
 export async function generateStaticParams() {
-  // Return a single param with empty array to satisfy Next.js requirement for catch-all routes
-  // This creates /pat/index.html which will handle routing client-side
-  // The actual article routing (/pat/123) is handled via 404.html redirect
-  return [{ id: [] }];
+  return [];
 }
 
 export const revalidate = 60;
