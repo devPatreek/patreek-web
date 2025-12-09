@@ -71,10 +71,14 @@ export default function CoinsPage() {
 
       const confirmData = await confirm.json();
       if (confirmData.success) {
-        // Refresh profile to get updated coins
         const updatedProfile = await getUserProfile();
-        setProfile(updatedProfile);
-        setToast(`Success! ${bundle.coins} Pat Coins added. New balance: ${updatedProfile.coins}`);
+        if (updatedProfile) {
+          setProfile(updatedProfile);
+          const balanceText = updatedProfile.coins !== undefined ? updatedProfile.coins : '—';
+          setToast(`Success! ${bundle.coins} Pat Coins added. New balance: ${balanceText}`);
+        } else {
+          setToast(`Success! ${bundle.coins} Pat Coins added.`);
+        }
       } else {
         throw new Error(confirmData.error || 'Payment confirmation failed.');
       }
