@@ -108,8 +108,16 @@ export default function ProfilePage() {
   };
 
   const getTargetXpForLevel = (level: number) => {
-    const ladder = {1: 1400, 2: 4200, 3: 12000, 4: 60000, 5: 120000, 6: 240000, 7: Infinity};
-    return ladder[level + 1] || Infinity;
+    const ladder: Record<number, number> = {
+      2: 1400,
+      3: 4200,
+      4: 12000,
+      5: 60000,
+      6: 120000,
+      7: 240000,
+      8: Infinity,
+    };
+    return ladder[level + 1] ?? Infinity;
   };
 
   const getNextRankCost = (level: number) => {
