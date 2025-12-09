@@ -9,7 +9,7 @@ import MainHeader from '@/components/MainHeader';
 import Footer from '@/components/Footer';
 import { checkSessionStatus, getUserProfile, signOut, updateProfile, UserProfile, UpdateProfilePayload } from '@/lib/api';
 import XpProgressBar from '@/components/gamification/XpProgressBar';
-import { useToast } from 'sonner';
+import { Toaster, toast } from 'sonner';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -23,8 +23,6 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const { toast } = useToast();
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -179,6 +177,8 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.page}>
+      <Toaster richColors position="top-right" />
+      <Toaster richColors position="top-right" />
       <MainHeader hasSession={true} />
 
       <main className={styles.main}>
