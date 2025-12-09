@@ -4,7 +4,7 @@ import PatPageClient from './ArticlePageClient';
 // For optional catch-all routes [[...id]], we need to return an object with id as an array
 // This handles both /pat/ (homepage) and /pat/{id} (article) routes
 export async function generateStaticParams() {
-  return [];
+  return [{ id: [] }];
 }
 
 export const revalidate = 60;
