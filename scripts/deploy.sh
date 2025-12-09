@@ -62,8 +62,8 @@ git add -A
 echo "💾 Committing changes..."
 git commit -m "$COMMIT_MESSAGE"
 
-echo "🚀 Pushing to origin/main..."
-git push origin main
+echo "🚀 Pushing to origin/preflight..."
+git push origin preflight
 
 echo ""
 echo "✅ Deployment complete!"
