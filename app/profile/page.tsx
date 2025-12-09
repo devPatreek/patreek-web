@@ -179,8 +179,13 @@ export default function ProfilePage() {
   const rankLevel = profile?.rank?.level ?? 1;
   const currentXp = profile?.xp ?? 0;
   const adSlots = profile?.adSlots ?? 4;
-  const targetXp = getTargetXpForLevel(rankLevel); // Define function below
+  const dailyCap = profile?.dailyCap ?? 200;
+  const targetXp = getTargetXpForLevel(rankLevel);
   const rankName = profile?.rank?.name ?? 'Fledgling';
+  const adLoadStatusText =
+    rankLevel >= 5
+      ? 'Ad Load: None (Premium Status Active) ✨'
+      : 'Ad Load: Heavy/Medium (Reach Fledgling to remove)';
 
   const initials = profile?.name
     ? profile.name
@@ -324,14 +329,16 @@ export default function ProfilePage() {
             <XpProgressBar
               currentXp={currentXp}
               targetXp={targetXp}
-              rankName={profile?.rank?.name ?? 'Fledgling'}
+              rankName={rankName}
               dailyXp={profile?.dailyXp ?? 0}
+              dailyCap={dailyCap}
             />
-            <div className={styles.adStatus}>
-              {adSlots === 0 ? (
-                <span className={styles.vipBadge}>VIP: Ad-Free Experience</span>
-              ) : (
-                <span className={styles.adBadge}>Ads Active ({adSlots} slots) - Level Up to Remove</span>
+            <div className={styles.adLoadStatus}>
+              <span>{adLoadStatusText}</span>
+              {adSlots > 0 && (
+                <span className={styles.adSlotInfo}>
+                  {adSlots} ad slot{adSlots === 1 ? '' : 's'} active
+                </span>
               )}
             </div>
             <button 
