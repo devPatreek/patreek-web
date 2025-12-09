@@ -199,6 +199,13 @@
   border: 1px solid #e5e7eb;
 }
 
+.adSlotInfo {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
 .statChip {
   display: flex;
   flex-direction: column;

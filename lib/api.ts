@@ -36,6 +36,10 @@ export interface UserProfile {
   totalComments?: number;
   coins?: number;
   patCoins?: number;
+  xp?: number;
+  dailyXp?: number;
+  dailyCap?: number;
+  adSlots?: number;
   countryCode?: string;
   headline?: string;
   bio?: string;
