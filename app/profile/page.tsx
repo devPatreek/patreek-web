@@ -9,6 +9,7 @@ import MainHeader from '@/components/MainHeader';
 import Footer from '@/components/Footer';
 import { checkSessionStatus, getUserProfile, signOut, updateProfile, UserProfile, UpdateProfilePayload } from '@/lib/api';
 import XpProgressBar from '@/components/gamification/XpProgressBar';
+import { useToast } from 'sonner';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -107,6 +109,44 @@ export default function ProfilePage() {
     }
   };
 
+  const getTargetXpForLevel = (level: number) => {
+    const ladder = {1: 1400, 2: 4200, 3: 12000, 4: 60000, 5: 120000, 6: 240000, 7: Infinity};
+    return ladder[level + 1] || Infinity;
+  };
+
+  const getNextRankCost = (level: number) => {
+    const costs = {1: 1000, 2: 3000, 3: 10000, 4: 50000, 5: 100000, 6: 200000};
+    return costs[level] || 0;
+  };
+
+  const canBuyRankBoost = (profile: UserProfile | null) => {
+    if (!profile || profile.rankLevel >= 7) return false;
+    // Add 70% XP check logic if available
+    return true;
+  };
+
+  const handleBuyRankBoost = async () => {
+    if (!profile) return;
+    try {
+      const response = await fetch('/api/v1/user/rank/buy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to buy rank boost');
+      }
+      const data = await response.json();
+      // Refresh profile
+      const updatedProfile = await getUserProfile();
+      setProfile(updatedProfile);
+      // Show toast
+      toast.success('Rank boost purchased! Check your new level.');
+    } catch (error) {
+      toast.error('Purchase failed. Check your coins and try again.');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className={styles.page}>
@@ -123,7 +163,10 @@ export default function ProfilePage() {
     return null; // Will redirect
   }
 
-  const rankLevel = profile?.rank?.level ?? 1;
+  const rankLevel = profile?.rankLevel ?? 1;
+  const currentXp = profile?.xp ?? 0;
+  const adSlots = profile?.adSlots ?? 4;
+  const targetXp = getTargetXpForLevel(rankLevel); // Define function below
   const rankName = profile?.rank?.name ?? 'Fledgling';
 
   const initials = profile?.name
@@ -265,15 +308,25 @@ export default function ProfilePage() {
 
           <div className={styles.progressSection}>
             <XpProgressBar
-              currentXp={(profile?.totalPats ?? 0) * 10}
-              targetXp={Math.max(4200, (rankLevel + 1) * 1500)}
-              rankName={rankName}
-              dailyXp={Math.min((profile?.totalPats ?? 0) * 2, 200)}
-              dailyCap={200}
+              currentXp={currentXp}
+              targetXp={targetXp}
+              rankName={profile?.rank?.name ?? 'Fledgling'}
+              dailyXp={profile?.dailyXp ?? 0}
             />
-            <p className={styles.adLoadStatus}>
-              {rankLevel >= 5 ? 'Ad Load: None (Premium Status Active) ✨' : 'Ad Load: Heavy/Medium (Reach Fledgling to remove)'}
-            </p>
+            <div className={styles.adStatus}>
+              {adSlots === 0 ? (
+                <span className={styles.vipBadge}>VIP: Ad-Free Experience</span>
+              ) : (
+                <span className={styles.adBadge}>Ads Active ({adSlots} slots) - Level Up to Remove</span>
+              )}
+            </div>
+            <button 
+              onClick={handleBuyRankBoost} 
+              className={styles.rankBoostButton}
+              disabled={!canBuyRankBoost(profile)}
+            >
+              Buy Rank Boost ({getNextRankCost(rankLevel)} Pat Coins)
+            </button>
           </div>
           <div className={styles.grid}>
             <div className={styles.card}>

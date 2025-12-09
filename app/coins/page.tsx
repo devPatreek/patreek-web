@@ -9,9 +9,9 @@ import PricingCard from '@/components/ui/PricingCard';
 import { checkSessionStatus, getUserProfile, UserProfile } from '@/lib/api';
 
 const bundles = [
-  { id: 'small', title: 'Small Bundle', coins: 100, price: 0.99, description: 'Kickstart your pat streak with a small boost.' },
-  { id: 'medium', title: 'Medium Bundle', coins: 550, price: 4.99, description: 'Popular choice for creators and comment champions.', popular: true },
-  { id: 'large', title: 'Large Bundle', coins: 1200, price: 9.99, description: 'Best value for heavy tasters and community builders.' },
+  { id: 'coins_100', title: 'Small Bundle', coins: 100, price: 0.99, description: 'Kickstart your pat streak with a small boost.' },
+  { id: 'coins_550', title: 'Medium Bundle', coins: 550, price: 4.99, description: 'Popular choice for creators and comment champions.', popular: true },
+  { id: 'coins_1200', title: 'Large Bundle', coins: 1200, price: 9.99, description: 'Best value for heavy tasters and community builders.' },
 ];
 
 export default function CoinsPage() {
@@ -51,29 +51,33 @@ export default function CoinsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ bundleId: bundle.id, amount: bundle.price, coins: bundle.coins }),
+        body: JSON.stringify({ bundleId: bundle.id }),
       });
       if (!createIntent.ok) {
         throw new Error('Unable to start payment.');
       }
       const intentData = await createIntent.json();
-      const intentId = intentData?.id || intentData?.intentId || '';
+      const intentId = intentData.data?.id || intentData.id || '';
 
       const confirm = await fetch('/api/v1/payment/mock-confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ intentId, bundleId: bundle.id }),
+        body: JSON.stringify({ paymentIntentId: intentId, bundleId: bundle.id }),
       });
       if (!confirm.ok) {
         throw new Error('Unable to confirm payment.');
       }
 
-      setToast(`Patronage success! ${bundle.title} is ready.`);
-      setProfile((prev) => {
-        if (!prev) return prev;
-        return { ...prev, coins: (prev.coins ?? 0) + bundle.coins };
-      });
+      const confirmData = await confirm.json();
+      if (confirmData.success) {
+        // Refresh profile to get updated coins
+        const updatedProfile = await getUserProfile();
+        setProfile(updatedProfile);
+        setToast(`Success! ${bundle.coins} Pat Coins added. New balance: ${updatedProfile.coins}`);
+      } else {
+        throw new Error(confirmData.error || 'Payment confirmation failed.');
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Purchase failed.';
       setToast(message);
