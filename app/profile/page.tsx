@@ -176,7 +176,7 @@ export default function ProfilePage() {
     return null; // Will redirect
   }
 
-  const rankLevel = profile?.rankLevel ?? 1;
+  const rankLevel = profile?.rank?.level ?? 1;
   const currentXp = profile?.xp ?? 0;
   const adSlots = profile?.adSlots ?? 4;
   const targetXp = getTargetXpForLevel(rankLevel); // Define function below
@@ -192,7 +192,6 @@ export default function ProfilePage() {
 
   return (
     <div className={styles.page}>
-      <Toaster richColors position="top-right" />
       <Toaster richColors position="top-right" />
       <MainHeader hasSession={true} />
 
