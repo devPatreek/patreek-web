@@ -133,8 +133,8 @@ export default function ProfilePage() {
   };
 
   const canBuyRankBoost = (profile: UserProfile | null) => {
-    if (!profile || profile.rankLevel >= 7) return false;
-    // Add 70% XP check logic if available
+    const level = profile?.rank?.level ?? 0;
+    if (!profile || level >= 7) return false;
     return true;
   };
 
