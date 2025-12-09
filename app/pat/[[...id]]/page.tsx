@@ -10,7 +10,8 @@ export async function generateStaticParams() {
   return [{ id: [] }];
 }
 
+export const revalidate = 60;
+
 export default function PatPage() {
   return <PatPageClient />;
 }
-
