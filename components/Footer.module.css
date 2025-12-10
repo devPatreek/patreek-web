@@ -1,132 +1,72 @@
 .footer {
-  background-color: #ffffff;
-  border-top: 1px solid #e5e5e5;
-  padding: 60px 20px 40px;
-  margin-top: 80px;
-}
-
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.footerGrid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 40px;
-  margin-bottom: 40px;
-}
-
-.footerColumn {
+  width: 100%;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  padding: 16px 24px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 13px;
+  color: #475569;
+  flex-wrap: wrap;
 }
 
-.columnTitle {
-  color: #666;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
+.links {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.footerLink {
-  color: #252525;
+.link {
+  color: #475569;
   text-decoration: none;
-  font-size: 14px;
-  transition: opacity 0.2s;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
 }
 
-.footerLink:hover {
+.link:hover {
   opacity: 0.7;
 }
 
-.logoLink {
-  display: inline-block;
-  text-decoration: none;
-}
-
-.footerLogo {
-  width: auto;
-  height: 60px;
-  object-fit: contain;
-}
-
-.divider {
-  height: 1px;
-  background-color: #e5e5e5;
-  margin: 40px 0 24px;
-}
-
-.footerBottom {
+.right {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 16px;
+}
+
+.copy {
+  font-weight: 600;
+}
+
+.socials {
+  display: flex;
   gap: 8px;
-  text-align: center;
 }
 
-.copyright {
-  color: #666;
+.socialButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #111827;
   font-size: 14px;
-}
-
-.companyInfo {
-  color: #999;
-  font-size: 12px;
-}
-
-/* Dark mode support */
-.dark .footer {
-  background-color: #2a2a2a;
-  border-top-color: #4a4a4a;
-}
-
-.dark .columnTitle {
-  color: #b5b9bf;
-}
-
-.dark .footerLink {
-  color: #ffffff;
-}
-
-.dark .divider {
-  background-color: #4a4a4a;
-}
-
-.dark .copyright {
-  color: #b5b9bf;
-}
-
-.dark .companyInfo {
-  color: #888;
-}
-
-/* Responsive */
-@media (max-width: 991px) {
-  .footerGrid {
-    grid-template-columns: 1fr 1fr;
-    gap: 32px;
-  }
-
-  .footerLogo {
-    height: 50px;
-  }
+  font-weight: 700;
+  text-decoration: none;
 }
 
 @media (max-width: 640px) {
   .footer {
-    padding: 40px 16px 32px;
-    margin-top: 60px;
+    justify-content: center;
+    text-align: center;
   }
 
-  .footerGrid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-
-  .footerLogo {
-    height: 45px;
+  .right {
+    flex-direction: column;
+    gap: 8px;
   }
 }
-

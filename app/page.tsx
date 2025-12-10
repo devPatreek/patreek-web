@@ -12,6 +12,10 @@ import WhoToFollowWidget from '@/components/home/WhoToFollowWidget';
 import AppDownloadBanner from '@/components/AppDownloadBanner';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import AuthWallModal from '@/components/auth/AuthWallModal';
+import WeatherWidget from '@/components/widgets/WeatherWidget';
+import ForexWidget from '@/components/widgets/ForexWidget';
+import MainHeader from '@/components/MainHeader';
+import StatStrip from '@/components/home/StatStrip';
 import styles from './page.module.css';
 
 /**
@@ -98,13 +102,8 @@ function LinksHomePage() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.topBar}>
-        <div className={styles.topLeft}>
-          <h1 className={styles.brand}>Patreek</h1>
-          <p className={styles.highlight}>Live · AI-curated · Newsroom energy</p>
-        </div>
-      </div>
-
+      <MainHeader hasSession={hasSession} />
+      <StatStrip />
       <div className={styles.layout}>
         <aside className={styles.trendingColumn}>
           <TrendingSidebar items={feeds} />
@@ -136,7 +135,15 @@ function LinksHomePage() {
         <aside className={styles.widgetColumn}>
           <DailyFocusWidget />
           <div className={styles.adSlot}>
-            <AdPlaceholder placementId="homepage-right" />
+            <AdPlaceholder placementId="homepage-right-1" />
+          </div>
+          <WeatherWidget />
+          <div className={styles.adSlot}>
+            <AdPlaceholder placementId="homepage-right-2" />
+          </div>
+          <ForexWidget />
+          <div className={styles.adSlot}>
+            <AdPlaceholder placementId="homepage-right-3" />
           </div>
           <WhoToFollowWidget />
         </aside>
