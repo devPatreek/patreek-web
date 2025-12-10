@@ -7,7 +7,7 @@ export interface FeedItemProps {
   source?: string;
   createdAt: string;
   patCount: number;
-  avatarUrl?: string;
+  thumbnailUrl?: string;
   isPattedByCurrentUser?: boolean;
 }
 
@@ -17,7 +17,7 @@ export default function NewsCard({
   source,
   createdAt,
   patCount,
-  avatarUrl,
+  thumbnailUrl,
   isPattedByCurrentUser = false,
 }: FeedItemProps) {
   const [hasPat, setHasPat] = useState(Boolean(isPattedByCurrentUser));
@@ -38,8 +38,6 @@ export default function NewsCard({
       : date.toLocaleDateString(undefined, {
           month: 'short',
           day: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
         });
   }, [createdAt]);
 
@@ -49,46 +47,36 @@ export default function NewsCard({
       setLocalPatCount((prevCount) => Math.max(0, prevCount + (next ? 1 : -1)));
       return next;
     });
-
-    // Future: fire API call here.
   };
-
-  const initials = useMemo(() => {
-    if (avatarUrl) return null;
-    const words = title.split(' ').slice(0, 2);
-    return words.map((w) => w[0]).join('').toUpperCase();
-  }, [title, avatarUrl]);
 
   return (
     <article className={styles.card}>
-      <div className={styles.avatar}>
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="Feed avatar" loading="lazy" />
+      <div className={styles.thumbnail}>
+        {thumbnailUrl ? (
+          <img src={thumbnailUrl} alt="" loading="lazy" />
         ) : (
-          <span>{initials || 'X'}</span>
+          <span className={styles.fallback}>Patreek</span>
         )}
       </div>
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <div>
-            <h3 className={styles.title}>{title}</h3>
-            {summary && <p className={styles.summary}>{summary}</p>}
-          </div>
-          <button
-            className={`${styles.patButton} ${hasPat ? styles.active : ''}`}
-            onClick={handlePat}
-            aria-pressed={hasPat}
-            type="button"
-          >
-            <span className={styles.emoji}>{hasPat ? '🧡' : '🤍'}</span>
-            <span>{localPatCount ?? 0}</span>
-          </button>
+      <div className={styles.body}>
+        <div>
+          <h3 className={styles.title}>{title}</h3>
+          {summary && <p className={styles.summary}>{summary}</p>}
         </div>
         <div className={styles.meta}>
           {source && <span className={styles.source}>{source}</span>}
           <span className={styles.date}>{formattedDate}</span>
         </div>
       </div>
+      <button
+        className={`${styles.patButton} ${hasPat ? styles.active : ''}`}
+        onClick={handlePat}
+        aria-pressed={hasPat}
+        type="button"
+      >
+        <span className={styles.emoji}>{hasPat ? '🧡' : '🤍'}</span>
+        <span>{localPatCount ?? 0}</span>
+      </button>
     </article>
   );
 }

@@ -16,6 +16,38 @@ function isToday(date: string): boolean {
   return moment(date).isSame(moment(), 'day');
 }
 
+interface SocialStatsBarProps {
+  views: number;
+  pats: number;
+  shares: number;
+  comments: number;
+}
+
+function SocialStatsBar({ views, pats, shares, comments }: SocialStatsBarProps) {
+  const stats = [
+    { label: 'Views', value: views, icon: '👁️', color: '#6b7280' },
+    { label: 'Pats', value: pats, icon: '❤️', color: '#f43f5e' },
+    { label: 'Shares', value: shares, icon: '🔁', color: '#16a34a' },
+    { label: 'Comments', value: comments, icon: '💬', color: '#2563eb' },
+  ];
+
+  return (
+    <div className={styles.socialBar} role="list">
+      {stats.map((stat) => (
+        <div key={stat.label} className={styles.socialStat} role="listitem">
+          <span className={styles.socialIcon} style={{ color: stat.color }}>
+            {stat.icon}
+          </span>
+          <div>
+            <span className={styles.socialValue}>{stat.value.toLocaleString()}</span>
+            <p className={styles.socialLabel}>{stat.label}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function ArticleReader({ article }: ArticleReaderProps) {
   const [isDark, setIsDark] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -180,6 +212,13 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
           {article.excerpt && (
             <p className={styles.description}>{article.excerpt}</p>
           )}
+
+          <SocialStatsBar
+            views={article.viewCount ?? 0}
+            pats={article.totalPats ?? 0}
+            shares={article.totalShares ?? 0}
+            comments={article.totalComments ?? 0}
+          />
 
           <div
             className={styles.content}
