@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { FeedArticle, Comment, getArticleComments, API_BASE_URL } from '@/lib/api';
+import { FeedArticle, Comment, getArticleComments, API_BASE_URL, checkSessionStatus } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
 import Footer from '@/components/Footer';
+import AuthWallModal from '@/components/auth/AuthWallModal';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
 
@@ -53,6 +54,8 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [hasSession, setHasSession] = useState(false);
+  const [authWall, setAuthWall] = useState({ open: false, action: 'view this content' });
   const [currentBody, setCurrentBody] = useState(article.body);
   const [currentSummaryType, setCurrentSummaryType] = useState<'EXTRACTIVE' | 'AI_GENERATED'>(article.summaryType ?? 'EXTRACTIVE');
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -103,6 +106,26 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     const timer = setTimeout(() => setCopyStatus('idle'), 2500);
     return () => clearTimeout(timer);
   }, [copyStatus]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const checkAuth = async () => {
+      try {
+        const session = await checkSessionStatus();
+        if (!cancelled) {
+          setHasSession(session.authenticated);
+        }
+      } catch {
+        if (!cancelled) {
+          setHasSession(false);
+        }
+      }
+    };
+    checkAuth();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Fallback copy method for older browsers
   const fallbackCopy = (text: string) => {
@@ -160,6 +183,9 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     return beautifyContent(currentBody);
   }, [currentBody]);
 
+  const isPrivateArticle = article.isPublic === false;
+  const showAuthLock = isPrivateArticle && !hasSession;
+
   const handleEnhance = async () => {
     if (isEnhancing) return;
     setIsEnhancing(true);
@@ -193,6 +219,19 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     }
   };
 
+  const openAuthWall = (action: string) => {
+    setAuthWall({ open: true, action });
+  };
+  const closeAuthWall = () => {
+    setAuthWall((prev) => ({ ...prev, open: false }));
+  };
+
+  const handleReplyClick = () => {
+    if (!hasSession) {
+      openAuthWall('reply to a comment');
+    }
+  };
+
   return (
     <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
       <main className={styles.main}>
@@ -220,89 +259,112 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
             comments={article.totalComments ?? 0}
           />
 
-          <div
-            className={styles.content}
-            dangerouslySetInnerHTML={{ __html: beautifiedBody }}
-          />
-
-          {currentSummaryType === 'EXTRACTIVE' && (
-            <div className={styles.enhanceWrapper}>
-              {enhanceError && <p className={styles.enhanceError}>{enhanceError}</p>}
+          {showAuthLock ? (
+            <div className={styles.authLocked}>
+              <h3>Members only</h3>
+              <p>Sign in to read this story and join the discussion.</p>
               <button
                 type="button"
-                className={`${styles.enhanceButton} ${
-                  isEnhancing ? styles.enhanceButtonLoading : ''
-                }`}
-                onClick={handleEnhance}
-                disabled={isEnhancing}
+                className={`${styles.enhanceButton} ${styles.authUnlockButton}`}
+                onClick={() => openAuthWall('read this story')}
               >
-                {isEnhancing ? 'Summarizing…' : '✨ Summarize with AI'}
+                Unlock story
               </button>
             </div>
-          )}
+          ) : (
+            <>
+              <div
+                className={styles.content}
+                dangerouslySetInnerHTML={{ __html: beautifiedBody }}
+              />
 
-          {/* Comments Section */}
-          <div className={styles.commentsSection}>
-            <h2 className={styles.commentsTitle}>Comments</h2>
-            
-            {/* Share Bar - Inside Comments Section */}
-            <div className={styles.shareBar}>
-              <p className={styles.shareLabel}>Share this Pat</p>
-              <button
-                type="button"
-                className={`${styles.shareButton} ${
-                  copyStatus === 'copied' ? styles.shareButtonSuccess : ''
-                } ${copyStatus === 'error' ? styles.shareButtonError : ''}`}
-                onClick={handleCopyLink}
-                aria-live="polite"
-                title={copyLabel}
-              >
-                <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.shareIcon}>
-                  <path
-                    d="M18.586 5.414a5 5 0 0 1 7.071 7.071l-3 3a1 1 0 0 1-1.414-1.414l3-3a3 3 0 1 0-4.243-4.243l-3 3a1 1 0 1 1-1.414-1.414l3-3z"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M13.414 26.586a5 5 0 0 1-7.071-7.071l3-3a1 1 0 0 1 1.414 1.414l-3 3a3 3 0 1 0 4.243 4.243l3-3a1 1 0 1 1 1.414 1.414l-3 3z"
-                    fill="currentColor"
-                  />
-                  <path
-                    d="M20.586 11.586l-8 8a1 1 0 0 1-1.414-1.414l8-8a1 1 0 0 1 1.414 1.414z"
-                    fill="currentColor"
-                  />
-                </svg>
-                <span className={styles.shareText}>{copyLabel}</span>
-              </button>
-            </div>
-            {isLoadingComments ? (
-              <p className={styles.commentsLoading}>Loading comments...</p>
-            ) : comments.length === 0 ? (
-              <p className={styles.noComments}>No comments yet.</p>
-            ) : (
-              <div className={styles.commentsList}>
-                {comments.map((comment, index) => (
-                  <div key={index} className={styles.commentItem}>
-                    <div className={styles.commentHeader}>
-                      {comment.photoUrl && (
-                        <img
-                          src={comment.photoUrl}
-                          alt={comment.author}
-                          className={styles.commentAvatar}
+              {currentSummaryType === 'EXTRACTIVE' && (
+                <div className={styles.enhanceWrapper}>
+                  {enhanceError && <p className={styles.enhanceError}>{enhanceError}</p>}
+                  <button
+                    type="button"
+                    className={`${styles.enhanceButton} ${
+                      isEnhancing ? styles.enhanceButtonLoading : ''
+                    }`}
+                    onClick={handleEnhance}
+                    disabled={isEnhancing}
+                  >
+                    {isEnhancing ? 'Summarizing…' : '✨ Summarize with AI'}
+                  </button>
+                </div>
+              )}
+
+              {/* Comments Section */}
+              <div className={styles.commentsSection}>
+                <h2 className={styles.commentsTitle}>Comments</h2>
+                <div className={styles.shareBar}>
+                  <p className={styles.shareLabel}>Share this Pat</p>
+                  <div className={styles.shareActions}>
+                    <button
+                      type="button"
+                      className={`${styles.shareButton} ${
+                        copyStatus === 'copied' ? styles.shareButtonSuccess : ''
+                      } ${copyStatus === 'error' ? styles.shareButtonError : ''}`}
+                      onClick={handleCopyLink}
+                      aria-live="polite"
+                      title={copyLabel}
+                    >
+                      <svg viewBox="0 0 32 32" aria-hidden="true" className={styles.shareIcon}>
+                        <path
+                          d="M18.586 5.414a5 5 0 0 1 7.071 7.071l-3 3a1 1 0 0 1-1.414-1.414l3-3a3 3 0 1 0-4.243-4.243l-3 3a1 1 0 1 1-1.414-1.414l3-3z"
+                          fill="currentColor"
                         />
-                      )}
-                      <div className={styles.commentAuthorInfo}>
-                        <span className={styles.commentAuthor}>{comment.author}</span>
-                        <span className={styles.commentDate}>
-                          {moment(comment.createdAt).format('MMM DD, YYYY')}
-                        </span>
-                      </div>
-                    </div>
-                    <p className={styles.commentBody}>{comment.body}</p>
+                        <path
+                          d="M13.414 26.586a5 5 0 0 1-7.071-7.071l3-3a1 1 0 0 1 1.414 1.414l-3 3a3 3 0 1 0 4.243 4.243l3-3a1 1 0 1 1 1.414 1.414l-3 3z"
+                          fill="currentColor"
+                        />
+                        <path
+                          d="M20.586 11.586l-8 8a1 1 0 0 1-1.414-1.414l8-8a1 1 0 0 1 1.414 1.414z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                      <span className={styles.shareText}>{copyLabel}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.replyButton}
+                      onClick={handleReplyClick}
+                    >
+                      Reply
+                    </button>
                   </div>
-                ))}
+                </div>
+                {isLoadingComments ? (
+                  <p className={styles.commentsLoading}>Loading comments...</p>
+                ) : comments.length === 0 ? (
+                  <p className={styles.noComments}>No comments yet.</p>
+                ) : (
+                  <div className={styles.commentsList}>
+                    {comments.map((comment, index) => (
+                      <div key={index} className={styles.commentItem}>
+                        <div className={styles.commentHeader}>
+                          {comment.photoUrl && (
+                            <img
+                              src={comment.photoUrl}
+                              alt={comment.author}
+                              className={styles.commentAvatar}
+                            />
+                          )}
+                          <div className={styles.commentAuthorInfo}>
+                            <span className={styles.commentAuthor}>{comment.author}</span>
+                            <span className={styles.commentDate}>
+                              {moment(comment.createdAt).format('MMM DD, YYYY')}
+                            </span>
+                          </div>
+                        </div>
+                        <p className={styles.commentBody}>{comment.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
 
           {/* UNLOCK YOUR PATS Banner */}
           <div className={styles.unlockBanner}>
@@ -345,6 +407,11 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
         </article>
       </main>
       <Footer />
+      <AuthWallModal
+        isOpen={authWall.open}
+        triggerAction={authWall.action}
+        onClose={closeAuthWall}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { getPublicFeeds, Feed } from '@/lib/api';
+import { getPublicFeeds, Feed, checkSessionStatus } from '@/lib/api';
 import PatPageClient from './pat/[[...id]]/ArticlePageClient';
 import NewsCard from '@/components/feed/NewsCard';
 import HeroCard from '@/components/home/HeroCard';
@@ -11,6 +11,7 @@ import DailyFocusWidget from '@/components/home/DailyFocusWidget';
 import WhoToFollowWidget from '@/components/home/WhoToFollowWidget';
 import AppDownloadBanner from '@/components/AppDownloadBanner';
 import AdPlaceholder from '@/components/AdPlaceholder';
+import AuthWallModal from '@/components/auth/AuthWallModal';
 import styles from './page.module.css';
 
 /**
@@ -32,6 +33,36 @@ export default function RootPage() {
 function LinksHomePage() {
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasSession, setHasSession] = useState(false);
+  const [authWall, setAuthWall] = useState({ open: false, action: 'access this content' });
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadSession = async () => {
+      try {
+        const session = await checkSessionStatus();
+        if (!cancelled) {
+          setHasSession(session.authenticated);
+        }
+      } catch {
+        if (!cancelled) {
+          setHasSession(false);
+        }
+      }
+    };
+    loadSession();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const openAuthWall = (action: string) => {
+    setAuthWall({ open: true, action });
+  };
+
+  const closeAuthWall = () => {
+    setAuthWall((prev) => ({ ...prev, open: false }));
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +126,8 @@ function LinksHomePage() {
                 createdAt={feed.createdAt}
                 patCount={feed.pats ?? 0}
                 thumbnailUrl={feed.imageUrl}
+                requiresAuth={!hasSession}
+                onAuthWall={openAuthWall}
               />
             ))}
           </div>
@@ -108,6 +141,12 @@ function LinksHomePage() {
           <WhoToFollowWidget />
         </aside>
       </div>
+
+      <AuthWallModal
+        isOpen={authWall.open}
+        triggerAction={authWall.action}
+        onClose={closeAuthWall}
+      />
 
       <AppDownloadBanner />
     </div>

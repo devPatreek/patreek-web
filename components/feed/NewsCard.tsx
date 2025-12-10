@@ -9,6 +9,8 @@ export interface FeedItemProps {
   patCount: number;
   thumbnailUrl?: string;
   isPattedByCurrentUser?: boolean;
+  requiresAuth?: boolean;
+  onAuthWall?: (action: string) => void;
 }
 
 export default function NewsCard({
@@ -19,6 +21,8 @@ export default function NewsCard({
   patCount,
   thumbnailUrl,
   isPattedByCurrentUser = false,
+  requiresAuth = false,
+  onAuthWall,
 }: FeedItemProps) {
   const [hasPat, setHasPat] = useState(Boolean(isPattedByCurrentUser));
   const [localPatCount, setLocalPatCount] = useState(patCount);
@@ -42,6 +46,11 @@ export default function NewsCard({
   }, [createdAt]);
 
   const handlePat = () => {
+    if (requiresAuth && onAuthWall) {
+      onAuthWall('pat this story');
+      return;
+    }
+
     setHasPat((prev) => {
       const next = !prev;
       setLocalPatCount((prevCount) => Math.max(0, prevCount + (next ? 1 : -1)));

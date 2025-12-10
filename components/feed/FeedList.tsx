@@ -13,6 +13,8 @@ interface PaginatedResponse<T> {
 interface FeedListProps {
   fetchUrl: string;
   queryKey: string;
+  requiresAuth?: boolean;
+  onAuthWall?: (action: string) => void;
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => {
@@ -22,7 +24,7 @@ const fetcher = (url: string) => fetch(url).then((res) => {
   return res.json();
 });
 
-export default function FeedList({ fetchUrl, queryKey }: FeedListProps) {
+export default function FeedList({ fetchUrl, queryKey, requiresAuth = false, onAuthWall }: FeedListProps) {
   const getKey = (pageIndex: number, previousPageData: PaginatedResponse<any> | null) => {
     if (previousPageData && previousPageData.content.length === 0) {
       return null;
@@ -93,6 +95,8 @@ export default function FeedList({ fetchUrl, queryKey }: FeedListProps) {
           patCount={feed.patCount ?? 0}
           thumbnailUrl={feed.authorAvatarUrl || feed.avatarUrl}
           isPattedByCurrentUser={feed.hasPatted}
+          requiresAuth={requiresAuth}
+          onAuthWall={onAuthWall}
         />
       ))}
 
