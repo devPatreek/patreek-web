@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styles from './page.module.css';
 import { getOpinions, Opinion } from '@/lib/api';
 
-const navTags = ['White House', 'Congress', 'Civil Rights', 'World', 'Science'];
 const appNav = ['Coins', 'Store', 'Media', 'Community', 'Opinion'];
+const categoryPills = ['All', 'Tech', 'Politics', 'Sports', 'Crypto'];
 
 function formatTimeAgo(timestamp: string): string {
   const now = new Date();
@@ -54,6 +54,14 @@ export default function OpinionPage() {
   const [opinions, setOpinions] = useState<Opinion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const filteredOpinions = useMemo(() => {
+    if (activeCategory === 'All') return opinions;
+    return opinions.filter(
+      opinion => opinion.categoryName?.toLowerCase() === activeCategory.toLowerCase()
+    );
+  }, [opinions, activeCategory]);
 
   useEffect(() => {
     const fetchOpinions = async () => {
@@ -114,23 +122,29 @@ export default function OpinionPage() {
         <div className={styles.heroContent}>
           <p className={styles.kicker}>Perspectives from Patreek Pundits</p>
           <h1 className={styles.title}>Opinion</h1>
-          <nav className={styles.nav} aria-label="Opinion sections">
-            {navTags.map(tag => (
-              <button key={tag} className={styles.navItem} type="button">
-                {tag}
-              </button>
-            ))}
-          </nav>
         </div>
       </header>
+
+      <div className={styles.filterBar}>
+          {categoryPills.map(category => (
+            <button
+              key={category}
+              type="button"
+              className={`${styles.filterPill} ${activeCategory === category ? styles.activePill : ''}`}
+              onClick={() => setActiveCategory(category)}
+            >
+              {category}
+            </button>
+          ))}
+        </div>
 
       <main className={styles.feed}>
         {loading && <div style={{ padding: '40px', textAlign: 'center' }}>Loading opinions...</div>}
         {error && <div style={{ padding: '40px', textAlign: 'center', color: 'red' }}>Error: {error}</div>}
-        {!loading && !error && opinions.length === 0 && (
+        {!loading && !error && filteredOpinions.length === 0 && (
           <div style={{ padding: '40px', textAlign: 'center' }}>No opinions found.</div>
         )}
-        {!loading && !error && opinions.map(item => {
+        {!loading && !error && filteredOpinions.map(item => {
           const title = extractTitle(item.content);
           const dek = extractDek(item.content);
           const ageLabel = formatTimeAgo(item.timestamp);

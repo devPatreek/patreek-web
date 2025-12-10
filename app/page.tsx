@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { getPublicFeeds, Feed, checkSessionStatus } from '@/lib/api';
 import PatPageClient from './pat/[[...id]]/ArticlePageClient';
@@ -39,6 +39,7 @@ function LinksHomePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasSession, setHasSession] = useState(false);
   const [authWall, setAuthWall] = useState({ open: false, action: 'access this content' });
+  const [isMobileFeed, setIsMobileFeed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,6 +59,16 @@ function LinksHomePage() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  useEffect(() => {
+    const check = () => {
+      if (typeof window === 'undefined') return;
+      setIsMobileFeed(window.innerWidth < 768);
+    };
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
   const openAuthWall = (action: string) => {
@@ -99,6 +110,18 @@ function LinksHomePage() {
 
   const spotlight = feeds[0];
   const stream = feeds.slice(1);
+  type StreamItem = Feed | { isAd: true; adKey: string };
+  const streamWithAds = useMemo<StreamItem[]>(() => {
+    if (!isMobileFeed) return stream;
+    const merged: StreamItem[] = [];
+    stream.forEach((item, index) => {
+      merged.push(item);
+      if ((index + 1) % 5 === 0) {
+        merged.push({ isAd: true, adKey: `mobile-feed-${index}` });
+      }
+    });
+    return merged;
+  }, [stream, isMobileFeed]);
 
   return (
     <div className={styles.page}>
@@ -116,19 +139,28 @@ function LinksHomePage() {
             {!isLoading && !stream.length && (
               <p className={styles.loading}>No stories available yet.</p>
             )}
-            {stream.map((feed) => (
-              <NewsCard
-                key={feed.id}
-                title={feed.title}
-                summary={feed.description}
-                source={feed.categoryName}
-                createdAt={feed.createdAt}
-                patCount={feed.pats ?? 0}
-                thumbnailUrl={feed.imageUrl}
-                requiresAuth={!hasSession}
-                onAuthWall={openAuthWall}
-              />
-            ))}
+            {streamWithAds.map((item) => {
+              if ('isAd' in item && item.isAd) {
+                return (
+                  <div key={item.adKey} className={styles.mobileAd}>
+                    <AdPlaceholder placementId={`mobile-feed-${item.adKey}`} />
+                  </div>
+                );
+              }
+              return (
+                <NewsCard
+                  key={item.id}
+                  title={item.title}
+                  summary={item.description}
+                  source={item.categoryName}
+                  createdAt={item.createdAt}
+                  patCount={item.pats ?? 0}
+                  thumbnailUrl={item.imageUrl}
+                  requiresAuth={!hasSession}
+                  onAuthWall={openAuthWall}
+                />
+              );
+            })}
           </div>
         </section>
 
