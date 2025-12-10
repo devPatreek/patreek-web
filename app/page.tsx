@@ -147,15 +147,16 @@ function LinksHomePage() {
                   </div>
                 );
               }
+              const feed = item as Feed;
               return (
                 <NewsCard
-                  key={item.id}
-                  title={item.title}
-                  summary={item.description}
-                  source={item.categoryName}
-                  createdAt={item.createdAt}
-                  patCount={item.pats ?? 0}
-                  thumbnailUrl={item.imageUrl}
+                  key={feed.id}
+                  title={feed.title}
+                  summary={feed.description}
+                  source={feed.categoryName}
+                  createdAt={feed.createdAt}
+                  patCount={feed.pats ?? 0}
+                  thumbnailUrl={feed.imageUrl}
                   requiresAuth={!hasSession}
                   onAuthWall={openAuthWall}
                 />
