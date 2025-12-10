@@ -80,6 +80,38 @@
   gap: 16px;
 }
 
+.filterBar {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0 auto;
+  max-width: 1080px;
+  padding: 0 16px;
+}
+
+.filterPill {
+  border: 1px solid #cbd5f5;
+  background: #fff;
+  color: #0f172a;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.filterPill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+}
+
+.activePill {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.2);
+}
+
 .card {
   background: #ffffff;
   border-radius: 14px;

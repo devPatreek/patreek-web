@@ -58,6 +58,10 @@
   gap: 12px;
 }
 
+.mobileAd {
+  padding: 8px 0;
+}
+
 .widgetColumn {
   display: none;
   flex-direction: column;
