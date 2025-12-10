@@ -27,7 +27,7 @@ export default function HeroCard({ article }: HeroCardProps) {
         <div className={styles.overlay}>
           <p className={styles.tag}>{article.categoryName}</p>
           <h2 className={styles.title}>{article.title}</h2>
-          {article.excerpt && <p className={styles.copy}>{article.excerpt}</p>}
+          {article.description && <p className={styles.copy}>{article.description}</p>}
         </div>
       </div>
     </Link>
