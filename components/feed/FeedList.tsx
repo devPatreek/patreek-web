@@ -91,7 +91,7 @@ export default function FeedList({ fetchUrl, queryKey }: FeedListProps) {
           source={feed.source || feed.categoryName}
           createdAt={feed.createdAt || feed.publishedAt}
           patCount={feed.patCount ?? 0}
-          avatarUrl={feed.authorAvatarUrl || feed.avatarUrl}
+          thumbnailUrl={feed.authorAvatarUrl || feed.avatarUrl}
           isPattedByCurrentUser={feed.hasPatted}
         />
       ))}
