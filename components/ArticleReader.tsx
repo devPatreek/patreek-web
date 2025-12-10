@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
-import { FeedArticle, Comment, getArticleComments } from '@/lib/api';
+import { FeedArticle, Comment, getArticleComments, API_BASE_URL } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
 import Footer from '@/components/Footer';
 import styles from './ArticleReader.module.css';
@@ -21,6 +21,10 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [currentBody, setCurrentBody] = useState(article.body);
+  const [currentSummaryType, setCurrentSummaryType] = useState<'EXTRACTIVE' | 'AI_GENERATED'>(article.summaryType ?? 'EXTRACTIVE');
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhanceError, setEnhanceError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check for dark mode preference
@@ -113,9 +117,49 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     : moment(article.createdAt).format('MMM DD');
 
   // Beautify the article body content
+  useEffect(() => {
+    setCurrentBody(article.body);
+    setCurrentSummaryType(article.summaryType ?? 'EXTRACTIVE');
+    setEnhanceError(null);
+    setIsEnhancing(false);
+  }, [article.body, article.summaryType]);
+
   const beautifiedBody = useMemo(() => {
-    return beautifyContent(article.body);
-  }, [article.body]);
+    return beautifyContent(currentBody);
+  }, [currentBody]);
+
+  const handleEnhance = async () => {
+    if (isEnhancing) return;
+    setIsEnhancing(true);
+    setEnhanceError(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/feeds/${article.id}/enhance`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Unable to summarize with AI right now.');
+      }
+
+      const data: Partial<FeedArticle> = await response.json();
+      const enrichedBody = data.body ?? data.excerpt ?? currentBody;
+      const enrichedSummaryType = data.summaryType ?? 'AI_GENERATED';
+
+      setCurrentBody(enrichedBody);
+      setCurrentSummaryType(enrichedSummaryType);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Summarization failed.';
+      setEnhanceError(message);
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
 
   return (
     <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
@@ -141,6 +185,22 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
             className={styles.content}
             dangerouslySetInnerHTML={{ __html: beautifiedBody }}
           />
+
+          {currentSummaryType === 'EXTRACTIVE' && (
+            <div className={styles.enhanceWrapper}>
+              {enhanceError && <p className={styles.enhanceError}>{enhanceError}</p>}
+              <button
+                type="button"
+                className={`${styles.enhanceButton} ${
+                  isEnhancing ? styles.enhanceButtonLoading : ''
+                }`}
+                onClick={handleEnhance}
+                disabled={isEnhancing}
+              >
+                {isEnhancing ? 'Summarizing…' : '✨ Summarize with AI'}
+              </button>
+            </div>
+          )}
 
           {/* Comments Section */}
           <div className={styles.commentsSection}>

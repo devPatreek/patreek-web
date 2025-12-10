@@ -1,6 +1,6 @@
 import { getAuthHeaders, getSessionTokenFromStorage, setSessionTokenInStorage, removeSessionTokenFromStorage } from './session';
 
-const API_BASE_URL = 'https://api.patreek.com';
+export const API_BASE_URL = 'https://api.patreek.com';
 
 export interface Feed {
   id: number;
@@ -127,6 +127,7 @@ export interface FeedArticle {
   categoryId: number;
   createdAt: string;
   sourceUrl?: string;
+  summaryType?: 'EXTRACTIVE' | 'AI_GENERATED';
 }
 
 export interface Comment {
