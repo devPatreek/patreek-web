@@ -13,6 +13,10 @@ export interface Feed {
   categoryName: string;
   createdAt: string;
   updatedAt: string;
+  viewCount?: number;
+  pats?: number;
+  shares?: number;
+  comments?: number;
 }
 
 export interface Category {
@@ -128,6 +132,10 @@ export interface FeedArticle {
   createdAt: string;
   sourceUrl?: string;
   summaryType?: 'EXTRACTIVE' | 'AI_GENERATED';
+  viewCount?: number;
+  totalPats?: number;
+  totalShares?: number;
+  totalComments?: number;
 }
 
 export interface Comment {

@@ -135,6 +135,36 @@
   color: #b5b9bf;
 }
 
+.socialBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.socialStat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.socialIcon {
+  font-size: 24px;
+}
+
+.socialValue {
+  font-size: 18px;
+  font-weight: 700;
+  display: block;
+}
+
+.socialLabel {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
 .content {
   font-size: 18px;
   line-height: 1.9;
