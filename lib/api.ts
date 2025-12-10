@@ -17,6 +17,7 @@ export interface Feed {
   pats?: number;
   shares?: number;
   comments?: number;
+  isPublic?: boolean;
 }
 
 export interface Category {
@@ -136,6 +137,7 @@ export interface FeedArticle {
   totalPats?: number;
   totalShares?: number;
   totalComments?: number;
+  isPublic?: boolean;
 }
 
 export interface Comment {

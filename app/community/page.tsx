@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 import Footer from '@/components/Footer';
 import MainHeader from '@/components/MainHeader';
+import AuthWallModal from '@/components/auth/AuthWallModal';
 import {
   ChatMessage,
   LeaderboardEntry,
@@ -36,6 +38,8 @@ export default function CommunityPage() {
     pats: [],
     coins: [],
   });
+  const [authWallOpen, setAuthWallOpen] = useState(false);
+  const router = useRouter();
   const [loadingBoards, setLoadingBoards] = useState(true);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
@@ -85,6 +89,10 @@ export default function CommunityPage() {
     load();
   }, []);
 
+  useEffect(() => {
+    setAuthWallOpen(!hasSession);
+  }, [hasSession]);
+
   const handleSend = async () => {
     const text = chatInput.trim();
     if (!text) return;
@@ -133,7 +141,7 @@ export default function CommunityPage() {
           </div>
         </section>
 
-        <section className={styles.leaderboards}>
+        <section className={`${styles.leaderboards} ${!hasSession ? styles.blurredBoard : ''}`}>
           <div className={styles.sectionHeader}>
             <h2>Leaderboards</h2>
             <p>Updated frequently — totals reflect the top 10 contributors.</p>
@@ -150,6 +158,11 @@ export default function CommunityPage() {
               />
             ))}
           </div>
+          {!hasSession && (
+            <div className={styles.authOverlay}>
+              <p>Sign in to unlock these leaderboards.</p>
+            </div>
+          )}
         </section>
 
         <section className={styles.chatSection}>
@@ -216,6 +229,13 @@ export default function CommunityPage() {
       </main>
 
       <Footer />
+
+      <AuthWallModal
+        isOpen={authWallOpen}
+        triggerAction="join the community"
+        disableClose
+        onClose={() => router.push('/')}
+      />
     </div>
   );
 }

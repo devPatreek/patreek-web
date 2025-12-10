@@ -191,6 +191,44 @@
   margin-bottom: 0;
 }
 
+.authLocked {
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  padding: 32px;
+  background: rgba(248, 250, 252, 0.85);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.authLocked h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.authUnlockButton {
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+}
+
+.replyButton {
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  background: transparent;
+  padding: 8px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  color: #0f172a;
+}
+
+.replyButton:hover {
+  background: rgba(15, 23, 42, 0.08);
+}
+
 .content h1,
 .content h2,
 .content h3 {
@@ -406,6 +444,11 @@
   font-weight: 600;
   visibility: visible;
   opacity: 1;
+}
+
+.shareActions {
+  display: flex;
+  gap: 8px;
 }
 
 .container.dark .shareLabel {
