@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { FeedArticle, Comment, getArticleComments, API_BASE_URL, checkSessionStatus } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
-import Footer from '@/components/Footer';
 import AuthWallModal from '@/components/auth/AuthWallModal';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
@@ -17,36 +16,47 @@ function isToday(date: string): boolean {
   return moment(date).isSame(moment(), 'day');
 }
 
-interface SocialStatsBarProps {
-  views: number;
-  pats: number;
-  shares: number;
-  comments: number;
+interface SocialActionBarProps {
+  article: FeedArticle;
 }
 
-function SocialStatsBar({ views, pats, shares, comments }: SocialStatsBarProps) {
+function SocialActionBar({ article }: SocialActionBarProps) {
   const stats = [
-    { label: 'Views', value: views, icon: '👁️', color: '#6b7280' },
-    { label: 'Pats', value: pats, icon: '❤️', color: '#f43f5e' },
-    { label: 'Shares', value: shares, icon: '🔁', color: '#16a34a' },
-    { label: 'Comments', value: comments, icon: '💬', color: '#2563eb' },
+    { label: 'Views', value: article.viewCount ?? 0, icon: '👁️' },
+    { label: 'Comments', value: article.totalComments ?? 0, icon: '💬' },
+    { label: 'Reposts', value: article.totalShares ?? 0, icon: '🔁' },
+    { label: 'Pats', value: article.totalPats ?? 0, icon: '❤️' },
+    { label: 'Bookmark', value: null, icon: '🔖' },
   ];
 
   return (
-    <div className={styles.socialBar} role="list">
+    <div className={styles.socialActionBar}>
       {stats.map((stat) => (
-        <div key={stat.label} className={styles.socialStat} role="listitem">
-          <span className={styles.socialIcon} style={{ color: stat.color }}>
-            {stat.icon}
-          </span>
-          <div>
-            <span className={styles.socialValue}>{stat.value.toLocaleString()}</span>
-            <p className={styles.socialLabel}>{stat.label}</p>
+        <button key={stat.label} type="button" className={styles.socialActionStat}>
+          <span className={styles.socialActionIcon}>{stat.icon}</span>
+          <div className={styles.socialActionLabel}>
+            <span>{stat.label}</span>
+            {stat.value !== null && (
+              <strong className={styles.socialActionCount}>{stat.value.toLocaleString()}</strong>
+            )}
           </div>
-        </div>
+        </button>
       ))}
     </div>
   );
+}
+
+function getSourceLabel(article: FeedArticle) {
+  if (article.sourceUrl) {
+    try {
+      const url = new URL(article.sourceUrl);
+      const hostname = url.hostname.replace(/^www\./, '');
+      return hostname;
+    } catch {
+      // fallback to category if parsing fails
+    }
+  }
+  return article.categoryName || 'Patreek';
 }
 
 export default function ArticleReader({ article }: ArticleReaderProps) {
@@ -167,6 +177,8 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
       ? 'Unable to copy'
       : 'Copy pat link';
 
+  const sourceLabel = getSourceLabel(article);
+
   const formattedDate = isToday(article.createdAt)
     ? 'Today in'
     : moment(article.createdAt).format('MMM DD');
@@ -246,18 +258,13 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
             </div>
           )}
 
+          <p className={styles.sourceLine}>From {sourceLabel}</p>
+          <SocialActionBar article={article} />
           <h1 className={styles.title}>{article.title}</h1>
 
           {article.excerpt && (
             <p className={styles.description}>{article.excerpt}</p>
           )}
-
-          <SocialStatsBar
-            views={article.viewCount ?? 0}
-            pats={article.totalPats ?? 0}
-            shares={article.totalShares ?? 0}
-            comments={article.totalComments ?? 0}
-          />
 
           {showAuthLock ? (
             <div className={styles.authLocked}>
@@ -367,7 +374,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
           )}
 
           {/* UNLOCK YOUR PATS Banner */}
-          <div className={styles.unlockBanner}>
+          <div className={`${styles.unlockBanner} ${styles.mobileOnly}`}>
             <div className={styles.unlockBannerContent}>
               <p className={styles.unlockText}>UNLOCK YOUR PATS</p>
               <p className={styles.unlockDescription}>
@@ -406,7 +413,6 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
           </div>
         </article>
       </main>
-      <Footer />
       <AuthWallModal
         isOpen={authWall.open}
         triggerAction={authWall.action}

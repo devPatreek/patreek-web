@@ -127,6 +127,20 @@ function LinksHomePage() {
     <div className={styles.page}>
       <MainHeader hasSession={hasSession} />
       <StatStrip />
+      <section className={`${styles.page_adSection} ${styles.featuredBanner}`}>
+        <div>
+          <p className={styles.featuredTag}>Featured Partner</p>
+          <h2 className={styles.featuredTitle}>Book a premium news slot</h2>
+          <p className={styles.featuredCopy}>
+            Spotlight your brand inside the Patreek newsroom and multiply impressions across our curated audiences.
+          </p>
+        </div>
+        <div className={styles.featuredActions}>
+          <a className={styles.featuredButton} href="/advertise">
+            Book this slot
+          </a>
+        </div>
+      </section>
       <div className={styles.layout}>
         <aside className={styles.trendingColumn}>
           <TrendingSidebar items={feeds} />
