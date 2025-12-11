@@ -10,6 +10,7 @@ interface CommentItem {
   authorAvatarUrl?: string;
   text?: string;
   createdAt?: string;
+  body?: string;
 }
 
 interface CommentsResponse {
@@ -85,6 +86,8 @@ export default function CommentSection({
     }
     return words.map((word) => word[0]).join('').toUpperCase();
   };
+
+  const helperActions = ['GIF', 'Emoji', 'Image'];
 
   const handlePost = async () => {
     if (isPosting || !endpoint) {
@@ -180,11 +183,18 @@ export default function CommentSection({
         <div className={styles.inputGroup}>
           <textarea
             className={styles.textarea}
-            placeholder="Add your note…"
+            placeholder="Write a comment…"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
             rows={3}
           />
+          <div className={styles.helperRow}>
+            {helperActions.map((label) => (
+              <button key={label} type="button" className={styles.helperButton}>
+                {label}
+              </button>
+            ))}
+          </div>
           <div className={styles.actions}>
             <button
               type="button"
@@ -201,28 +211,38 @@ export default function CommentSection({
       {error && <p className={styles.error}>Unable to load comments.</p>}
       {isLoading && <p className={styles.meta}>Loading comments…</p>}
 
-      <div className={styles.list}>
+      <div className={styles.threadList}>
         {!isLoading && comments.length === 0 && (
           <p className={styles.empty}>No comments yet — be the first.</p>
         )}
-        {comments.map((comment) => (
-          <article key={comment.id} className={styles.comment}>
-            <div className={styles.commentAvatar}>
-              {comment.authorAvatarUrl ? (
-                <img src={comment.authorAvatarUrl} alt={`${comment.authorName ?? 'Commenter'} avatar`} />
-              ) : (
-                <span>{computeInitials(comment.authorName)}</span>
-              )}
-            </div>
-            <div className={styles.commentContent}>
-              <div className={styles.commentHeader}>
-                <span className={styles.commentName}>{comment.authorName || 'Patreek User'}</span>
-                <span className={styles.commentTime}>{formatRelativeTime(comment.createdAt)}</span>
+        {comments.map((comment) => {
+          const text = comment.text ?? comment.body ?? '';
+          return (
+            <article key={comment.id} className={styles.commentCard}>
+              <div className={styles.commentAvatarWrapper}>
+                {comment.authorAvatarUrl ? (
+                  <img
+                    src={comment.authorAvatarUrl}
+                    alt={`${comment.authorName ?? 'Commenter'} avatar`}
+                    className={styles.commentAvatar}
+                  />
+                ) : (
+                  <span className={styles.avatarFallback}>{computeInitials(comment.authorName)}</span>
+                )}
               </div>
-              <p className={styles.commentBody}>{comment.text || ''}</p>
-            </div>
-          </article>
-        ))}
+              <div className={styles.commentBodyWrap}>
+                <div className={styles.commentHeader}>
+                  <span className={styles.commentName}>{comment.authorName || 'Patreek User'}</span>
+                  <span className={styles.commentTime}>{formatRelativeTime(comment.createdAt)}</span>
+                </div>
+                <p className={styles.commentBody}>{text}</p>
+                <button type="button" className={styles.replyBtn}>
+                  Reply
+                </button>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

@@ -25,7 +25,7 @@ export default function ContactPage() {
     setStatus('submitting');
     setError(null);
     try {
-      const response = await fetch('https://api.patreek.com/api/v1/feedback', {
+      const response = await fetch('/api/v1/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

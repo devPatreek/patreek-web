@@ -1,14 +1,21 @@
-'use client';
+"use client";
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { getUserProfile, getPublicFeed, FeedArticle, checkSessionStatus } from '@/lib/api';
+import {
+  Feed,
+  FeedArticle,
+  getPublicFeed,
+  getPublicFeeds,
+  getUserProfile,
+  checkSessionStatus,
+} from '@/lib/api';
 import { getCachedArticle, setCachedArticle } from '@/lib/cache';
 import ArticleReader from '@/components/ArticleReader';
-import AdsterraSlot from '@/components/AdsterraSlot';
-import AdPlaceholder from '@/components/AdPlaceholder';
 import MainHeader from '@/components/MainHeader';
-import styles from '../../page.module.css';
+import Footer from '@/components/Footer';
+import AdPlaceholder from '@/components/AdPlaceholder';
+import styles from './page.module.css';
 
 export default function PatPageClient() {
   const pathname = usePathname();
@@ -17,6 +24,7 @@ export default function PatPageClient() {
   const [error, setError] = useState<string | null>(null);
   const [hasSession, setHasSession] = useState(false);
   const [rankLevel, setRankLevel] = useState(0);
+  const [recommended, setRecommended] = useState<Feed[]>([]);
 
   const articleId = useMemo(() => {
     if (typeof window !== 'undefined') {
@@ -31,7 +39,6 @@ export default function PatPageClient() {
   }, [pathname]);
 
   useEffect(() => {
-    // Check session status
     const checkSession = async () => {
       try {
         const result = await checkSessionStatus();
@@ -51,13 +58,13 @@ export default function PatPageClient() {
   }, []);
 
   useEffect(() => {
-    if (!articleId) {
-      setIsLoading(false);
-      setError('Invalid pat ID');
-      return;
-    }
-
     const load = async () => {
+      if (!articleId) {
+        setIsLoading(false);
+        setError('Invalid pat ID');
+        return;
+      }
+
       try {
         setIsLoading(true);
 
@@ -66,7 +73,6 @@ export default function PatPageClient() {
           setArticle(cached);
           setError(null);
           setIsLoading(false);
-          return;
         }
 
         const data = await getPublicFeed(articleId);
@@ -75,7 +81,6 @@ export default function PatPageClient() {
           setArticle(null);
           return;
         }
-
         setCachedArticle(articleId, data);
         setArticle(data);
         setError(null);
@@ -90,9 +95,26 @@ export default function PatPageClient() {
     load();
   }, [articleId]);
 
+  useEffect(() => {
+    const loadRecommendations = async () => {
+      try {
+        const feeds = await getPublicFeeds();
+        if (articleId) {
+          setRecommended(feeds.filter((feed) => feed.id !== articleId).slice(0, 5));
+        } else {
+          setRecommended(feeds.slice(0, 5));
+        }
+      } catch (err) {
+        console.error('[PatPage] Failed to load recommendations', err);
+        setRecommended([]);
+      }
+    };
+    loadRecommendations();
+  }, [articleId]);
+
   if (isLoading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className={styles.loader}>
         <p>Loading pat...</p>
       </div>
     );
@@ -100,9 +122,9 @@ export default function PatPageClient() {
 
   if (error || !article) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+      <div className={styles.loader}>
         <p>{error || 'Pat not found'}</p>
-        <a href="/" style={{ marginTop: 16, color: '#667eea', textDecoration: 'underline' }}>
+        <a href="/" className={styles.backLink}>
           ← Back to Home
         </a>
       </div>
@@ -110,24 +132,34 @@ export default function PatPageClient() {
   }
 
   return (
-    <div>
+    <div className={styles.page}>
       <MainHeader hasSession={hasSession} />
-      <main className={`${styles.main} ${styles.mainRow}`}>
-        <div className={styles.mainColumn}>
+      <main className={styles.grid}>
+        <section className={styles.contentColumn}>
           <ArticleReader article={article} />
-        </div>
-        <aside className={styles.rightRailSticky} aria-label="Sponsored">
-          {rankLevel < 5 && (
-            <>
-              <AdsterraSlot variant="iframe300x250" />
-              <AdsterraSlot variant="iframe300x250" />
-              <AdsterraSlot variant="native" />
-              <AdsterraSlot variant="native" />
-            </>
-          )}
-          <AdPlaceholder placementId="pat-right-rail" rankLevel={rankLevel} />
+        </section>
+        <aside className={styles.sidebar}>
+          <div className={styles.adWrapper}>
+            <AdPlaceholder placementId="pat-article-300x250" />
+          </div>
+          <div className={styles.recommended}>
+            <div className={styles.recommendedHeader}>
+              <span>More for you</span>
+            </div>
+            <ul className={styles.recommendedList}>
+              {recommended.map((feed) => (
+                <li key={feed.id} className={styles.recommendedItem}>
+                  <a href={`/pat/${feed.id}`} className={styles.recommendedLink}>
+                    <p className={styles.recommendedTitle}>{feed.title}</p>
+                    <p className={styles.recommendedMeta}>{feed.categoryName}</p>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </aside>
       </main>
+      <Footer />
     </div>
   );
 }

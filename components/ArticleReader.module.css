@@ -135,6 +135,59 @@
   color: #b5b9bf;
 }
 
+.sourceLine {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.socialActionBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.socialActionStat {
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 150px;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.socialActionStat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+}
+
+.socialActionIcon {
+  font-size: 18px;
+}
+
+.socialActionLabel {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  font-size: 11px;
+  color: #475569;
+}
+
+.socialActionCount {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
 .socialBar {
   display: flex;
   flex-wrap: wrap;
@@ -395,6 +448,16 @@
 .storeLink:hover {
   opacity: 0.9;
   transform: scale(1.05);
+}
+
+.mobileOnly {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .mobileOnly {
+    display: none;
+  }
 }
 
 .storeImage {

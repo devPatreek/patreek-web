@@ -106,7 +106,7 @@ export default function CoinsPage() {
             <h1 className={styles.heading}>Pat Coins Store</h1>
             <p className={styles.subhead}>Top up instantly and keep your community shining.</p>
           </div>
-          <div className={styles.badge}>Earn 1 Pat = $1 inside Patreek</div>
+          <div className={styles.badge}>Earn 1 Pat = $0.01 inside Patreek</div>
         </section>
 
         {toast && <div className={styles.toast}>{toast}</div>}
