@@ -10,10 +10,10 @@
 
 /.next/
 /out/
-/docs/
-
 # production
 /build
+
+docs/_site
 
 # misc
 .DS_Store
