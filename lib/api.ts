@@ -1,6 +1,9 @@
 import { getAuthHeaders, getSessionTokenFromStorage, setSessionTokenInStorage, removeSessionTokenFromStorage } from './session';
 
-export const API_BASE_URL = 'https://api.patreek.com';
+const PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.patreek.com';
+const INTERNAL_API_BASE_URL = process.env.INTERNAL_API_URL || PUBLIC_API_BASE_URL;
+const isBrowser = typeof window !== 'undefined';
+export const API_BASE_URL = isBrowser ? PUBLIC_API_BASE_URL : INTERNAL_API_BASE_URL;
 
 export interface Feed {
   id: number;
