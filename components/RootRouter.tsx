@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 
 // Dynamically import components to avoid SSR issues
 const ArticlePageClient = dynamic(() => import('@/app/article/[[...id]]/ArticlePageClient'), { ssr: false });
+const UserProfileClient = dynamic(() => import('@/app/u/[username]/UserProfileClient'), { ssr: false });
 const LinksHomePage = dynamic(() => import('@/app/page'), { ssr: false });
 
 /**
@@ -33,16 +34,17 @@ export default function RootRouter() {
     }
   }, [pathname]);
 
-  // Check if we're on an article route
   // Use window.location.pathname as the source of truth since it works with 404.html redirects
-  const isArticleRoute = mounted && currentPath && /^\/article\/\d+/.test(currentPath);
+  const articleMatch = mounted && currentPath ? currentPath.match(/^\/article\/(\d+)/) : null;
+  const profileMatch = mounted && currentPath ? currentPath.match(/^\/u\/([^/]+)/) : null;
 
-  // If we're on an article route, render the article page
-  if (isArticleRoute) {
+  if (articleMatch) {
     return <ArticlePageClient />;
   }
 
-  // Otherwise, render the home page
+  if (profileMatch) {
+    return <UserProfileClient params={{ username: decodeURIComponent(profileMatch[1]) }} />;
+  }
+
   return <LinksHomePage />;
 }
-
