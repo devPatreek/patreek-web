@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { getPublicFeeds, Feed, checkSessionStatus } from '@/lib/api';
+import { getPublicFeeds, Feed, checkSessionStatus, getUserProfile, UserProfile } from '@/lib/api';
 import PatPageClient from './pat/[[...id]]/ArticlePageClient';
 import NewsCard from '@/components/feed/NewsCard';
 import HeroCard from '@/components/home/HeroCard';
@@ -17,6 +17,7 @@ import ForexWidget from '@/components/widgets/ForexWidget';
 import MainHeader from '@/components/MainHeader';
 import StatStrip from '@/components/home/StatStrip';
 import DynamicHomeBanner from '@/components/ads/DynamicHomeBanner';
+import UsernameSetupBanner from '@/components/dashboard/UsernameSetupBanner';
 import styles from './page.module.css';
 
 /**
@@ -41,6 +42,7 @@ function LinksHomePage() {
   const [hasSession, setHasSession] = useState(false);
   const [authWall, setAuthWall] = useState({ open: false, action: 'access this content' });
   const [isMobileFeed, setIsMobileFeed] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -61,6 +63,35 @@ function LinksHomePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!hasSession) {
+      setUserProfile(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadProfile = async () => {
+      try {
+        const profile = await getUserProfile();
+        if (!cancelled) {
+          setUserProfile(profile);
+        }
+      } catch {
+        if (!cancelled) {
+          setUserProfile(null);
+        }
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [hasSession]);
 
   useEffect(() => {
     const check = () => {
@@ -128,6 +159,7 @@ function LinksHomePage() {
     <div className={styles.page}>
       <MainHeader hasSession={hasSession} />
       <StatStrip />
+      {hasSession && userProfile && <UsernameSetupBanner user={userProfile} />}
       <DynamicHomeBanner />
       <div className={styles.layout}>
         <aside className={styles.trendingColumn}>

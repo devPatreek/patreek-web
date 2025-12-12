@@ -1,0 +1,68 @@
+.banner {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 24px 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.copy {
+  flex: 1;
+  min-width: 200px;
+}
+
+.title {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: #1e3a8a;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #1e40af;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.secondary {
+  background: transparent;
+  color: #60a5fa;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.primary:hover,
+.secondary:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 600px) {
+  .actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
