@@ -2071,13 +2071,12 @@ type AvatarCacheEntry = {
 
 const AVATAR_CACHE_PREFIX = 'pat_avatar_';
 const AVATAR_CACHE_TTL_MS = 1000 * 60 * 60 * 12; // 12 hours
-const isBrowser = () => typeof window !== 'undefined';
 
 const avatarCacheKey = (username?: string) =>
   username ? `${AVATAR_CACHE_PREFIX}${username.toLowerCase()}` : '';
 
 function readAvatarFromCache(username?: string): string | null {
-  if (!isBrowser() || !username) return null;
+  if (!isBrowser || !username) return null;
   try {
     const raw = localStorage.getItem(avatarCacheKey(username));
     if (!raw) return null;
@@ -2097,7 +2096,7 @@ function readAvatarFromCache(username?: string): string | null {
 }
 
 function writeAvatarCache(username: string | undefined, url: string | undefined, ttlMs = AVATAR_CACHE_TTL_MS) {
-  if (!isBrowser() || !username || !url) return;
+  if (!isBrowser || !username || !url) return;
   try {
     const entry: AvatarCacheEntry = { url, expiresAt: Date.now() + ttlMs };
     localStorage.setItem(avatarCacheKey(username), JSON.stringify(entry));
