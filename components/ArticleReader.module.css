@@ -135,6 +135,31 @@
   color: #b5b9bf;
 }
 
+.summaryHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.summaryEditButton {
+  align-self: flex-start;
+  border: 1px solid #cbd5f5;
+  background: #eef2ff;
+  color: #1e3a8a;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.summaryEditButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(30, 58, 138, 0.2);
+}
+
 .sourceLine {
   font-size: 13px;
   text-transform: uppercase;
@@ -674,4 +699,118 @@
 
 .container.dark .commentBody {
   color: #ffffff;
+}
+
+.summaryModalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.summaryModal {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.3);
+}
+
+.summaryModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.summaryModalHeader h3 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.summaryModalClose {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #475569;
+}
+
+.summaryModalHint {
+  margin: 0 0 12px 0;
+  color: #475569;
+  font-size: 13px;
+}
+
+.summaryTextarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #cbd5f5;
+  padding: 12px;
+  font-size: 14px;
+  resize: vertical;
+  font-family: inherit;
+  margin-bottom: 12px;
+}
+
+.progressWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.progressTrack {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.progressLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.summaryModalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modalPrimary,
+.modalSecondary {
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.modalSecondary {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.modalPrimary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.modalPrimary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

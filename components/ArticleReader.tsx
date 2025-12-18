@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { FeedArticle, Comment, getArticleComments, API_BASE_URL, checkSessionStatus } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
 import AuthWallModal from '@/components/auth/AuthWallModal';
 import styles from './ArticleReader.module.css';
 import moment from 'moment';
+import stringSimilarity from 'string-similarity';
 
 interface ArticleReaderProps {
   article: FeedArticle;
@@ -59,6 +60,11 @@ function getSourceLabel(article: FeedArticle) {
   return article.categoryName || 'Patreek';
 }
 
+const stripHtml = (input: string) => {
+  if (!input) return '';
+  return input.replace(/<[^>]+>/g, ' ');
+};
+
 export default function ArticleReader({ article }: ArticleReaderProps) {
   const [isDark, setIsDark] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -70,6 +76,11 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   const [currentSummaryType, setCurrentSummaryType] = useState<'EXTRACTIVE' | 'AI_GENERATED'>(article.summaryType ?? 'EXTRACTIVE');
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhanceError, setEnhanceError] = useState<string | null>(null);
+  const [currentSummary, setCurrentSummary] = useState(article.excerpt || '');
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState(article.excerpt || '');
+  const [summaryScore, setSummaryScore] = useState(1);
+  const originalBodyRef = useRef(article.body || '');
 
   useEffect(() => {
     // Check for dark mode preference
@@ -189,7 +200,14 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     setCurrentSummaryType(article.summaryType ?? 'EXTRACTIVE');
     setEnhanceError(null);
     setIsEnhancing(false);
+    originalBodyRef.current = article.body || '';
   }, [article.body, article.summaryType]);
+
+  useEffect(() => {
+    setCurrentSummary(article.excerpt || '');
+    setSummaryDraft(article.excerpt || '');
+    setSummaryScore(calculateSimilarity(article.excerpt || ''));
+  }, [article.excerpt, article.body, calculateSimilarity]);
 
   const beautifiedBody = useMemo(() => {
     return beautifyContent(currentBody);
@@ -244,6 +262,32 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     }
   };
 
+  const calculateSimilarity = useCallback((input: string) => {
+    const original = stripHtml(originalBodyRef.current || '').slice(0, 5000);
+    const candidate = stripHtml(input || '');
+    if (!original || !candidate) return 0;
+    return stringSimilarity.compareTwoStrings(original, candidate);
+  }, [originalBodyRef]);
+
+  const handleSummaryDraftChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const next = event.target.value;
+    setSummaryDraft(next);
+    setSummaryScore(calculateSimilarity(next));
+  };
+
+  const handleSummarySave = () => {
+    if (summaryScore < 0.3) return;
+    const sanitized = summaryDraft.trim();
+    setCurrentSummary(sanitized);
+    setIsSummaryModalOpen(false);
+  };
+
+  const openSummaryModal = () => {
+    setSummaryDraft(currentSummary);
+    setSummaryScore(calculateSimilarity(currentSummary));
+    setIsSummaryModalOpen(true);
+  };
+
   return (
     <div className={`${styles.container} ${isDark ? styles.dark : ''}`}>
       <main className={styles.main}>
@@ -262,8 +306,15 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
           <SocialActionBar article={article} />
           <h1 className={styles.title}>{article.title}</h1>
 
-          {article.excerpt && (
-            <p className={styles.description}>{article.excerpt}</p>
+          {currentSummary && (
+            <div className={styles.summaryHeader}>
+              <p className={styles.description}>{currentSummary}</p>
+              {hasSession && (
+                <button type="button" className={styles.summaryEditButton} onClick={openSummaryModal}>
+                  ✏️ Refine summary
+                </button>
+              )}
+            </div>
           )}
 
           {showAuthLock ? (
@@ -418,6 +469,57 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
         triggerAction={authWall.action}
         onClose={closeAuthWall}
       />
+      {isSummaryModalOpen && (
+        <div className={styles.summaryModalOverlay}>
+          <div className={styles.summaryModal}>
+            <div className={styles.summaryModalHeader}>
+              <h3>Summary Editor</h3>
+              <button
+                type="button"
+                className={styles.summaryModalClose}
+                onClick={() => setIsSummaryModalOpen(false)}
+                aria-label="Close summary editor"
+              >
+                ×
+              </button>
+            </div>
+            <p className={styles.summaryModalHint}>Keep your edit aligned with the original context.</p>
+            <textarea
+              className={styles.summaryTextarea}
+              rows={8}
+              value={summaryDraft}
+              onChange={handleSummaryDraftChange}
+            />
+            <div className={styles.progressWrapper}>
+              <div className={styles.progressTrack}>
+                <div
+                  className={styles.progressFill}
+                  style={{
+                    width: `${Math.min(100, Math.max(0, Math.round(summaryScore * 100)))}%`,
+                    backgroundColor: summaryScore >= 0.3 ? '#22c55e' : '#ef4444',
+                  }}
+                />
+              </div>
+              <span className={styles.progressLabel}>
+                {Math.round(summaryScore * 100)}% Context Match
+              </span>
+            </div>
+            <div className={styles.summaryModalActions}>
+              <button type="button" className={styles.modalSecondary} onClick={() => setIsSummaryModalOpen(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.modalPrimary}
+                onClick={handleSummarySave}
+                disabled={summaryScore < 0.3 || !summaryDraft.trim()}
+              >
+                Save Summary
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

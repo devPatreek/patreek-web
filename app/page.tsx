@@ -12,8 +12,10 @@ import WhoToFollowWidget from '@/components/home/WhoToFollowWidget';
 import AppDownloadBanner from '@/components/AppDownloadBanner';
 import AdPlaceholder from '@/components/AdPlaceholder';
 import AuthWallModal from '@/components/auth/AuthWallModal';
-import WeatherWidget from '@/components/widgets/WeatherWidget';
 import ForexWidget from '@/components/widgets/ForexWidget';
+import WeatherCard from '@/components/widgets/WeatherCard';
+import CryptoCard from '@/components/widgets/CryptoCard';
+import DailyTipCard from '@/components/widgets/DailyTipCard';
 import MainHeader from '@/components/MainHeader';
 import StatStrip from '@/components/home/StatStrip';
 import DynamicHomeBanner from '@/components/ads/DynamicHomeBanner';
@@ -201,10 +203,12 @@ function LinksHomePage() {
 
         <aside className={styles.widgetColumn}>
           <DailyFocusWidget />
+          <DailyTipCard />
           <div className={styles.adSlot}>
             <AdPlaceholder placementId="homepage-right-1" />
           </div>
-          <WeatherWidget />
+          <WeatherCard />
+          <CryptoCard />
           <div className={styles.adSlot}>
             <AdPlaceholder placementId="homepage-right-2" />
           </div>
