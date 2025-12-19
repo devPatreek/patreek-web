@@ -468,6 +468,25 @@ export default {
       )
     }
 
+    // EARLY CHECK: If this is an unknown route on patreek.com, serve 404 immediately
+    // This prevents proxying to Webflow for unknown routes
+    // IMPORTANT: This check happens BEFORE any route handlers to catch unknown routes early
+    if (hostname === 'patreek.com') {
+      const isKnown = isKnownPagesRoute(pathname, url.searchParams)
+      console.log(
+        `[Worker] Route check for ${pathname}: ${
+          isKnown ? 'KNOWN' : 'UNKNOWN → 404'
+        }`
+      )
+
+      if (!isKnown) {
+        console.log(
+          `[Worker] Unknown route ${pathname} on patreek.com, serving 404 page directly (skipping Webflow)`
+        )
+        return await serve404Page(rateLimitHeaders)
+      }
+    }
+
     // Handle developer.patreek.com - route to developer pages
     if (hostname === 'developer.patreek.com') {
       // Route developer requests to developer.html
@@ -1174,20 +1193,9 @@ export default {
       }
     }
 
-    // Check if this is a known route - if not, serve 404 page directly
-    // (Only check for main domain, not admin/developer subdomains)
-    if (
-      hostname === 'patreek.com' &&
-      !isKnownPagesRoute(pathname, url.searchParams)
-    ) {
-      console.log(
-        `[Worker] Unknown route ${pathname}, serving Pages 404 page directly`
-      )
-      return await serve404Page(rateLimitHeaders)
-    }
-
     // Proxy all other requests to patreek.webflow.io
-    // (This should rarely be reached now since we check for known routes above)
+    // Note: This should only be reached for known routes that need Webflow content
+    // Unknown routes are already handled above with 404 page
     console.log(`[Worker] Routing to Webflow: ${pathname}`)
     const targetUrl = `https://patreek.webflow.io${pathname}${url.search}`
 
