@@ -609,6 +609,63 @@
   border-top-color: #4a4a4a;
 }
 
+.noticeBanner {
+  margin: 24px 0;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+  background: rgba(99, 102, 241, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.noticeButton {
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(120deg, #6366f1, #a855f7);
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 18px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+}
+
+.commentComposer {
+  position: relative;
+  margin-bottom: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.commentInput {
+  width: 100%;
+  min-height: 80px;
+  border-radius: 12px;
+  border: 1px dashed #cbd5f5;
+  background: #f8fafc;
+  padding: 16px;
+  font-size: 14px;
+  resize: none;
+  color: #1e293b;
+  pointer-events: none;
+}
+
+.commentOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #475569;
+  pointer-events: none;
+}
+
 .commentsTitle {
   font-size: 24px;
   font-weight: 600;

@@ -5,21 +5,34 @@ import { Feed } from '@/lib/api';
 
 interface TrendingSidebarProps {
   items: Feed[];
+  onSubscribe?: () => void;
 }
 
-export default function TrendingSidebar({ items }: TrendingSidebarProps) {
+export default function TrendingSidebar({ items, onSubscribe }: TrendingSidebarProps) {
   if (!items.length) {
     return (
       <div className={styles.empty}>
         <p className={styles.title}>Trending</p>
         <p className={styles.emptyCopy}>Fresh stories will appear soon.</p>
+        {onSubscribe && (
+          <button type="button" className={styles.subscribeButton} onClick={onSubscribe}>
+            Subscribe
+          </button>
+        )}
       </div>
     );
   }
 
   return (
     <div className={styles.sidebar}>
-      <p className={styles.title}>Trending</p>
+      <div className={styles.headerRow}>
+        <p className={styles.title}>Trending</p>
+        {onSubscribe && (
+          <button type="button" className={styles.subscribeButton} onClick={onSubscribe}>
+            Subscribe
+          </button>
+        )}
+      </div>
       <ol className={styles.list}>
         {items.slice(0, 5).map((item, index) => (
           <li key={item.id} className={styles.item}>

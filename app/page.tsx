@@ -1,8 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { usePathname } from 'next/navigation';
-import { getPublicFeeds, Feed, checkSessionStatus, getUserProfile, UserProfile } from '@/lib/api';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  getPublicFeeds,
+  getPublicCategories,
+  Feed,
+  Category,
+  checkSessionStatus,
+  getUserProfile,
+  UserProfile,
+} from '@/lib/api';
 import PatPageClient from './pat/[[...id]]/ArticlePageClient';
 import NewsCard from '@/components/feed/NewsCard';
 import HeroCard from '@/components/home/HeroCard';
@@ -35,16 +43,39 @@ export default function RootPage() {
     return <PatPageClient />;
   }
 
-  return <LinksHomePage />;
+  return (
+    <Suspense fallback={<div className={styles.page}><p className={styles.loading}>Loading…</p></div>}>
+      <LinksHomePage />
+    </Suspense>
+  );
 }
 
 function LinksHomePage() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { initialQuery, initialCategoryId } = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return { initialQuery: '', initialCategoryId: undefined };
+    }
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('query') ?? '';
+    const categoryParam = params.get('categoryId');
+    const categoryId = categoryParam ? Number(categoryParam) : undefined;
+    return { initialQuery: query, initialCategoryId: Number.isFinite(categoryId) ? categoryId : undefined };
+  }, []);
+
   const [feeds, setFeeds] = useState<Feed[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasSession, setHasSession] = useState(false);
   const [authWall, setAuthWall] = useState({ open: false, action: 'access this content' });
   const [isMobileFeed, setIsMobileFeed] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [filters, setFilters] = useState<{ query: string; categoryId?: number }>(() => ({
+    query: initialQuery,
+    categoryId: Number.isFinite(initialCategoryId) ? initialCategoryId : undefined,
+  }));
+  const [searchInput, setSearchInput] = useState(initialQuery);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -119,7 +150,10 @@ function LinksHomePage() {
     async function loadFeeds() {
       try {
         setIsLoading(true);
-        const data = await getPublicFeeds();
+        const data = await getPublicFeeds({
+          query: filters.query,
+          categoryId: filters.categoryId,
+        });
         if (!cancelled) {
           setFeeds(data);
         }
@@ -140,6 +174,41 @@ function LinksHomePage() {
     return () => {
       cancelled = true;
     };
+  }, [filters]);
+
+  useEffect(() => {
+    if (!pathname) return;
+    const params = new URLSearchParams();
+    if (filters.query) {
+      params.set('query', filters.query);
+    }
+    if (typeof filters.categoryId === 'number') {
+      params.set('categoryId', filters.categoryId.toString());
+    }
+    const queryString = params.toString();
+    const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(nextUrl, { scroll: false });
+  }, [filters, pathname, router]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadCategories = async () => {
+      try {
+        const list = await getPublicCategories();
+        if (!cancelled) {
+          setCategories(list || []);
+        }
+      } catch (error) {
+        console.warn('[HomePage] Failed to load categories', error);
+        if (!cancelled) {
+          setCategories([]);
+        }
+      }
+    };
+    loadCategories();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const spotlight = feeds[0];
@@ -157,6 +226,28 @@ function LinksHomePage() {
     return merged;
   }, [stream, isMobileFeed]);
 
+  const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFilters((prev) => ({
+      ...prev,
+      query: searchInput.trim(),
+    }));
+  };
+
+  const handleCategorySelect = (categoryId?: number) => {
+    setFilters((prev) => ({
+      ...prev,
+      categoryId: prev.categoryId === categoryId ? undefined : categoryId,
+    }));
+  };
+
+  const clearFilters = () => {
+    setSearchInput('');
+    setFilters({ query: '', categoryId: undefined });
+  };
+
+  const displayedCategories = categories.slice(0, 8);
+
   return (
     <div className={styles.page}>
       <MainHeader hasSession={hasSession} />
@@ -165,10 +256,50 @@ function LinksHomePage() {
       <DynamicHomeBanner />
       <div className={styles.layout}>
         <aside className={styles.trendingColumn}>
-          <TrendingSidebar items={feeds} />
+          <TrendingSidebar items={feeds} onSubscribe={() => openAuthWall('subscribe to a category')} />
         </aside>
 
         <section className={styles.feedColumn}>
+          <div className={styles.filterCard}>
+            <form className={styles.searchForm} onSubmit={handleSearchSubmit}>
+              <input
+                type="search"
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="Search headlines, tickers, or writers"
+                className={styles.searchInput}
+              />
+              <button type="submit" className={styles.searchButton}>
+                Search
+              </button>
+              {(filters.query || filters.categoryId !== undefined) && (
+                <button type="button" className={styles.clearButton} onClick={clearFilters}>
+                  Clear
+                </button>
+              )}
+            </form>
+            <div className={styles.pillRow}>
+              <button
+                type="button"
+                className={`${styles.filterPill} ${filters.categoryId === undefined ? styles.pillActive : ''}`}
+                onClick={() => handleCategorySelect(undefined)}
+              >
+                All
+              </button>
+              {displayedCategories.map((category) => (
+                <button
+                  key={category.id}
+                  type="button"
+                  className={`${styles.filterPill} ${
+                    filters.categoryId === category.id ? styles.pillActive : ''
+                  }`}
+                  onClick={() => handleCategorySelect(category.id)}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+          </div>
           <HeroCard article={spotlight} />
           <div className={styles.newsStream}>
             {isLoading && <p className={styles.loading}>Loading stories…</p>}

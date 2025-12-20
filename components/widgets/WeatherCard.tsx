@@ -57,7 +57,7 @@ export default function WeatherCard() {
   const wind = data?.current_weather?.windspeed;
 
   return (
-    <div style={cardStyle}>
+    <div id="weather-widget" style={cardStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={labelStyle}>Local Weather</span>
         {coords && <span style={coordsStyle}>{coords.lat}°, {coords.lon}°</span>}

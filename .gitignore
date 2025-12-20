@@ -7,8 +7,7 @@
 
 # testing
 /coverage
-tests/
-test-results/
+/test-results/
 
 /.next/
 /out/

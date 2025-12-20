@@ -1,5 +1,5 @@
-import useSWRInfinite from 'swr/infinite';
 import { useEffect, useMemo, useRef } from 'react';
+import { useFeed } from '@/lib/hooks/useFeed';
 import NewsCard from './NewsCard';
 
 const PAGE_SIZE = 10;
@@ -38,7 +38,7 @@ export default function FeedList({ fetchUrl, queryKey, requiresAuth = false, onA
     setSize,
     error,
     isValidating,
-  } = useSWRInfinite(getKey, fetcher, {
+  } = useFeed(getKey, fetcher, {
     revalidateFirstPage: false,
   });
 

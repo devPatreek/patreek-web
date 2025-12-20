@@ -198,41 +198,59 @@ export interface EmailAvailability {
   message: string;
 }
 
-export async function getPublicFeeds(): Promise<Feed[]> {
+export interface FeedQueryParams {
+  query?: string;
+  categoryId?: number;
+}
+
+export async function getPublicFeeds(params: FeedQueryParams = {}): Promise<Feed[]> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    // Check for bypass parameter in URL for admin testing
+
+    const searchParams = new URLSearchParams({
+      page: '0',
+      size: '30',
+    });
+
+    if (params.query && params.query.trim().length > 0) {
+      searchParams.set('query', params.query.trim());
+    }
+
+    if (typeof params.categoryId === 'number') {
+      searchParams.set('categoryId', params.categoryId.toString());
+    }
+
+    // Preserve bypass parameter in URL for admin testing
     const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
     const bypass = urlParams?.get('bypass');
-    const bypassParam = bypass === 'ag3nt007' ? '?bypass=ag3nt007' : '';
-    const url = `${API_BASE_URL}/api/v1/feeds/public${bypassParam}`;
-    
+    if (bypass === 'ag3nt007') {
+      searchParams.set('bypass', 'ag3nt007');
+    }
+
+    const url = `${API_BASE_URL}/api/v1/feeds/public?${searchParams.toString()}`;
+
     const response = await fetch(url, {
       method: 'GET',
-      // Allow browser to cache the response
       cache: 'default',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        Accept: 'application/json',
       },
       signal: controller.signal,
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       console.warn(`[API] Failed to fetch public feeds: ${response.status}`);
       return [];
     }
-    
+
     const data: FeedsResponse = await response.json();
-    // Limit to top 30 articles (API returns 20, but we'll slice if more come in future)
     const feeds = data.content || [];
     return feeds.slice(0, 30);
   } catch (error) {
-    // Handle timeout and connection errors gracefully
     if (error instanceof Error) {
       if (error.name === 'AbortError' || error.message.includes('timeout') || error.message.includes('TIMED_OUT')) {
         console.warn('[API] Connection timeout while fetching public feeds - backend may be unavailable');

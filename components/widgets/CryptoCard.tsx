@@ -31,7 +31,7 @@ export default function CryptoCard() {
   const changeSign = change !== undefined ? (change >= 0 ? '+' : '') : '';
 
   return (
-    <div style={cardStyle}>
+    <div id="crypto-widget" style={cardStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
         <span style={labelStyle}>Bitcoin</span>
         <span style={miniStyle}>1 BTC</span>

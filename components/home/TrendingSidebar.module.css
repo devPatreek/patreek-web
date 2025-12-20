@@ -11,6 +11,25 @@
   margin-bottom: 12px;
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.subscribeButton {
+  border: 1px solid #111827;
+  background: transparent;
+  color: #111827;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .list {
   list-style: none;
   padding: 0;
@@ -63,4 +82,8 @@
 .emptyCopy {
   margin: 0;
   color: #6b7280;
+}
+
+.empty .subscribeButton {
+  margin-top: 12px;
 }
