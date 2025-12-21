@@ -819,9 +819,10 @@ export async function confirmPasswordReset(token: string, newPassword: string): 
 
 /**
  * Check if user has a valid session
+ * Uses /api/v1/user/auth-status endpoint which returns AuthStatusDto directly
  * Tries cookie first (preferred), then localStorage token as header (fallback)
  */
-export async function checkSessionStatus(): Promise<{ authenticated: boolean; message?: string }> {
+export async function checkSessionStatus(): Promise<{ authenticated: boolean; message?: string; userId?: string; username?: string; email?: string }> {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -829,7 +830,8 @@ export async function checkSessionStatus(): Promise<{ authenticated: boolean; me
     // Get auth headers from localStorage (fallback for cookie-restricted jurisdictions)
     const authHeaders = getAuthHeaders();
     
-    const response = await fetch(`${API_BASE_URL}/api/v1/auth/session`, {
+    // Use /api/v1/user/auth-status instead of deprecated /api/v1/auth/session
+    const response = await fetch(`${API_BASE_URL}/api/v1/user/auth-status`, {
       method: 'GET',
       headers: {
         Accept: 'application/json',
@@ -842,10 +844,14 @@ export async function checkSessionStatus(): Promise<{ authenticated: boolean; me
     if (!response.ok) {
       return { authenticated: false };
     }
+    // AuthStatusDto is returned directly (not wrapped in ApiResponse.data)
     const data = await response.json();
     return {
-      authenticated: data.data?.authenticated === true,
-      message: data.data?.message,
+      authenticated: data.authenticated === true,
+      userId: data.userId,
+      username: data.username,
+      email: data.email,
+      message: data.authenticated ? 'Authenticated' : 'Not authenticated',
     };
   } catch (error) {
     console.warn('[API] Error checking session status:', error);
