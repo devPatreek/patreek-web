@@ -49,14 +49,47 @@
   gap: 10px;
 }
 
-.iconButton {
-  border: none;
-  background: #f3f4f6;
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  font-size: 18px;
-  cursor: pointer;
+.coinWidget {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(120deg, #eef2ff, #ede9fe);
+  text-decoration: none;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  color: #1e1b4b;
+  font-weight: 600;
+}
+
+.coinWidget:hover {
+  box-shadow: 0 6px 18px rgba(99, 102, 241, 0.25);
+  transform: translateY(-1px);
+}
+
+.coinIcon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+}
+
+.coinText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.coinLabel {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #7c3aed;
+}
+
+.coinValue {
+  font-size: 14px;
+  color: #111827;
 }
 
 .profileCircle {
@@ -114,6 +147,9 @@
 
 @media (max-width: 768px) {
   .nav {
+    display: none;
+  }
+  .coinWidget {
     display: none;
   }
   .hamburger {

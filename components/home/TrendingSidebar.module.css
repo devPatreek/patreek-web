@@ -39,11 +39,24 @@
   gap: 12px;
 }
 
+.listItem {
+  margin: 0;
+}
+
 .item {
+  text-decoration: none;
+  color: inherit;
   display: grid;
   grid-template-columns: 32px 1fr 48px;
   gap: 12px;
   align-items: center;
+  padding: 8px 4px;
+  border-radius: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.item:hover {
+  background: #f4f5fb;
 }
 
 .index {

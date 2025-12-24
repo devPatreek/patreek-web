@@ -15,16 +15,32 @@ interface FeedListProps {
   queryKey: string;
   requiresAuth?: boolean;
   onAuthWall?: (action: string) => void;
+  notFoundMessage?: string;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => {
-  if (!res.ok) {
-    throw new Error('Failed to load feed page');
+const fetcher = (_identifier: string, requestUrl?: string) => {
+  const url = requestUrl ?? _identifier;
+  if (typeof url !== 'string') {
+    throw new Error('Missing feed URL');
   }
-  return res.json();
-});
 
-export default function FeedList({ fetchUrl, queryKey, requiresAuth = false, onAuthWall }: FeedListProps) {
+  return fetch(url).then((res) => {
+    if (!res.ok) {
+      const error: Error & { status?: number } = new Error('Failed to load feed page');
+      error.status = res.status;
+      throw error;
+    }
+    return res.json();
+  });
+};
+
+export default function FeedList({
+  fetchUrl,
+  queryKey,
+  requiresAuth = false,
+  onAuthWall,
+  notFoundMessage,
+}: FeedListProps) {
   const getKey = (pageIndex: number, previousPageData: PaginatedResponse<any> | null) => {
     if (previousPageData && previousPageData.content.length === 0) {
       return null;
@@ -75,6 +91,12 @@ export default function FeedList({ fetchUrl, queryKey, requiresAuth = false, onA
     };
   }, [isLoadingMore, isReachingEnd, setSize, size]);
 
+  const httpStatus = (error as Error & { status?: number })?.status;
+
+  if (httpStatus === 404 && notFoundMessage) {
+    return <p style={{ color: '#6b7280' }}>{notFoundMessage}</p>;
+  }
+
   if (error) {
     return <p style={{ color: '#ef4444' }}>Unable to load content.</p>;
   }
@@ -87,6 +109,7 @@ export default function FeedList({ fetchUrl, queryKey, requiresAuth = false, onA
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {feeds.map((feed: any) => (
         <NewsCard
+          id={feed.id}
           key={feed.id}
           title={feed.title}
           summary={feed.excerpt || feed.body}

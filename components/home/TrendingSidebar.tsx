@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import styles from './TrendingSidebar.module.css';
 import { Feed } from '@/lib/api';
 
@@ -35,15 +37,21 @@ export default function TrendingSidebar({ items, onSubscribe }: TrendingSidebarP
       </div>
       <ol className={styles.list}>
         {items.slice(0, 5).map((item, index) => (
-          <li key={item.id} className={styles.item}>
-            <span className={styles.index}>{index + 1}</span>
-            <div>
-              <p className={styles.headline}>{item.title}</p>
-              <span className={styles.meta}>{item.categoryName}</span>
-            </div>
-            {item.imageUrl && (
-              <img src={item.imageUrl} alt="" className={styles.thumbnail} />
-            )}
+          <li key={item.id} className={styles.listItem}>
+            <Link
+              href={`/pat/${item.id}`}
+              className={styles.item}
+              aria-label={`Read ${item.title}`}
+            >
+              <span className={styles.index}>{index + 1}</span>
+              <div>
+                <p className={styles.headline}>{item.title}</p>
+                <span className={styles.meta}>{item.categoryName}</span>
+              </div>
+              {item.imageUrl && (
+                <img src={item.imageUrl} alt={item.title} className={styles.thumbnail} />
+              )}
+            </Link>
           </li>
         ))}
       </ol>

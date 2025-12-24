@@ -54,8 +54,9 @@ export default function UserProfileClient({ params }: { params: { username: stri
     if (!username) {
       throw new Error('Username unavailable');
     }
-    const path = nextState ? 'follow' : 'unfollow';
-    const response = await fetch(`/api/v1/users/${username}/${path}`, {
+
+    const targetUserId = profile?.id || profile?.userId || username;
+    const response = await fetch(`/api/v1/social/follow/${encodeURIComponent(targetUserId)}`, {
       method: nextState ? 'POST' : 'DELETE',
       credentials: 'include',
     });
@@ -71,6 +72,18 @@ export default function UserProfileClient({ params }: { params: { username: stri
         year: 'numeric',
       })
     : undefined;
+
+  const profileDisplayName =
+    profile?.fullName || profile?.name || profile?.username || username || 'This Patreeker';
+
+  const tabFriendlyMessages = useMemo(
+    () => ({
+      curated: `${profileDisplayName} hasn't curated any public feeds yet. When they do, you'll see their picks here.`,
+      pats: `${profileDisplayName} hasn't handed out any pats yet. Check back after they show some love.`,
+      comments: `${profileDisplayName} hasn't left any public comments yet. Once they chime in, the threads will land here.`,
+    }),
+    [profileDisplayName]
+  );
 
   const activeEndpoint = useMemo(() => {
     const config = tabConfig.find((tab) => tab.key === activeTab);
@@ -119,7 +132,11 @@ export default function UserProfileClient({ params }: { params: { username: stri
 
         {activeEndpoint && (
           <div className={styles.feedArea}>
-            <FeedList fetchUrl={activeEndpoint} queryKey={`${username}-${activeTab}`} />
+            <FeedList
+              fetchUrl={activeEndpoint}
+              queryKey={`${username}-${activeTab}`}
+              notFoundMessage={tabFriendlyMessages[activeTab as keyof typeof tabFriendlyMessages]}
+            />
           </div>
         )}
       </main>

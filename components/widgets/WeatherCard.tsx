@@ -19,6 +19,7 @@ const fetcher = (url: string) => fetch(url).then((res) => {
 export default function WeatherCard() {
   const [coords, setCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -38,6 +39,48 @@ export default function WeatherCard() {
       { enableHighAccuracy: false, timeout: 10000 }
     );
   }, []);
+
+  useEffect(() => {
+    if (!coords) {
+      setLocationLabel(null);
+      return;
+    }
+
+    let cancelled = false;
+    const fetchLocationLabel = async () => {
+      try {
+        const response = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.lat}&longitude=${coords.lon}&localityLanguage=en`
+        );
+        if (!response.ok) {
+          throw new Error('Reverse geocode failed');
+        }
+        const data = await response.json();
+        const city = data.city || data.locality || data.principalSubdivision;
+        const country = data.countryCode || data.countryName;
+        if (!cancelled) {
+          if (city && country) {
+            setLocationLabel(`${city}, ${country}`);
+          } else if (city) {
+            setLocationLabel(city);
+          } else if (country) {
+            setLocationLabel(country);
+          } else {
+            setLocationLabel(`${coords.lat}°, ${coords.lon}°`);
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setLocationLabel(`${coords.lat}°, ${coords.lon}°`);
+        }
+      }
+    };
+
+    fetchLocationLabel();
+    return () => {
+      cancelled = true;
+    };
+  }, [coords]);
 
   const { data, error, isLoading } = useSWR<WeatherResponse>(
     coords ? `weather:${coords.lat}:${coords.lon}` : null,
@@ -60,7 +103,7 @@ export default function WeatherCard() {
     <div id="weather-widget" style={cardStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
         <span style={labelStyle}>Local Weather</span>
-        {coords && <span style={coordsStyle}>{coords.lat}°, {coords.lon}°</span>}
+        {locationLabel && <span style={coordsStyle}>{locationLabel}</span>}
       </div>
       {geoError && <p style={errorStyle}>{geoError}</p>}
       {error && <p style={errorStyle}>Unable to load weather.</p>}

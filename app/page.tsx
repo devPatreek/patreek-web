@@ -1,7 +1,7 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import {
   getPublicFeeds,
   getPublicCategories,
@@ -11,6 +11,7 @@ import {
   getUserProfile,
   UserProfile,
 } from '@/lib/api';
+import useSWR, { useSWRConfig } from 'swr';
 import PatPageClient from './pat/[[...id]]/ArticlePageClient';
 import NewsCard from '@/components/feed/NewsCard';
 import HeroCard from '@/components/home/HeroCard';
@@ -51,8 +52,7 @@ export default function RootPage() {
 }
 
 function LinksHomePage() {
-  const router = useRouter();
-  const pathname = usePathname();
+  const { mutate } = useSWRConfig();
   const { initialQuery, initialCategoryId } = useMemo(() => {
     if (typeof window === 'undefined') {
       return { initialQuery: '', initialCategoryId: undefined };
@@ -64,8 +64,6 @@ function LinksHomePage() {
     return { initialQuery: query, initialCategoryId: Number.isFinite(categoryId) ? categoryId : undefined };
   }, []);
 
-  const [feeds, setFeeds] = useState<Feed[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [hasSession, setHasSession] = useState(false);
   const [authWall, setAuthWall] = useState({ open: false, action: 'access this content' });
   const [isMobileFeed, setIsMobileFeed] = useState(false);
@@ -75,7 +73,7 @@ function LinksHomePage() {
     categoryId: Number.isFinite(initialCategoryId) ? initialCategoryId : undefined,
   }));
   const [searchInput, setSearchInput] = useState(initialQuery);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const prefetchedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,72 +142,47 @@ function LinksHomePage() {
     setAuthWall((prev) => ({ ...prev, open: false }));
   };
 
-  useEffect(() => {
-    let cancelled = false;
+  const feedKey = useMemo(
+    () => ['publicFeeds', filters.query || '', filters.categoryId ?? 'all'],
+    [filters]
+  );
 
-    async function loadFeeds() {
-      try {
-        setIsLoading(true);
-        const data = await getPublicFeeds({
-          query: filters.query,
-          categoryId: filters.categoryId,
-        });
-        if (!cancelled) {
-          setFeeds(data);
-        }
-      } catch (error) {
-        console.warn('[HomePage] Failed to load feeds:', error);
-        if (!cancelled) {
-          setFeeds([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
+  const { data: feeds = [], isLoading: feedsLoading } = useSWR(
+    feedKey,
+    () => getPublicFeeds({ query: filters.query, categoryId: filters.categoryId }),
+    {
+      dedupingInterval: 600_000,
+      keepPreviousData: true,
     }
+  );
 
-    loadFeeds();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [filters]);
+  const { data: categories = [] } = useSWR<Category[]>(
+    'publicCategories',
+    getPublicCategories,
+    {
+      dedupingInterval: 600_000,
+    }
+  );
 
   useEffect(() => {
-    if (!pathname) return;
-    const params = new URLSearchParams();
-    if (filters.query) {
-      params.set('query', filters.query);
+    if (!categories.length || prefetchedRef.current) {
+      return;
     }
-    if (typeof filters.categoryId === 'number') {
-      params.set('categoryId', filters.categoryId.toString());
-    }
-    const queryString = params.toString();
-    const nextUrl = queryString ? `${pathname}?${queryString}` : pathname;
-    router.replace(nextUrl, { scroll: false });
-  }, [filters, pathname, router]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadCategories = async () => {
-      try {
-        const list = await getPublicCategories();
-        if (!cancelled) {
-          setCategories(list || []);
+    prefetchedRef.current = true;
+    categories.forEach((category) => {
+      const key = ['publicFeeds', '', category.id];
+      mutate(
+        key,
+        getPublicFeeds({ query: '', categoryId: category.id }),
+        {
+          populateCache: true,
+          revalidate: false,
         }
-      } catch (error) {
-        console.warn('[HomePage] Failed to load categories', error);
-        if (!cancelled) {
-          setCategories([]);
-        }
-      }
-    };
-    loadCategories();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      ).catch((error) => {
+        console.warn(`[HomePage] Prefetch failed for category ${category.name}`, error);
+      });
+    });
+  }, [categories, mutate]);
 
   const spotlight = feeds[0];
   const stream = feeds.slice(1);
@@ -302,8 +275,8 @@ function LinksHomePage() {
           </div>
           <HeroCard article={spotlight} />
           <div className={styles.newsStream}>
-            {isLoading && <p className={styles.loading}>Loading stories…</p>}
-            {!isLoading && !stream.length && (
+            {feedsLoading && <p className={styles.loading}>Loading stories…</p>}
+            {!feedsLoading && !stream.length && (
               <p className={styles.loading}>No stories available yet.</p>
             )}
             {streamWithAds.map((item) => {
@@ -317,6 +290,7 @@ function LinksHomePage() {
               const feed = item as Feed;
               return (
                 <NewsCard
+                  id={feed.id}
                   key={feed.id}
                   title={feed.title}
                   summary={feed.description}

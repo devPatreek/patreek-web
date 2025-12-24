@@ -11,6 +11,12 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.interactiveArea {
+  display: contents;
+  text-decoration: none;
+  color: inherit;
+}
+
 .card:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);

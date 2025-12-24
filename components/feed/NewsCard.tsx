@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import styles from './NewsCard.module.css';
 
 export interface FeedItemProps {
+  id: number | string;
   title: string;
   summary?: string;
   source?: string;
@@ -14,6 +16,7 @@ export interface FeedItemProps {
 }
 
 export default function NewsCard({
+  id,
   title,
   summary,
   source,
@@ -60,23 +63,25 @@ export default function NewsCard({
 
   return (
     <article className={styles.card}>
-      <div className={styles.thumbnail}>
-        {thumbnailUrl ? (
-          <img src={thumbnailUrl} alt="" loading="lazy" />
-        ) : (
-          <span className={styles.fallback}>Patreek</span>
-        )}
-      </div>
-      <div className={styles.body}>
-        <div>
-          <h3 className={styles.title}>{title}</h3>
-          {summary && <p className={styles.summary}>{summary}</p>}
+      <Link href={`/pat/${id}`} className={styles.interactiveArea}>
+        <div className={styles.thumbnail}>
+          {thumbnailUrl ? (
+            <img src={thumbnailUrl} alt="" loading="lazy" />
+          ) : (
+            <span className={styles.fallback}>Patreek</span>
+          )}
         </div>
-        <div className={styles.meta}>
-          {source && <span className={styles.source}>{source}</span>}
-          <span className={styles.date}>{formattedDate}</span>
+        <div className={styles.body}>
+          <div>
+            <h3 className={styles.title}>{title}</h3>
+            {summary && <p className={styles.summary}>{summary}</p>}
+          </div>
+          <div className={styles.meta}>
+            {source && <span className={styles.source}>{source}</span>}
+            <span className={styles.date}>{formattedDate}</span>
+          </div>
         </div>
-      </div>
+      </Link>
       <button
         className={`${styles.patButton} ${hasPat ? styles.active : ''}`}
         onClick={handlePat}

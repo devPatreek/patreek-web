@@ -70,6 +70,12 @@ export interface MiniFeedItem {
   engagementScore?: number;
 }
 
+export interface EconomyMetadata {
+  currency: string;
+  unitPrice: number;
+  marketCap: number;
+}
+
 // Community models
 export type LeaderboardMetric = 'shares' | 'comments' | 'pats' | 'coins';
 
@@ -294,6 +300,42 @@ export async function getUserProfileByUsername(username: string): Promise<UserPr
     return applyAvatarCache(profile, username);
   } catch (error) {
     console.warn('[API] Error fetching user profile by username', error);
+    return null;
+  }
+}
+
+export async function getEconomyMetadata(): Promise<EconomyMetadata | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/economy/metadata`, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+      },
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      console.warn('[API] Failed to fetch coin metadata:', response.status);
+      return null;
+    }
+
+    const payload = await response.json();
+    const data = payload?.data ?? payload;
+    if (!data) {
+      return null;
+    }
+
+    const currency = typeof data.currency === 'string' ? data.currency : 'PAT';
+    const unitPrice = Number(data.unitPrice);
+    const marketCap = Number(data.marketCap);
+
+    return {
+      currency,
+      unitPrice: Number.isFinite(unitPrice) ? unitPrice : 0.01,
+      marketCap: Number.isFinite(marketCap) ? marketCap : 0,
+    };
+  } catch (error) {
+    console.warn('[API] Error fetching coin metadata', error);
     return null;
   }
 }
