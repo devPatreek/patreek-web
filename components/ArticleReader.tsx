@@ -83,6 +83,12 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   const [summaryScore, setSummaryScore] = useState(1);
   const [isSavingSummary, setIsSavingSummary] = useState(false);
   const originalBodyRef = useRef(article.body || '');
+  const calculateSimilarity = useCallback((input: string) => {
+    const original = stripHtml(originalBodyRef.current || '').slice(0, 5000);
+    const candidate = stripHtml(input || '');
+    if (!original || !candidate) return 0;
+    return stringSimilarity.compareTwoStrings(original, candidate);
+  }, [originalBodyRef]);
 
   useEffect(() => {
     // Check for dark mode preference
@@ -262,13 +268,6 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
       openAuthWall('reply to a comment');
     }
   };
-
-  const calculateSimilarity = useCallback((input: string) => {
-    const original = stripHtml(originalBodyRef.current || '').slice(0, 5000);
-    const candidate = stripHtml(input || '');
-    if (!original || !candidate) return 0;
-    return stringSimilarity.compareTwoStrings(original, candidate);
-  }, [originalBodyRef]);
 
   const handleSummaryDraftChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const next = event.target.value;
