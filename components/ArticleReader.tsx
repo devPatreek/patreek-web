@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Image from 'next/image';
+import DOMPurify from 'dompurify';
 import { FeedArticle, Comment, getArticleComments, API_BASE_URL, checkSessionStatus } from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
 import AuthWallModal from '@/components/auth/AuthWallModal';
@@ -74,9 +75,6 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   const [hasSession, setHasSession] = useState(false);
   const [authWall, setAuthWall] = useState({ open: false, action: 'view this content' });
   const [currentBody, setCurrentBody] = useState(article.body);
-  const [currentSummaryType, setCurrentSummaryType] = useState<'EXTRACTIVE' | 'AI_GENERATED'>(article.summaryType ?? 'EXTRACTIVE');
-  const [isEnhancing, setIsEnhancing] = useState(false);
-  const [enhanceError, setEnhanceError] = useState<string | null>(null);
   const [currentSummary, setCurrentSummary] = useState(article.excerpt || '');
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
   const [summaryDraft, setSummaryDraft] = useState(article.excerpt || '');
@@ -205,11 +203,8 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   // Beautify the article body content
   useEffect(() => {
     setCurrentBody(article.body);
-    setCurrentSummaryType(article.summaryType ?? 'EXTRACTIVE');
-    setEnhanceError(null);
-    setIsEnhancing(false);
     originalBodyRef.current = article.body || '';
-  }, [article.body, article.summaryType]);
+  }, [article.body]);
 
   useEffect(() => {
     setCurrentSummary(article.excerpt || '');
@@ -217,44 +212,23 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
     setSummaryScore(calculateSimilarity(article.excerpt || ''));
   }, [article.excerpt, article.body, calculateSimilarity]);
 
-  const beautifiedBody = useMemo(() => {
-    return beautifyContent(currentBody);
-  }, [currentBody]);
+  const beautifiedBody = useMemo(() => beautifyContent(currentBody || ''), [currentBody]);
+  const safeBody = useMemo(() => DOMPurify.sanitize(beautifiedBody), [beautifiedBody]);
+
+  const normalizedSummary = useMemo(() => stripHtml(currentSummary || '').replace(/\s+/g, ' ').trim(), [currentSummary]);
+  const normalizedBody = useMemo(() => stripHtml(currentBody || '').replace(/\s+/g, ' ').trim(), [currentBody]);
+  const summarySimilarity = useMemo(() => {
+    if (!normalizedSummary || !normalizedBody) {
+      return 0;
+    }
+    return stringSimilarity.compareTwoStrings(normalizedSummary, normalizedBody);
+  }, [normalizedSummary, normalizedBody]);
+  const isSummaryRedundant =
+    Boolean(normalizedSummary && normalizedBody) &&
+    (summarySimilarity >= 0.9 || normalizedBody.includes(normalizedSummary) || normalizedSummary.includes(normalizedBody));
+  const shouldShowSummary = Boolean(currentSummary && currentSummary.trim().length > 0) && !isSummaryRedundant;
 
   const isGuest = !hasSession;
-
-  const handleEnhance = async () => {
-    if (isEnhancing) return;
-    setIsEnhancing(true);
-    setEnhanceError(null);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/feeds/${article.id}/enhance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Unable to summarize with AI right now.');
-      }
-
-      const data: Partial<FeedArticle> = await response.json();
-      const enrichedBody = data.body ?? data.excerpt ?? currentBody;
-      const enrichedSummaryType = data.summaryType ?? 'AI_GENERATED';
-
-      setCurrentBody(enrichedBody);
-      setCurrentSummaryType(enrichedSummaryType);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Summarization failed.';
-      setEnhanceError(message);
-    } finally {
-      setIsEnhancing(false);
-    }
-  };
 
   const openAuthWall = (action: string) => {
     setAuthWall({ open: true, action });
@@ -287,7 +261,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
           Accept: 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ summary: sanitized }),
+        body: JSON.stringify({ content: sanitized }),
       });
 
       if (!response.ok) {
@@ -307,9 +281,6 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
 
       const data: Partial<FeedArticle> = await response.json();
       setCurrentSummary(data.summary ?? sanitized);
-      if (data.summaryType) {
-        setCurrentSummaryType(data.summaryType);
-      }
       toast.success('Summary updated! You earned Pat Coins.');
       setIsSummaryModalOpen(false);
     } catch (error) {
@@ -321,8 +292,9 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   };
 
   const openSummaryModal = () => {
-    setSummaryDraft(currentSummary);
-    setSummaryScore(calculateSimilarity(currentSummary));
+    const seedSummary = currentSummary && currentSummary.trim().length > 0 ? currentSummary : currentBody;
+    setSummaryDraft(seedSummary);
+    setSummaryScore(calculateSimilarity(seedSummary));
     setIsSummaryModalOpen(true);
   };
 
@@ -344,7 +316,7 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
           <SocialActionBar article={article} />
           <h1 className={styles.title}>{article.title}</h1>
 
-          {currentSummary && (
+          {shouldShowSummary && (
             <div className={styles.summaryHeader}>
               <p className={styles.description}>{currentSummary}</p>
               {hasSession && (
@@ -354,10 +326,17 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
               )}
             </div>
           )}
+          {hasSession && !shouldShowSummary && (
+            <div className={styles.summaryHeader}>
+              <button type="button" className={styles.summaryEditButton} onClick={openSummaryModal}>
+                ✏️ Refine summary
+              </button>
+            </div>
+          )}
 
           <div
             className={styles.content}
-            dangerouslySetInnerHTML={{ __html: beautifiedBody }}
+            dangerouslySetInnerHTML={{ __html: safeBody }}
           />
 
           {isGuest && article.isPublic === false && (
@@ -369,20 +348,6 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
                 onClick={() => openAuthWall('unlock member perks')}
               >
                 Join Patreek
-              </button>
-            </div>
-          )}
-
-          {currentSummaryType === 'EXTRACTIVE' && (
-            <div className={styles.enhanceWrapper}>
-              {enhanceError && <p className={styles.enhanceError}>{enhanceError}</p>}
-              <button
-                type="button"
-                className={`${styles.enhanceButton} ${isEnhancing ? styles.enhanceButtonLoading : ''}`}
-                onClick={handleEnhance}
-                disabled={isEnhancing}
-              >
-                {isEnhancing ? 'Summarizing…' : '✨ Summarize with AI'}
               </button>
             </div>
           )}
