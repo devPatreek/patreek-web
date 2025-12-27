@@ -642,6 +642,11 @@
   user-select: none;
 }
 
+.commentComposerActive {
+  cursor: default;
+  user-select: auto;
+}
+
 .commentInput {
   width: 100%;
   min-height: 80px;
@@ -655,6 +660,19 @@
   pointer-events: none;
 }
 
+.commentInputEditable {
+  border-style: solid;
+  border-color: #cbd5f5;
+  background: #ffffff;
+  pointer-events: auto;
+}
+
+.container.dark .commentInputEditable {
+  background: #111827;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
 .commentOverlay {
   position: absolute;
   inset: 0;
@@ -664,6 +682,55 @@
   font-weight: 600;
   color: #475569;
   pointer-events: none;
+}
+
+.commentActions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.commentHint {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.container.dark .commentHint {
+  color: #94a3b8;
+}
+
+.commentSubmitButton {
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(120deg, #6366f1, #a855f7);
+  color: #fff;
+  font-weight: 600;
+  padding: 8px 22px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.commentSubmitButton:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.commentSubmitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.commentError {
+  margin-top: 6px;
+  font-size: 13px;
+  color: #dc2626;
+}
+
+.container.dark .commentError {
+  color: #fca5a5;
 }
 
 .commentsTitle {

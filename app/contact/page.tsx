@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import MainHeader from '@/components/MainHeader';
+import { API_BASE_URL } from '@/lib/api';
 import styles from './page.module.css';
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
@@ -25,7 +26,7 @@ export default function ContactPage() {
     setStatus('submitting');
     setError(null);
     try {
-      const response = await fetch('/api/v1/contact', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

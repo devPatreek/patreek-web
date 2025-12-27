@@ -6,7 +6,7 @@ import styles from './page.module.css';
 import Footer from '@/components/Footer';
 import MainHeader from '@/components/MainHeader';
 import PricingCard from '@/components/ui/PricingCard';
-import { checkSessionStatus, getUserProfile, UserProfile } from '@/lib/api';
+import { API_BASE_URL, checkSessionStatus, getUserProfile, UserProfile } from '@/lib/api';
 
 const bundles = [
   { id: 'coins_100', title: 'Small Bundle', coins: 100, price: 0.99, description: 'Kickstart your pat streak with a small boost.' },
@@ -47,7 +47,7 @@ export default function CoinsPage() {
     setToast(null);
     setPurchaseLoading(bundle.id);
     try {
-      const createIntent = await fetch('/api/v1/payment/create-intent', {
+      const createIntent = await fetch(`${API_BASE_URL}/api/v1/payment/create-intent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'include',
@@ -59,7 +59,7 @@ export default function CoinsPage() {
       const intentData = await createIntent.json();
       const intentId = intentData.data?.id || intentData.id || '';
 
-      const confirm = await fetch('/api/v1/payment/mock-confirm', {
+      const confirm = await fetch(`${API_BASE_URL}/api/v1/payment/mock-confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'include',

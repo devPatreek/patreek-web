@@ -7,7 +7,7 @@ import Image from 'next/image';
 import styles from './page.module.css';
 import MainHeader from '@/components/MainHeader';
 import Footer from '@/components/Footer';
-import { checkSessionStatus, getUserProfile, signOut, updateProfile, UserProfile, UpdateProfilePayload } from '@/lib/api';
+import { API_BASE_URL, checkSessionStatus, getUserProfile, signOut, updateProfile, UserProfile, UpdateProfilePayload } from '@/lib/api';
 import XpProgressBar from '@/components/gamification/XpProgressBar';
 import { Toaster, toast } from 'sonner';
 
@@ -141,7 +141,7 @@ export default function ProfilePage() {
   const handleBuyRankBoost = async () => {
     if (!profile) return;
     try {
-      const response = await fetch('/api/v1/user/rank/buy', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/user/rank/buy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         credentials: 'include',

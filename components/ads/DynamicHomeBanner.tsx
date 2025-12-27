@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { API_BASE_URL } from '@/lib/api';
 import styles from './DynamicHomeBanner.module.css';
 
 type BannerState = 'loading' | 'active' | 'empty' | 'error';
@@ -22,8 +23,9 @@ export default function DynamicHomeBanner() {
     async function fetchAd() {
       setState('loading');
       try {
-        const response = await fetch('/api/v1/ads/active/home_banner', {
+        const response = await fetch(`${API_BASE_URL}/api/v1/ads/active/home_banner`, {
           cache: 'no-store',
+          credentials: 'include',
         });
 
         if (cancelled) return;

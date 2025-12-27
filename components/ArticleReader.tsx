@@ -3,7 +3,14 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import DOMPurify from 'dompurify';
-import { FeedArticle, Comment, getArticleComments, API_BASE_URL, checkSessionStatus } from '@/lib/api';
+import {
+  FeedArticle,
+  Comment,
+  getArticleComments,
+  API_BASE_URL,
+  checkSessionStatus,
+  postArticleComment,
+} from '@/lib/api';
 import { beautifyContent } from '@/lib/contentFormatter';
 import AuthWallModal from '@/components/auth/AuthWallModal';
 import styles from './ArticleReader.module.css';
@@ -80,7 +87,11 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   const [summaryDraft, setSummaryDraft] = useState(article.excerpt || '');
   const [summaryScore, setSummaryScore] = useState(1);
   const [isSavingSummary, setIsSavingSummary] = useState(false);
+  const [commentDraft, setCommentDraft] = useState('');
+  const [isPostingComment, setIsPostingComment] = useState(false);
+  const [commentError, setCommentError] = useState<string | null>(null);
   const originalBodyRef = useRef(article.body || '');
+  const commentInputRef = useRef<HTMLTextAreaElement | null>(null);
   const calculateSimilarity = useCallback((input: string) => {
     const original = stripHtml(originalBodyRef.current || '').slice(0, 5000);
     const candidate = stripHtml(input || '');
@@ -240,6 +251,49 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
   const handleReplyClick = () => {
     if (!hasSession) {
       openAuthWall('reply to a comment');
+    } else {
+      commentInputRef.current?.focus();
+    }
+  };
+
+  const handleCommentDraftChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (commentError) {
+      setCommentError(null);
+    }
+    setCommentDraft(event.target.value);
+  };
+
+  const handleCommentKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+      event.preventDefault();
+      handleCommentSubmit();
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!hasSession) {
+      openAuthWall('comment on this story');
+      return;
+    }
+    const trimmed = commentDraft.trim();
+    if (!trimmed) {
+      setCommentError('Share a thought before posting.');
+      return;
+    }
+    setIsPostingComment(true);
+    setCommentError(null);
+    try {
+      await postArticleComment(article.id, { body: trimmed });
+      const refreshedComments = await getArticleComments(article.id);
+      setComments(refreshedComments);
+      setCommentDraft('');
+      toast.success('Comment posted!');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to post comment.';
+      setCommentError(message);
+      toast.error(message);
+    } finally {
+      setIsPostingComment(false);
     }
   };
 
@@ -393,23 +447,44 @@ export default function ArticleReader({ article }: ArticleReaderProps) {
               </div>
             </div>
             <div
-              className={styles.commentComposer}
-              role="button"
-              tabIndex={0}
-              onClick={() => openAuthWall('comment on this story')}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  openAuthWall('comment on this story');
-                }
-              }}
+              className={`${styles.commentComposer} ${hasSession ? styles.commentComposerActive : ''}`}
             >
-              <textarea
-                className={styles.commentInput}
-                placeholder="Join the discussion…"
-                disabled
-              />
-              <div className={styles.commentOverlay}>Log in to comment</div>
+              {hasSession ? (
+                <>
+                  <textarea
+                    ref={commentInputRef}
+                    className={`${styles.commentInput} ${styles.commentInputEditable}`}
+                    placeholder="Share your take…"
+                    value={commentDraft}
+                    onChange={handleCommentDraftChange}
+                    onKeyDown={handleCommentKeyDown}
+                    disabled={isPostingComment}
+                  />
+                  <div className={styles.commentActions}>
+                    <span className={styles.commentHint}>
+                      Pro tip: Command/Ctrl + Enter to post instantly.
+                    </span>
+                    <button
+                      type="button"
+                      className={styles.commentSubmitButton}
+                      onClick={handleCommentSubmit}
+                      disabled={isPostingComment || !commentDraft.trim()}
+                    >
+                      {isPostingComment ? 'Posting…' : 'Post comment'}
+                    </button>
+                  </div>
+                  {commentError && <p className={styles.commentError}>{commentError}</p>}
+                </>
+              ) : (
+                <>
+                  <textarea
+                    className={styles.commentInput}
+                    placeholder="Join the discussion…"
+                    disabled
+                  />
+                  <div className={styles.commentOverlay}>Log in to comment</div>
+                </>
+              )}
             </div>
             {isLoadingComments ? (
               <p className={styles.commentsLoading}>Loading comments...</p>

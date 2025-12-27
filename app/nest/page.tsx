@@ -131,6 +131,7 @@ export default function NestPage() {
               otherUserName={activeConversation?.otherUserName}
               otherUserAvatar={activeConversation?.otherUserAvatar}
               currentUserId={userId}
+              currentUsername={currentUser?.username ?? currentUser?.name ?? null}
               onClose={isMobile ? handleCloseChat : undefined}
             />
           </div>

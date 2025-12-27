@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import useSWR from 'swr';
+import { API_BASE_URL } from '@/lib/api';
 import styles from './Nest.module.css';
 
 export interface ConversationSummary {
@@ -97,7 +98,8 @@ const getInitials = (name?: string) => {
 };
 
 export default function ConversationList({ activeUserId, onSelectUser }: ConversationListProps) {
-  const { data, error, isValidating } = useSWR<ConversationSummary[]>('/api/v1/nest/conversations', fetcher);
+  const conversationsEndpoint = `${API_BASE_URL}/api/v1/nest/conversations`;
+  const { data, error, isValidating } = useSWR<ConversationSummary[]>(conversationsEndpoint, fetcher);
 
   const conversations = useMemo(() => {
     if (!data) return [];

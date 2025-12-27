@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFeed } from '@/lib/hooks/useFeed';
+import { API_BASE_URL } from '@/lib/api';
 import NewsCard from './NewsCard';
 
 const PAGE_SIZE = 10;
@@ -18,13 +19,25 @@ interface FeedListProps {
   notFoundMessage?: string;
 }
 
+const toAbsoluteApiUrl = (url: string) => {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  if (url.startsWith('/')) {
+    return `${API_BASE_URL}${url}`;
+  }
+  return `${API_BASE_URL}/${url}`;
+};
+
 const fetcher = (_identifier: string, requestUrl?: string) => {
   const url = requestUrl ?? _identifier;
-  if (typeof url !== 'string') {
+  if (typeof url !== 'string' || !url) {
     throw new Error('Missing feed URL');
   }
 
-  return fetch(url).then((res) => {
+  const absoluteUrl = toAbsoluteApiUrl(url);
+
+  return fetch(absoluteUrl, { credentials: 'include' }).then((res) => {
     if (!res.ok) {
       const error: Error & { status?: number } = new Error('Failed to load feed page');
       error.status = res.status;

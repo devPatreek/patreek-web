@@ -1,9 +1,45 @@
 import { getAuthHeaders, getSessionTokenFromStorage, setSessionTokenInStorage, removeSessionTokenFromStorage } from './session';
 
-const PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.patreek.com';
-const INTERNAL_API_BASE_URL = process.env.INTERNAL_API_URL || PUBLIC_API_BASE_URL;
 const isBrowser = typeof window !== 'undefined';
-export const API_BASE_URL = isBrowser ? PUBLIC_API_BASE_URL : INTERNAL_API_BASE_URL;
+
+const LOCAL_API_FALLBACK = process.env.NEXT_PUBLIC_LOCAL_API_URL || 'http://localhost:5555';
+const DEFAULT_REMOTE_API = 'https://api.patreek.com';
+
+const sanitizeBaseUrl = (value?: string | null) => {
+  if (!value) {
+    return '';
+  }
+  let normalized = value.trim();
+  if (!normalized) {
+    return '';
+  }
+  normalized = normalized.replace(/\/+$/, '');
+  normalized = normalized.replace(/\/api(\/v1)?$/i, '');
+  return normalized || '';
+};
+
+const detectRuntimeApiBase = () => {
+  if (!isBrowser) {
+    return null;
+  }
+  const host = window.location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return LOCAL_API_FALLBACK;
+  }
+  return null;
+};
+
+const resolvedPublicBase =
+  sanitizeBaseUrl(process.env.NEXT_PUBLIC_API_URL) ||
+  sanitizeBaseUrl(detectRuntimeApiBase()) ||
+  sanitizeBaseUrl(process.env.NODE_ENV === 'development' ? LOCAL_API_FALLBACK : DEFAULT_REMOTE_API);
+
+const resolvedInternalBase =
+  sanitizeBaseUrl(process.env.INTERNAL_API_URL) ||
+  sanitizeBaseUrl(process.env.NEXT_PUBLIC_API_URL) ||
+  sanitizeBaseUrl(process.env.NODE_ENV === 'development' ? LOCAL_API_FALLBACK : DEFAULT_REMOTE_API);
+
+export const API_BASE_URL = (isBrowser ? resolvedPublicBase : resolvedInternalBase) || DEFAULT_REMOTE_API;
 
 export interface Feed {
   id: number;
@@ -162,6 +198,11 @@ export interface CommentsResponse {
   totalPages: number;
   size: number;
   number: number;
+}
+
+export interface CreateCommentPayload {
+  body: string;
+  parentId?: number;
 }
 
 export interface SignupPayload {
@@ -605,6 +646,54 @@ export async function getArticleComments(feedId: number, page: number = 0, size:
       console.warn(`[API] Unknown error fetching comments for feed ${feedId}:`, error);
     }
     return [];
+  }
+}
+
+export async function postArticleComment(feedId: number, payload: CreateCommentPayload): Promise<Comment> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/feeds/${feedId}/comment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...getAuthHeaders(),
+      },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      let message = 'Unable to add comment right now.';
+      try {
+        const error = await response.json();
+        message =
+          error?.error?.message ||
+          error?.message ||
+          error?.data?.message ||
+          message;
+      } catch {
+        try {
+          const text = await response.text();
+          if (text) {
+            message = text;
+          }
+        } catch {
+          // ignore parse failures
+        }
+      }
+      throw new Error(message);
+    }
+    const data = await response.json();
+    return data?.data || data;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Comment request timed out. Please try again.');
+    }
+    throw error instanceof Error ? error : new Error('Failed to post comment.');
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

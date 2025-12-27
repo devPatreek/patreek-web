@@ -8,6 +8,7 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  min-height: 100vh;
   font-family: 'Varela', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -33,3 +34,6 @@ button {
   font-family: inherit;
 }
 
+:root {
+  --navbar-height: 84px;
+}

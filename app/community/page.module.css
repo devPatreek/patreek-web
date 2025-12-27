@@ -5,12 +5,12 @@
 }
 
 .main {
-  max-width: 1200px;
+  width: min(1400px, 100%);
   margin: 0 auto;
   padding: 48px 20px 80px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 28px;
 }
 
 .hero {
@@ -64,21 +64,105 @@
   box-shadow: 0 0 12px rgba(34, 197, 94, 0.7);
 }
 
-.grid {
+.townGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 160px minmax(0, 1fr) 360px;
   gap: 20px;
+  min-height: calc(100vh - var(--navbar-height, 80px) - 180px);
 }
 
-.adColumn {
+.skyscraper {
+  border-radius: 24px;
+  background: linear-gradient(180deg, #f1f5f9, #e2e8f0);
+  color: #0f172a;
+  font-weight: 600;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+}
+
+.arenaColumn {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  align-items: stretch;
 }
 
-.adSlot {
-  width: 100%;
+.chatColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chatShell {
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 24px 55px rgba(15, 23, 42, 0.12);
+  flex: 1;
+  min-height: 500px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sponsorBanner {
+  background: linear-gradient(120deg, #f8fafc, #e2e8f0);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.bannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bannerLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: #475569;
+}
+
+.bannerHeadline {
+  font-size: 20px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.bannerCta {
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.squareBannerRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+.squareBanner {
+  border-radius: 18px;
+  padding: 16px;
+  background: linear-gradient(140deg, #0f172a, #1d3a8a);
+  color: #fff;
+  min-height: 140px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
 }
 
 .arena {
@@ -198,29 +282,28 @@
 
 .tableRow:hover {
   background: #f8fafc;
-  transform: translateY(-2px);
 }
 
 .rowRank {
+  font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #94a3b8;
 }
 
 .rowUser {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
 }
 
 .rowAvatar {
   width: 48px;
   height: 48px;
-  border-radius: 12px;
-  background: #e0e7ff;
+  border-radius: 16px;
+  background: #f1f5f9;
   display: grid;
   place-items: center;
   font-weight: 700;
-  color: #0f172a;
 }
 
 .rowName {
@@ -230,8 +313,8 @@
 
 .rowHandle {
   margin: 2px 0 0;
-  font-size: 13px;
   color: #6b7280;
+  font-size: 13px;
 }
 
 .rowXp {
@@ -240,21 +323,55 @@
 }
 
 .muted {
-  color: #6b7280;
+  color: #94a3b8;
 }
 
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: minmax(180px, 250px) minmax(0, 1fr) minmax(180px, 320px);
-  }
+.chatLocked {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  color: #475569;
+  font-weight: 600;
+  flex-direction: column;
+  gap: 10px;
+}
 
-  .adColumn {
-    display: flex;
+.chatLocked button {
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+@media (max-width: 1200px) {
+  .townGrid {
+    grid-template-columns: 140px minmax(0, 1fr) 320px;
   }
 }
 
-@media (max-width: 1023px) {
-  .adColumn {
+@media (max-width: 1024px) {
+  .townGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .skyscraper {
     display: none;
+  }
+
+  .chatColumn {
+    order: 2;
+  }
+
+  .arenaColumn {
+    order: 1;
+  }
+
+  .chatShell {
+    min-height: 400px;
   }
 }

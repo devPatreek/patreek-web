@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import MainHeader from '@/components/MainHeader';
-import { getUserProfile, UserProfile } from '@/lib/api';
+import { API_BASE_URL, getUserProfile, UserProfile } from '@/lib/api';
 import styles from './page.module.css';
 
 type AdTier = {
@@ -75,7 +75,10 @@ export default function AdvertisePage() {
 
     async function loadPricing() {
       try {
-        const response = await fetch('/api/v1/ads/pricing', { cache: 'no-store' });
+        const response = await fetch(`${API_BASE_URL}/api/v1/ads/pricing`, {
+          cache: 'no-store',
+          credentials: 'include',
+        });
         if (!response.ok) return;
         const payload = await response.json();
         const rawTiers: any[] = Array.isArray(payload.tiers)
@@ -179,7 +182,7 @@ export default function AdvertisePage() {
       formData.append('costCoins', option.priceCoins.toString());
       formData.append('image', imageFile);
 
-      const response = await fetch('/api/v1/ads/book', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/ads/book`, {
         method: 'POST',
         body: formData,
         credentials: 'include',
